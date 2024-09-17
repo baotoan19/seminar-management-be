@@ -9,6 +9,6 @@ namespace Seminar.DOMAIN.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         IRepository<T> GetRepository<T>() where T : class;
-        Task SaveChangeAsync();
+        Task SaveChangesAsync();
     }
 }

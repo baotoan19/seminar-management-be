@@ -7,13 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SeminarINFRASTRUCTURE\SeminarINFRASTRUCTURE.csproj" />
+    <Compile Remove="Exceptions\**" />
+    <Compile Remove="Mapping\**" />
+    <EmbeddedResource Remove="Exceptions\**" />
+    <EmbeddedResource Remove="Mapping\**" />
+    <None Remove="Exceptions\**" />
+    <None Remove="Mapping\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Mapper\" />
+    <ProjectReference Include="..\SeminarINFRASTRUCTURE\Seminar.INFRASTRUCTURE.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Dtos\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.10.0" />
+    <PackageReference Include="MediatR" Version="12.4.1" />
   </ItemGroup>
 
 </Project>

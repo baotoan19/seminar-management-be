@@ -9,11 +9,11 @@ namespace Seminar.DOMAIN.Interfaces
     public interface IRepository<T> where T : class
     {
         IQueryable<T> Entities { get; }
-        Task<IList<T>> GetAll();
-        Task<T> GetById(int id);
-        Task Insert(T entity);
-        Task Delete(int id);
-        Task Update(T entity);
+        Task<IList<T>> GetAllAsync();
+        Task<T> GetByIdAsync(int id);
+        Task InsertAsync(T entity);
+        Task DeleteAsync(int id);
+        Task UpdateAsync(T entity);
 
     }
 }
