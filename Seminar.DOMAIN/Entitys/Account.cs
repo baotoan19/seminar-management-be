@@ -19,9 +19,6 @@ namespace Seminar.DOMAIN.Entitys
         [Required]
         [StringLength(255)]
         public string Password { get; set; }
-        [Required]
-        [StringLength(11)]
-        public string? NumberPhone { get; set; }
         [ForeignKey("Role")]
         public int? RoleId { get; set; }
         public bool Status { get; set; }

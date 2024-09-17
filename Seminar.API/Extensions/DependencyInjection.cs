@@ -1,4 +1,5 @@
 using System.Text;
+using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +16,7 @@ namespace Seminar.API.Extensions
             JwtSetting(services, configuration);
             ConfigureCors(services);
             ConfigureAuthentication(services, configuration);
-            AddDatabase(services, configuration);
+            AddDatabases(services, configuration);
             AddSwagger(services);
         }
 
@@ -24,7 +25,7 @@ namespace Seminar.API.Extensions
         {
             services.AddSingleton(option =>
             {
-                JwtSettings jwtSettings = new() 
+                JwtSettings jwtSettings = new()
                 {
                     SecretKey = configuration["JWT_KEY"],
                     Issuer = configuration["JWT_ISSUER"],
@@ -82,11 +83,16 @@ namespace Seminar.API.Extensions
         }
 
         //Database
-        public static void AddDatabase(this IServiceCollection services, IConfiguration configuration)
+        public static void AddDatabases(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             services.AddDbContext<SeminarContext>(options =>
-                options.UseSqlServer(connectionString));
+            options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"), sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(60),
+                    errorNumbersToAdd: null);
+            }));
         }
 
         //Add Swagger

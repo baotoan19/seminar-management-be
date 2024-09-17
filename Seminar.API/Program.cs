@@ -1,22 +1,19 @@
 using dotenv.net;
+using Microsoft.EntityFrameworkCore;
 using Seminar.API.Extensions;
 using Seminar.APPLICATION.Extensions;
+using Seminar.INFRASTRUCTURE.Database;
 
-//DotEnv.Load();
+//Load env
 DotEnv.Load();
 var builder = WebApplication.CreateBuilder(args);
-Console.WriteLine($"DB_CONNECTION_STRING: {Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")}");
-Console.WriteLine($"JWT_KEY: {Environment.GetEnvironmentVariable("JWT_KEY")}");
-Console.WriteLine($"JWT_ISSUER: {Environment.GetEnvironmentVariable("JWT_ISSUER")}");
-Console.WriteLine($"JWT_AUDIENCE: {Environment.GetEnvironmentVariable("JWT_AUDIENCE")}");
+
 
 // Add Controllers
 builder.Services.AddControllers();
-
 // Add Services
 builder.Services.AddApplication(builder.Configuration);
-
-// Add cors, swagger, authentication, and authorization
+// Add cors, swagger, authentication, and authorization, database
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();

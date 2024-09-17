@@ -12,6 +12,7 @@ namespace Seminar.DOMAIN.Entitys
     public class Organizer : BaseEntity
     {
         public string? Name { get; set; }
+        public string? NumberPhone { get; set; }
         [StringLength(255)]
         public string? Description { get; set; }
         [ForeignKey("Account")]
