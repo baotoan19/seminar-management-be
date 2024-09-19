@@ -1,11 +1,11 @@
 using System.Text;
-using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Seminar.CORE.Base;
 using Seminar.INFRASTRUCTURE.Database;
+using Seminar.INFRASTRUCTURE.Seed;
 
 namespace Seminar.API.Extensions
 {
@@ -18,6 +18,7 @@ namespace Seminar.API.Extensions
             ConfigureAuthentication(services, configuration);
             AddDatabases(services, configuration);
             AddSwagger(services);
+            AddInitialiseDatabase(services);
         }
 
         // JWT Setting
@@ -64,8 +65,6 @@ namespace Seminar.API.Extensions
             })
             .AddJwtBearer(options =>
             {
-
-
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = true,
@@ -85,15 +84,24 @@ namespace Seminar.API.Extensions
         //Database
         public static void AddDatabases(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<SeminarContext>(options =>
-            options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"), sqlOptions =>
+            try
             {
-                sqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 10,
-                    maxRetryDelay: TimeSpan.FromSeconds(60),
-                    errorNumbersToAdd: null);
-            }));
+                services.AddDbContext<SeminarContext>(options =>
+                    options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"), sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(60),
+                            errorNumbersToAdd: null);
+                    }));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in AddDatabases: {ex.Message}");
+                throw;
+            }
         }
+
 
         //Add Swagger
         public static void AddSwagger(this IServiceCollection services)
@@ -126,6 +134,20 @@ namespace Seminar.API.Extensions
                             }
                 });
             });
+        }
+
+        //Seed Data
+        public static void AddInitialiseDatabase(this IServiceCollection services)
+        {
+            services.AddScoped<ApplicationDbContextInitialiser>();
+        }
+
+        public static async Task UseInitialiseDatabaseAsync(this IApplicationBuilder app)
+        {
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
+            ApplicationDbContextInitialiser initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
+            await initialiser.InitialiseAsync();
+            await initialiser.SeedAsync();
         }
     }
 }

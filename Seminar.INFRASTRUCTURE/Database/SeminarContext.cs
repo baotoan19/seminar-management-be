@@ -35,6 +35,7 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Role> Roles { get; set; }
         public DbSet<Artical> Articals { get; set; }
         public DbSet<Conference> Conferences { get; set; }
+        public DbSet<Faculty> Faculties { get; set; }
         public DbSet<RegistrationForm> RegistrationForms { get; set; }
         public DbSet<Review_Assignment> Review_Assignments { get; set; }
         public DbSet<Review_Form> Review_Forms { get; set; }
@@ -69,7 +70,6 @@ namespace Seminar.INFRASTRUCTURE.Database
                 .HasIndex(a => a.AccountId)
                 .IsUnique();
         }
-
 
     }
 }

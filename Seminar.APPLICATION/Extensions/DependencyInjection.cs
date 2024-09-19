@@ -1,8 +1,14 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Seminar.APPLICATION.Interfaces;
+using Seminar.APPLICATION.Interfaces.IOrganizerService;
+using Seminar.APPLICATION.Services;
+using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Interfaces;
-using Seminar.INFRASTRUCTURE.Reponsitories;
+using Seminar.INFRASTRUCTURE.Database;
+using Seminar.INFRASTRUCTURE.Repositories;
 using Seminar.INFRASTRUCTURE.UnitOfWork;
 
 namespace Seminar.APPLICATION.Extensions
@@ -27,7 +33,13 @@ namespace Seminar.APPLICATION.Extensions
         //Đăng ký service
         public static void AddService(this IServiceCollection services, IConfiguration configuration)
         {
-            
+            services.AddHttpContextAccessor();
+            services.AddScoped(typeof(IAuthService), typeof(AuthService));
+            services.AddScoped(typeof(ITokenService), typeof(TokenService));
+            services.AddScoped(typeof(IAuthorService), typeof(AuthorService));
+            services.AddScoped(typeof(IOrganizerService), typeof(OrganizerService));
+            services.AddScoped(typeof(IReviewerService), typeof(ReviewerService));
+
         }
 
         //Đăng ký mapper

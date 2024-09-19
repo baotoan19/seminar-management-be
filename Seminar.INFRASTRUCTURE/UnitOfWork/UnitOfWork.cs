@@ -1,6 +1,6 @@
 using Seminar.DOMAIN.Interfaces;
 using Seminar.INFRASTRUCTURE.Database;
-using Seminar.INFRASTRUCTURE.Reponsitories;
+using Seminar.INFRASTRUCTURE.Repositories;
 
 namespace Seminar.INFRASTRUCTURE.UnitOfWork
 {

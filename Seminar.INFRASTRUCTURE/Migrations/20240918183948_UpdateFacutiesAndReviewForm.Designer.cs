@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Seminar.INFRASTRUCTURE.Database;
 
@@ -11,9 +12,11 @@ using Seminar.INFRASTRUCTURE.Database;
 namespace Seminar.INFRASTRUCTURE.Migrations
 {
     [DbContext(typeof(SeminarContext))]
-    partial class SeminarContextModelSnapshot : ModelSnapshot
+    [Migration("20240918183948_UpdateFacutiesAndReviewForm")]
+    partial class UpdateFacutiesAndReviewForm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

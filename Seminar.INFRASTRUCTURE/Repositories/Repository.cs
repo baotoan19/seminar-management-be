@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Seminar.INFRASTRUCTURE.Reponsitories
+namespace Seminar.INFRASTRUCTURE.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {

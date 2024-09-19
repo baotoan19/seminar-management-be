@@ -19,5 +19,6 @@ namespace Seminar.DOMAIN.Entitys
         public DateTime? DateUpdate { get; set; }
         public string? Summary { get; set; }
         public virtual Artical Artical { get; set; }
+        public virtual ICollection<Review_Form> Review_Forms { get; set; } = new List<Review_Form>();
     }
 }

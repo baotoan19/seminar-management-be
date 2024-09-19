@@ -28,7 +28,6 @@ namespace Seminar.DOMAIN.Entitys
         public virtual Discipline Discipline { get; set; } = new Discipline();
         public virtual Conference Conference { get; set; }
         public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
-        public virtual ICollection<Review_Form> Review_Forms { get; set; } = new List<Review_Form>();
         public virtual ICollection<History_Update_Artical> History_Update_Articlas { get; set; } = new List<History_Update_Artical>();
         public virtual ICollection<Author_Artical> Author_Articlas { get; set; } = new List<Author_Artical>();
         public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
