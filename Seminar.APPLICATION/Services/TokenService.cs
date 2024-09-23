@@ -34,7 +34,7 @@ namespace Seminar.APPLICATION.Services
             DateTime now = DateTime.Now;
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
+                new Claim("id", account.Id.ToString()),
                 new Claim("role",role),
                 new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(now.AddMinutes(60)).ToUnixTimeSeconds().ToString())
             };
@@ -83,7 +83,7 @@ namespace Seminar.APPLICATION.Services
                 {
                     Id = account.Id,
                     Email = account.Email,
-                    Role = roleName,
+                    RoleName = roleName,
                     CreatedAt = account.CreatedAt,
                 }
             };

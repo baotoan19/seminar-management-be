@@ -14,8 +14,6 @@ namespace Seminar.APPLICATION.Dtos.AuthDtos
         ErrorMessage = "Password must be at least 8 characters long, including uppercase, lowercase, numbers, and special characters.")]
         public string Password { get; set; }
         [Required(ErrorMessage = "Phone number is required")]
-        [Phone(ErrorMessage = "Phone number is not valid")]
-        [RegularExpression(@"^[0-9]{10}$", ErrorMessage = "Số điện thoại phải có 10 chữ số.")]
         public string NumberPhone { get; set; }
         [Required(ErrorMessage = "Role name is required")]
         public string RoleName { get; set; }

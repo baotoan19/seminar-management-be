@@ -34,10 +34,10 @@ else
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
+app.UseMiddleware<CustomExceptionHandlerMiddleware>();
 app.UseAuthentication();
 app.UseCors("AllowLocalhost");
 app.UseAuthorization();
-app.UseMiddleware<CustomExceptionHandlerMiddleware>();
 app.MapControllers();
 
 try

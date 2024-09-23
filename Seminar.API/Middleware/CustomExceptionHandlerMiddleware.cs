@@ -46,5 +46,6 @@ public class CustomExceptionHandlerMiddleware
             await context.Response.WriteAsync(result);
         }
     }
+
 }
 

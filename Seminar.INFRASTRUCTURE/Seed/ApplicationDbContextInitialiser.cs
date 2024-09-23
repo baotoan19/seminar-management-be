@@ -56,6 +56,10 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 await addRole();
                 await addAccount();
                 await addOrganizer();
+                await addFaculty();
+                await addDiscipline();
+                await addConference();
+                await addReviewCommittee();
             }
             catch (Exception ex)
             {
@@ -134,5 +138,103 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 }
             }
         }
+
+        private async Task addFaculty()
+        {
+            if (!await _context.Faculties.AnyAsync(x => x.DeletedAt == null))
+            {
+                Faculty[] faculties =
+                [
+                    new Faculty { FacultyName = "Công Nghệ Thông Tin" , Description = "HUIT" },
+                    new Faculty { FacultyName = "Công Nghệ Sinh Học" , Description = "HUIT" },
+                    new Faculty { FacultyName = "Điện - Điện Tử" , Description = "HUIT" },
+                    new Faculty { FacultyName = "Quản Trị Khinh Doanh" , Description = "HUIT" },
+                    new Faculty { FacultyName = "Công Nghệ Thực Phẩm" , Description = "HUIT" }
+                ];
+
+                foreach (Faculty faculty in faculties)
+                {
+                    if (!await _unitOfWork.GetRepository<Faculty>().Entities.AnyAsync(f => f.FacultyName == faculty.FacultyName))
+                    {
+                        faculty.CreatedAt = DateTime.Now;
+                        faculty.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Faculty>().InsertAsync(faculty);
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        private async Task addDiscipline()
+        {
+            if (!await _context.Disciplines.AnyAsync(x => x.DeletedAt == null))
+            {
+                Discipline[] disciplines =
+                [
+                    new Discipline { DisciplineName = "Trí Tuệ Nhân Tạo" },
+                    new Discipline { DisciplineName = "Công nghệ sinh học công nghiệp"},
+                    new Discipline { DisciplineName = "Kỹ thuật điện dân dụng"},
+                    new Discipline { DisciplineName = "Kinh tế và kinh doanh"},
+                    new Discipline { DisciplineName = "Kỹ thuật thực phẩm và đồ uống"}
+                ];
+
+                foreach (Discipline discipline in disciplines)
+                {
+                    if (!await _unitOfWork.GetRepository<Discipline>().Entities.AnyAsync(d => d.DisciplineName == discipline.DisciplineName))
+                    {
+                        discipline.CreatedAt = DateTime.Now;
+                        discipline.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Discipline>().InsertAsync(discipline);
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        private async Task addConference()
+        {
+            if (!await _context.Conferences.AnyAsync(x => x.DeletedAt == null))
+            {
+                Conference[] conferences =
+                [
+                    new Conference { ConferenceName = "Hội nghị khoa học thực phẩm" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 1 },
+                    new Conference { ConferenceName = "Hội nghị khoa học và công nghệ quốc tế" , DateStart = new DateTime(2024, 09, 01), DateEnd = new DateTime(2024, 10, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 2 }
+                ];
+                foreach (Conference conference in conferences)
+                {
+                    if (!await _unitOfWork.GetRepository<Conference>().Entities.AnyAsync(c => c.ConferenceName == conference.ConferenceName))
+                    {
+                        conference.CreatedAt = DateTime.Now;
+                        conference.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Conference>().InsertAsync(conference);
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        private async Task addReviewCommittee()
+        {
+            if (!await _context.Review_Committees.AnyAsync(x => x.DeletedAt == null))
+            {
+                Review_Committee[] review_Committees =
+                [
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", ConferenceId = 1 },
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", ConferenceId = 2 }
+                ];
+                foreach (Review_Committee review_Committee in review_Committees)
+                {
+                    if (!await _unitOfWork.GetRepository<Review_Committee>().Entities.AnyAsync(c => c.ReviewCommitteeName == review_Committee.ReviewCommitteeName))
+                    {
+                        review_Committee.CreatedAt = DateTime.Now;
+                        review_Committee.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Review_Committee>().InsertAsync(review_Committee);
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+
     }
 }

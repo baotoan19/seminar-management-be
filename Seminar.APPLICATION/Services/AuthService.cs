@@ -44,7 +44,7 @@ namespace Seminar.APPLICATION.Services
 
         public async Task RegisterAsync(RegisterRequestDto registerRequestDto)
         {
-            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == registerRequestDto.Email && x.DeletedAt == null);
+            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == registerRequestDto.Email && x.DeletedAt == null && x.Status == true);
             if (existAccount != null)
             {
                 throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.EXISTED, "This email is already registered.");
@@ -116,7 +116,7 @@ namespace Seminar.APPLICATION.Services
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto)
         {
-            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.BADREQUEST, "Email or password is incorrect");
+            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
             //check status
             if (account.Status == false)
             {
@@ -127,7 +127,7 @@ namespace Seminar.APPLICATION.Services
             string hashedInputPassWord = passwordHasher.HashPassword(null, loginRequestDto.Password);
             if (hashedInputPassWord != account.Password)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email or password is incorrect");
+                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "Email or password is incorrect");
             }
             Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(x => x.Id == account.RoleId && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found for the account");
             string roleName = role.RoleName;
@@ -145,6 +145,29 @@ namespace Seminar.APPLICATION.Services
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Refresh token is required");
             }
             return await _tokenService.RefreshAccessToken(refeshTokenRequest);
+        }
+        public async Task ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        {
+            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == changePasswordDto.Email && x.DeletedAt == null && x.Status == true) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
+            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+            string hashedInputPassWord = passwordHasher.HashPassword(null, changePasswordDto.Password);
+            if (hashedInputPassWord != account.Password)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Email or password is incorrect");
+            }
+            if (account.Password == passwordHasher.HashPassword(null, changePasswordDto.NewPassword))
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "New password and old password are the same");
+            }
+            if (changePasswordDto.NewPassword != changePasswordDto.ConfirmPassword)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Confirm password and new password do not match");
+            }
+
+            account.Password = passwordHasher.HashPassword(account, changePasswordDto.NewPassword);
+            await _unitOfWork.GetRepository<Account>().UpdateAsync(account); 
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

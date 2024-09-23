@@ -102,7 +102,6 @@ namespace Seminar.API.Extensions
             }
         }
 
-
         //Add Swagger
         public static void AddSwagger(this IServiceCollection services)
         {

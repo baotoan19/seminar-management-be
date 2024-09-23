@@ -17,7 +17,7 @@ namespace Seminar.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
+        public async Task<IActionResult> Register(RegisterRequestDto registerRequestDto)
         {
             await _authService.RegisterAsync(registerRequestDto);
             return Ok(new BaseResponse<string>(
@@ -27,7 +27,7 @@ namespace Seminar.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
+        public async Task<IActionResult> Login(LoginRequestDto loginRequestDto)
         {
             LoginResponseDto loginResponseDto = await _authService.LoginAsync(loginRequestDto);
             return Ok(new BaseResponse<LoginResponseDto>(
@@ -37,13 +37,23 @@ namespace Seminar.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefeshTokenRequestDto refeshTokenRequest)
+        public async Task<IActionResult> RefreshToken(RefeshTokenRequestDto refeshTokenRequest)
         {
             TokenResponseDto tokenResponseDto = await _authService.RefreshAccessTokenAsync(refeshTokenRequest);
             return Ok(new BaseResponse<TokenResponseDto>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 data: tokenResponseDto));
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            await _authService.ChangePasswordAsync(changePasswordDto);
+            return Ok(new BaseResponse<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: "Change password success"));
         }
     }
 }

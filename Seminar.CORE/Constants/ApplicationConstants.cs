@@ -22,6 +22,9 @@ namespace Seminar.CORE.Constants
         public const string FORBIDDEN = "Forbidden!";
         public const string BADREQUEST = "Bad request!";
         public const string INVALID_TOKEN = "Invalid token!";
+        public const string INVALID_USER_ID = "Invalid user id!";
+        public const string INVALID_ROLE = "Invalid role!";
+        public const string INVALID_DATA = "Invalid data!";
     }
 
 }

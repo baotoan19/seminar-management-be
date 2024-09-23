@@ -6,5 +6,6 @@ namespace Seminar.APPLICATION.Interfaces{
         Task RegisterAsync(RegisterRequestDto registerRequestDto);
         Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto);
         Task<TokenResponseDto> RefreshAccessTokenAsync(RefeshTokenRequestDto refeshTokenRequest);
+        Task ChangePasswordAsync(ChangePasswordDto changePasswordDto);
     }
 }
