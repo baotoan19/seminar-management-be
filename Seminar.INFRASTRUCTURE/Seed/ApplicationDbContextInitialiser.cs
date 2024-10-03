@@ -60,6 +60,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 await addDiscipline();
                 await addConference();
                 await addReviewCommittee();
+                await addConclude();
             }
             catch (Exception ex)
             {
@@ -229,6 +230,30 @@ namespace Seminar.INFRASTRUCTURE.Seed
                         review_Committee.CreatedAt = DateTime.Now;
                         review_Committee.UpdatedAt = DateTime.Now;
                         await _unitOfWork.GetRepository<Review_Committee>().InsertAsync(review_Committee);
+                    }
+                }
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        private async Task addConclude()
+        {
+            if (!await _context.Conclude.AnyAsync(x => x.DeletedAt == null))
+            {
+                Conclude[] concludes =
+                [
+                    new Conclude {Result = "Accepted"},
+                    new Conclude {Result = "Rejected"},
+                    new Conclude {Result = "Revision Required"}
+                ];
+
+                foreach (Conclude conclude in concludes)
+                {
+                    if (!await _unitOfWork.GetRepository<Conclude>().Entities.AnyAsync(c => c.Result == conclude.Result))
+                    {
+                        conclude.CreatedAt = DateTime.Now;
+                        conclude.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Conclude>().InsertAsync(conclude);
                     }
                 }
                 await _unitOfWork.SaveChangesAsync();

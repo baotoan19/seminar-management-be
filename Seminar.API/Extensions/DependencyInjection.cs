@@ -67,6 +67,7 @@ namespace Seminar.API.Extensions
             {
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
+
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,

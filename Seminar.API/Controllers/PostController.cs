@@ -5,7 +5,6 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
-using Seminar.DOMAIN.Entitys;
 
 namespace Seminar.API.Controllers;
 
@@ -20,7 +19,7 @@ public class PostController : ControllerBase
         _postService = postService;
     }
 
-    [HttpPost("create-post")]
+    [HttpPost()]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> CreatePostAsync(PostDto postDto)
     {
@@ -31,7 +30,7 @@ public class PostController : ControllerBase
             data: "Create post successfully!"));
     }
 
-    [HttpPatch("update-post/{id}")]
+    [HttpPatch("{id}")]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> UpdatePostAsync(int id, PostDto postDto)
     {
@@ -42,7 +41,7 @@ public class PostController : ControllerBase
             data: "Update post successfully!"));
     }
 
-    [HttpDelete("delete-post/{id}")]
+    [HttpDelete("{id}")]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> DeletePostAsync(int id)
     {
@@ -53,7 +52,7 @@ public class PostController : ControllerBase
             data: "Delete post successfully!"));
     }
 
-    [HttpGet("get-post/{id}")]
+    [HttpGet("{id}")]
     //[Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> GetPostByIdAsync(int id)
     {

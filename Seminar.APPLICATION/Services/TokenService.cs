@@ -21,7 +21,6 @@ namespace Seminar.APPLICATION.Services
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
-
         public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
@@ -32,11 +31,13 @@ namespace Seminar.APPLICATION.Services
         public TokenResponseDto GenerateToken(Account account, string role)
         {
             DateTime now = DateTime.Now;
+            var utcNow = DateTime.UtcNow;
+
             List<Claim> claims = new List<Claim>
             {
                 new Claim("id", account.Id.ToString()),
                 new Claim("role",role),
-                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(now.AddMinutes(60)).ToUnixTimeSeconds().ToString())
+                new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(now.AddMinutes(1)).ToUnixTimeSeconds().ToString())
             };
             var keyString = _configuration["JWT_KEY"];
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));

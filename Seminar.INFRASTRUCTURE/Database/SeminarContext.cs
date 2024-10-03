@@ -49,6 +49,7 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Proceeding> Proceedings { get; set; }
         public DbSet<Author_Artical> Author_Articlas { get; set; }
         public DbSet<History_Update_Artical> History_Update_Articals { get; set; }
+        public DbSet<Conclude> Conclude { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

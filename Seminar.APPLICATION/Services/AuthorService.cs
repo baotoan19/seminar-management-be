@@ -104,7 +104,5 @@ namespace Seminar.APPLICATION.Services
             return authorVM;
         }
 
-
-
     }
 }

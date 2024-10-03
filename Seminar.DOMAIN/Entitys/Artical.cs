@@ -25,7 +25,7 @@ namespace Seminar.DOMAIN.Entitys
         public int? ConferenceId { get; set; }
         [ForeignKey("Proceeding")]
         public int? ProceedingId { get; set; }
-        public virtual Discipline Discipline { get; set; } = new Discipline();
+        public virtual Discipline Discipline { get; set; }
         public virtual Conference Conference { get; set; }
         public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
         public virtual ICollection<History_Update_Artical> History_Update_Articlas { get; set; } = new List<History_Update_Artical>();

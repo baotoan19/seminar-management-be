@@ -42,6 +42,16 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(IAccountService), typeof(AccountService));
             services.AddScoped(typeof(IUserService), typeof(UserService));
             services.AddScoped(typeof(IPostService), typeof(PostService));
+            services.AddScoped(typeof(IConcludeService), typeof(ConcludeService));
+            services.AddScoped(typeof(IDisciplineService), typeof(DisciplineService));
+            services.AddScoped(typeof(IFacultyService), typeof(FacultyService));
+            services.AddScoped(typeof(IProceedingService), typeof(ProceedingService));
+            services.AddScoped(typeof(IArticalsService), typeof(ArticalService));
+            services.AddScoped(typeof(IHistoryArticalsService), typeof(HistoryArticalsService));
+            services.AddScoped(typeof(IReviewFormService), typeof(ReviewFormService));
+            services.AddScoped(typeof(IReviewAssignmentService), typeof(ReviewAssignmentService));
+            services.AddScoped(typeof(IReviewCommitteeService), typeof(ReviewCommitteeService));
+            services.AddScoped(typeof(IRegistrationFormService), typeof(RegistrationFormService));
         }
 
         //Đăng ký mapper
