@@ -55,10 +55,10 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 await addRole();
                 await addAccount();
-                await addOrganizer();
                 await addFaculty();
-                await addDiscipline();
+                await addOrganizer();
                 await addConference();
+                await addDiscipline();
                 await addReviewCommittee();
                 await addConclude();
             }
@@ -199,7 +199,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 Conference[] conferences =
                 [
                     new Conference { ConferenceName = "Hội nghị khoa học thực phẩm" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 1 },
-                    new Conference { ConferenceName = "Hội nghị khoa học và công nghệ quốc tế" , DateStart = new DateTime(2024, 09, 01), DateEnd = new DateTime(2024, 10, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 2 }
+                    // new Conference { ConferenceName = "Hội nghị khoa học và công nghệ quốc tế" , DateStart = new DateTime(2024, 09, 01), DateEnd = new DateTime(2024, 10, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 2 }
                 ];
                 foreach (Conference conference in conferences)
                 {
@@ -220,8 +220,8 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Review_Committee[] review_Committees =
                 [
-                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", ConferenceId = 1 },
-                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", ConferenceId = 2 }
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", ConferenceId = 1 }
+                    //new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", ConferenceId = 2 }
                 ];
                 foreach (Review_Committee review_Committee in review_Committees)
                 {
