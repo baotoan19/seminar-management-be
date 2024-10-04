@@ -97,21 +97,20 @@ namespace Seminar.APPLICATION.Services
             {
                 throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Invalid refresh token");
             }
-            var accountId = int.Parse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            var account = await _unitOfWork.GetRepository<Account>().Entities
-                .FirstOrDefaultAsync(x => x.Id == accountId && x.DeletedAt == null);
-
-            if (account == null)
+            var accountIdClaim = principal.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(accountIdClaim) || !int.TryParse(accountIdClaim, out int accountId))
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Invalid refresh token: missing or malformed account ID.");
             }
-
+            Account account = await _unitOfWork.GetRepository<Account>().Entities
+                .FirstOrDefaultAsync(x => x.Id == accountId && x.DeletedAt == null) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+    
             var role = await _unitOfWork.GetRepository<Role>().Entities
                 .FirstOrDefaultAsync(x => x.Id == account.RoleId && x.DeletedAt == null) ??
                 throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found for the account");
 
             var newTokens = GenerateToken(account, role.RoleName);
-
             return newTokens;
         }
 
