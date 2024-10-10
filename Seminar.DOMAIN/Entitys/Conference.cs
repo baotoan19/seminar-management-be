@@ -9,6 +9,7 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Conferences")]
     public class Conference : BaseEntity
     {
         [Required]
@@ -18,9 +19,9 @@ namespace Seminar.DOMAIN.Entitys
         public DateTime? DateEnd { get; set; }
         [StringLength(255)]
         public string? Destination { get; set; }
-        [ForeignKey("Organizer")]
+        [ForeignKey("Organizers")]
         public int? OrganizerId { get; set; }
-        public virtual ICollection<Artical> Articals { get; set; } = new List<Artical>();
+        public virtual ICollection<Topic> Topics { get; set; } = new List<Topic>();
         public virtual Organizer Organizer { get; set; }
         public virtual ICollection<Review_Committee> Review_Committees { get; set; } = new List<Review_Committee>();
         public virtual ICollection<RegistrationForm> RegistrationForms { get; set; } = new List<RegistrationForm>();

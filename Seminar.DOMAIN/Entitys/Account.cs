@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Accounts")]
     public class Account : BaseEntity
     {
         [Required]

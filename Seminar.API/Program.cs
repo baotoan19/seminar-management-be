@@ -19,7 +19,7 @@ builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();
 
-await app.UseInitialiseDatabaseAsync();
+//await app.UseInitialiseDatabaseAsync();
 
 if (app.Environment.IsDevelopment())
 {

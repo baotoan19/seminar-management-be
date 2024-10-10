@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("RegistrationForms")]
     public class RegistrationForm : BaseEntity
     {
 
-        [ForeignKey("Author")]
+        [ForeignKey("Authors")]
         public int AuthorId { get; set; }
-        [ForeignKey("Conference")]
+        [ForeignKey("Conferences")]
         public int ConferenceId { get; set; }
         public string? FilePath { get; set; }
         public int IsAccepted { get; set; }

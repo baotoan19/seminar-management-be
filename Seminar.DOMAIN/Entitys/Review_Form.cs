@@ -8,17 +8,18 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Review_Forms")]
     public class Review_Form : BaseEntity
     {
         public string? Content { get; set; }
-        [ForeignKey("History")]
+        [ForeignKey("History_Update_Topics")]
         public int? HistoryId { get; set; }
-        [ForeignKey("Reviewer")]
+        [ForeignKey("Reviewers")]
         public int? ReviewerId { get; set; }
-        [ForeignKey("Conclude")]
+        [ForeignKey("Concludes")]
         public int? ConcludeId { get; set; }
         public DateTime? Date_Upload { get; set; }
-        public virtual History_Update_Artical History { get; set; }
+        public virtual History_Update_Topic History { get; set; }
         public virtual Reviewer Reviewer { get; set; }
         public virtual Conclude Conclude { get; set; }
     }

@@ -9,15 +9,16 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Organizers")]
     public class Organizer : BaseEntity
     {
         public string? Name { get; set; }
         public string? NumberPhone { get; set; }
         [StringLength(255)]
         public string? Description { get; set; }
-        [ForeignKey("Account")]
+        [ForeignKey("Accounts")]
         public int AccountId { get; set; }
-        [ForeignKey("Faculty")]
+        [ForeignKey("Faculties")]
         public int? FacultyId { get; set; }
         public virtual Account Account { get; set; }
         public virtual Faculty Faculty { get; set; }

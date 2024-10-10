@@ -238,7 +238,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
 
         private async Task addConclude()
         {
-            if (!await _context.Conclude.AnyAsync(x => x.DeletedAt == null))
+            if (!await _context.Concludes.AnyAsync(x => x.DeletedAt == null))
             {
                 Conclude[] concludes =
                 [
@@ -259,7 +259,5 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 await _unitOfWork.SaveChangesAsync();
             }
         }
-
-
     }
 }

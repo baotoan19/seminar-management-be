@@ -9,6 +9,7 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Reviewers")]
     public class Reviewer : BaseEntity
     {
         public string? Name { get; set; }
@@ -16,11 +17,11 @@ namespace Seminar.DOMAIN.Entitys
         [StringLength(255)]
         public string? AcademicRank { get; set; }
         public string? AcademicDegree { get; set; }
-        [ForeignKey("Discipline")]
+        [ForeignKey("Disciplines")]
         public int? DisciplineId { get; set; }
-        [ForeignKey("Review_Committee")]
+        [ForeignKey("Review_Committees")]
         public int? ReviewCommitteeId { get; set; }
-        [ForeignKey("Account")]
+        [ForeignKey("Accounts")]
         public int AccountId { get; set; }
         public virtual Discipline Discipline { get; set; }
         public virtual Review_Committee Review_Committee { get; set; }

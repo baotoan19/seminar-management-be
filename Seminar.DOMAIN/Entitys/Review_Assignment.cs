@@ -8,17 +8,18 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Review_Assignments")]
     public class Review_Assignment : BaseEntity
     {
-        [ForeignKey("Organizer")]
+        [ForeignKey("Organizers")]
         public int? OrganizerId { get; set; }
-        [ForeignKey("Artical")]
-        public int? ArticalId { get; set; }
-        [ForeignKey("Reviewer")]
+        [ForeignKey("Topics")]
+        public int TopicId { get; set; }
+        [ForeignKey("Reviewers")]
         public int? ReviewerId { get; set; }
         public bool Status { get; set; }
         public virtual Organizer Organizer { get; set; }
-        public virtual Artical Artical { get; set; }
+        public virtual Topic Topic { get; set; }
         public virtual Reviewer Reviewer { get; set; }
     }
 }

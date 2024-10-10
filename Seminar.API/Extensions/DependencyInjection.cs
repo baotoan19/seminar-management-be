@@ -18,7 +18,7 @@ namespace Seminar.API.Extensions
             ConfigureAuthentication(services, configuration);
             AddDatabases(services, configuration);
             AddSwagger(services);
-            AddInitialiseDatabase(services);
+            //AddInitialiseDatabase(services);
         }
 
         // JWT Setting

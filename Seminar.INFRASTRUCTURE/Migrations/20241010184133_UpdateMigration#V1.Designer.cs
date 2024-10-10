@@ -12,8 +12,8 @@ using Seminar.INFRASTRUCTURE.Database;
 namespace Seminar.INFRASTRUCTURE.Migrations
 {
     [DbContext(typeof(SeminarContext))]
-    [Migration("20240917183707_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241010184133_UpdateMigration#V1")]
+    partial class UpdateMigrationV1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,41 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Acceptance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TopicId")
+                        .IsUnique();
+
+                    b.ToTable("Acceptances");
+                });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Account", b =>
                 {
@@ -68,16 +103,13 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Articel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ConferenceId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -88,21 +120,21 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("DisciplineId")
                         .HasColumnType("int");
 
                     b.Property<string>("FilePath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsStatus")
+                        .HasColumnType("bit");
+
                     b.Property<string>("KeyWord")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
-
-                    b.Property<int?>("ProceedingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Text")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -114,13 +146,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConferenceId");
-
                     b.HasIndex("DisciplineId");
 
-                    b.HasIndex("ProceedingId");
-
-                    b.ToTable("Articals");
+                    b.ToTable("Articels");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author", b =>
@@ -169,7 +197,7 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Articel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,7 +205,7 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArticalId")
+                    b.Property<int?>("ArticelId")
                         .HasColumnType("int");
 
                     b.Property<int?>("AuthorId")
@@ -189,7 +217,7 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Role")
+                    b.Property<string>("RoleName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -197,11 +225,47 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArticalId");
+                    b.HasIndex("ArticelId");
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Author_Articlas");
+                    b.ToTable("Author_Articels");
+                });
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Topic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("TopicId");
+
+                    b.ToTable("Author_Topics");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Conclude", b =>
@@ -228,7 +292,7 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Conclude");
+                    b.ToTable("Concludes");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Conference", b =>
@@ -327,19 +391,16 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Faculty");
+                    b.ToTable("Faculties");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.History_Update_Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.History_Update_Topic", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ArticalId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -358,14 +419,17 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TopicId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArticalId");
+                    b.HasIndex("TopicId");
 
-                    b.ToTable("History_Update_Articals");
+                    b.ToTable("History_Update_Topics");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Notification", b =>
@@ -375,9 +439,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ArticalId")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -401,12 +462,15 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("TopicId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArticalId");
+                    b.HasIndex("TopicId");
 
                     b.ToTable("Notifications");
                 });
@@ -492,39 +556,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Proceeding", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Proceedings");
-                });
-
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.RegistrationForm", b =>
                 {
                     b.Property<int>("Id")
@@ -571,9 +602,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArticalId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -589,16 +617,19 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
 
+                    b.Property<int>("TopicId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArticalId");
-
                     b.HasIndex("OrganizerId");
 
                     b.HasIndex("ReviewerId");
+
+                    b.HasIndex("TopicId");
 
                     b.ToTable("Review_Assignments");
                 });
@@ -643,9 +674,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArticalId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ConcludeId")
                         .HasColumnType("int");
 
@@ -661,6 +689,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("HistoryId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ReviewerId")
                         .HasColumnType("int");
 
@@ -669,9 +700,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArticalId");
-
                     b.HasIndex("ConcludeId");
+
+                    b.HasIndex("HistoryId");
 
                     b.HasIndex("ReviewerId");
 
@@ -714,6 +745,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<int?>("ReviewCommitteeId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Review_CommitteeId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -724,7 +758,7 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasIndex("DisciplineId");
 
-                    b.HasIndex("ReviewCommitteeId");
+                    b.HasIndex("Review_CommitteeId");
 
                     b.ToTable("Reviewers");
                 });
@@ -756,6 +790,90 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.ToTable("Roles");
                 });
 
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Topic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AchievedResults")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ArticelId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Budget")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ConferenceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateUpLoad")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DisciplineId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAcceptanceStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReviewStatus")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NameTopic")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewFilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConferenceId");
+
+                    b.HasIndex("DisciplineId");
+
+                    b.ToTable("Topics");
+                });
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Acceptance", b =>
+                {
+                    b.HasOne("Seminar.DOMAIN.Entitys.Topic", "Topic")
+                        .WithOne("Acceptance")
+                        .HasForeignKey("Seminar.DOMAIN.Entitys.Acceptance", "TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Topic");
+                });
+
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Account", b =>
                 {
                     b.HasOne("Seminar.DOMAIN.Entitys.Role", "Role")
@@ -765,25 +883,13 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Articel", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Conference", "Conference")
-                        .WithMany("Articals")
-                        .HasForeignKey("ConferenceId");
-
                     b.HasOne("Seminar.DOMAIN.Entitys.Discipline", "Discipline")
-                        .WithMany("Articals")
+                        .WithMany()
                         .HasForeignKey("DisciplineId");
 
-                    b.HasOne("Seminar.DOMAIN.Entitys.Proceeding", "Proceeding")
-                        .WithMany("Articals")
-                        .HasForeignKey("ProceedingId");
-
-                    b.Navigation("Conference");
-
                     b.Navigation("Discipline");
-
-                    b.Navigation("Proceeding");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author", b =>
@@ -801,19 +907,38 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Navigation("Faculty");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Articel", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Artical", "Artical")
+                    b.HasOne("Seminar.DOMAIN.Entitys.Articel", "Articel")
                         .WithMany("Author_Articlas")
-                        .HasForeignKey("ArticalId");
+                        .HasForeignKey("ArticelId");
 
                     b.HasOne("Seminar.DOMAIN.Entitys.Author", "Author")
                         .WithMany("Author_Articlas")
                         .HasForeignKey("AuthorId");
 
-                    b.Navigation("Artical");
+                    b.Navigation("Articel");
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author_Topic", b =>
+                {
+                    b.HasOne("Seminar.DOMAIN.Entitys.Author", "Author")
+                        .WithMany("Author_Topics")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Seminar.DOMAIN.Entitys.Topic", "Topic")
+                        .WithMany("Author_Topics")
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Conference", b =>
@@ -825,22 +950,22 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Navigation("Organizer");
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.History_Update_Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.History_Update_Topic", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Artical", "Artical")
-                        .WithMany("History_Update_Articlas")
-                        .HasForeignKey("ArticalId");
+                    b.HasOne("Seminar.DOMAIN.Entitys.Topic", "Topic")
+                        .WithMany("History_Update_Topics")
+                        .HasForeignKey("TopicId");
 
-                    b.Navigation("Artical");
+                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Notification", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Artical", "Artical")
+                    b.HasOne("Seminar.DOMAIN.Entitys.Topic", "Topic")
                         .WithMany("Notifications")
-                        .HasForeignKey("ArticalId");
+                        .HasForeignKey("TopicId");
 
-                    b.Navigation("Artical");
+                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Organizer", b =>
@@ -890,10 +1015,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Review_Assignment", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Artical", "Artical")
-                        .WithMany("Review_Assignments")
-                        .HasForeignKey("ArticalId");
-
                     b.HasOne("Seminar.DOMAIN.Entitys.Organizer", "Organizer")
                         .WithMany("Review_Assignments")
                         .HasForeignKey("OrganizerId");
@@ -902,39 +1023,45 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                         .WithMany("Review_Assignments")
                         .HasForeignKey("ReviewerId");
 
-                    b.Navigation("Artical");
+                    b.HasOne("Seminar.DOMAIN.Entitys.Topic", "Topic")
+                        .WithMany("Review_Assignments")
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Organizer");
 
                     b.Navigation("Reviewer");
+
+                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Review_Committee", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Conference", "Conference")
+                    b.HasOne("Seminar.DOMAIN.Entitys.Conference", "Conferences")
                         .WithMany("Review_Committees")
                         .HasForeignKey("ConferenceId");
 
-                    b.Navigation("Conference");
+                    b.Navigation("Conferences");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Review_Form", b =>
                 {
-                    b.HasOne("Seminar.DOMAIN.Entitys.Artical", "Artical")
-                        .WithMany("Review_Forms")
-                        .HasForeignKey("ArticalId");
-
                     b.HasOne("Seminar.DOMAIN.Entitys.Conclude", "Conclude")
                         .WithMany("Review_Forms")
                         .HasForeignKey("ConcludeId");
+
+                    b.HasOne("Seminar.DOMAIN.Entitys.History_Update_Topic", "History")
+                        .WithMany("Review_Forms")
+                        .HasForeignKey("HistoryId");
 
                     b.HasOne("Seminar.DOMAIN.Entitys.Reviewer", "Reviewer")
                         .WithMany("Review_Forms")
                         .HasForeignKey("ReviewerId");
 
-                    b.Navigation("Artical");
-
                     b.Navigation("Conclude");
+
+                    b.Navigation("History");
 
                     b.Navigation("Reviewer");
                 });
@@ -953,13 +1080,34 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.HasOne("Seminar.DOMAIN.Entitys.Review_Committee", "Review_Committee")
                         .WithMany("Reviewers")
-                        .HasForeignKey("ReviewCommitteeId");
+                        .HasForeignKey("Review_CommitteeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Account");
 
                     b.Navigation("Discipline");
 
                     b.Navigation("Review_Committee");
+                });
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Topic", b =>
+                {
+                    b.HasOne("Seminar.DOMAIN.Entitys.Conference", "Conferences")
+                        .WithMany("Topics")
+                        .HasForeignKey("ConferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Seminar.DOMAIN.Entitys.Discipline", "Disciplines")
+                        .WithMany("Topics")
+                        .HasForeignKey("DisciplineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conferences");
+
+                    b.Navigation("Disciplines");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Account", b =>
@@ -974,22 +1122,16 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Artical", b =>
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Articel", b =>
                 {
                     b.Navigation("Author_Articlas");
-
-                    b.Navigation("History_Update_Articlas");
-
-                    b.Navigation("Notifications");
-
-                    b.Navigation("Review_Assignments");
-
-                    b.Navigation("Review_Forms");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Author", b =>
                 {
                     b.Navigation("Author_Articlas");
+
+                    b.Navigation("Author_Topics");
 
                     b.Navigation("RegistrationForms");
                 });
@@ -1001,18 +1143,18 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Conference", b =>
                 {
-                    b.Navigation("Articals");
-
                     b.Navigation("RegistrationForms");
 
                     b.Navigation("Review_Committees");
+
+                    b.Navigation("Topics");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Discipline", b =>
                 {
-                    b.Navigation("Articals");
-
                     b.Navigation("Reviewers");
+
+                    b.Navigation("Topics");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Faculty", b =>
@@ -1022,6 +1164,11 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Navigation("Organizers");
                 });
 
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.History_Update_Topic", b =>
+                {
+                    b.Navigation("Review_Forms");
+                });
+
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Organizer", b =>
                 {
                     b.Navigation("Conferences");
@@ -1029,11 +1176,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Review_Assignments");
-                });
-
-            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Proceeding", b =>
-                {
-                    b.Navigation("Articals");
                 });
 
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Review_Committee", b =>
@@ -1051,6 +1193,20 @@ namespace Seminar.INFRASTRUCTURE.Migrations
             modelBuilder.Entity("Seminar.DOMAIN.Entitys.Role", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("Seminar.DOMAIN.Entitys.Topic", b =>
+                {
+                    b.Navigation("Acceptance")
+                        .IsRequired();
+
+                    b.Navigation("Author_Topics");
+
+                    b.Navigation("History_Update_Topics");
+
+                    b.Navigation("Notifications");
+
+                    b.Navigation("Review_Assignments");
                 });
 #pragma warning restore 612, 618
         }

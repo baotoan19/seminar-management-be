@@ -9,6 +9,7 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Posts")]
     public class Post : BaseEntity
     {
         [Required]

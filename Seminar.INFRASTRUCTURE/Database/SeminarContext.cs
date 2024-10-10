@@ -33,7 +33,7 @@ namespace Seminar.INFRASTRUCTURE.Database
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<Artical> Articals { get; set; }
+        public DbSet<Articel> Articals { get; set; }
         public DbSet<Conference> Conferences { get; set; }
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<RegistrationForm> RegistrationForms { get; set; }
@@ -43,13 +43,14 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Author> Authors { get; set; }
         public DbSet<Reviewer> Reviewers { get; set; }
         public DbSet<Organizer> Organizers { get; set; }
+        public DbSet<Conclude> Concludes { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Discipline> Disciplines { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Proceeding> Proceedings { get; set; }
-        public DbSet<Author_Artical> Author_Articlas { get; set; }
-        public DbSet<History_Update_Artical> History_Update_Articals { get; set; }
-        public DbSet<Conclude> Conclude { get; set; }
+        public DbSet<Topic> Topics { get; set; }
+        public DbSet<Author_Topic> Author_Topics { get; set; }
+        public DbSet<History_Update_Topic> History_Update_Topics { get; set; }
+        public DbSet<Acceptance> Acceptances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -69,6 +70,10 @@ namespace Seminar.INFRASTRUCTURE.Database
 
             modelBuilder.Entity<Reviewer>()
                 .HasIndex(a => a.AccountId)
+                .IsUnique();
+
+            modelBuilder.Entity<Acceptance>()
+                .HasIndex(a => a.TopicId)
                 .IsUnique();
         }
 

@@ -53,7 +53,6 @@ public class PostController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    //[Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> GetPostByIdAsync(int id)
     {
         PostVM postVM = await _postService.GetPostByIdAsync(id);

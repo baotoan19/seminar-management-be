@@ -39,7 +39,6 @@ public class RegistrationFormService : IRegistrationFormService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
         Conference conference = await _unitOfWork.GetRepository<Conference>().GetByIdAsync(dto.ConferenceId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Conference not found!");
-
         await _unitOfWork.GetRepository<RegistrationForm>().InsertAsync(registrationForm);
         await _unitOfWork.SaveChangesAsync();
     }

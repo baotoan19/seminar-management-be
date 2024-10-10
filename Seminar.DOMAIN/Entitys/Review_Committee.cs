@@ -9,14 +9,15 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("Review_Committees")]
     public class Review_Committee : BaseEntity
     {
         [Required]
         [StringLength(255)]
         public string ReviewCommitteeName { get; set; }
-        [ForeignKey("Conference")]
+        [ForeignKey("Conferences")]
         public int? ConferenceId { get; set; }
-        public virtual Conference Conference { get; set; }
+        public virtual Conference Conferences { get; set; }
         public virtual ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
     }
 }

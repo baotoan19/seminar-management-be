@@ -8,14 +8,15 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
-    public class Author_Artical:BaseEntity
+    [Table("Author_Articels")]
+    public class Author_Articel:BaseEntity
     {
         [ForeignKey("Author")]
         public int? AuthorId { get; set; }
-        [ForeignKey("Artical")]
-        public int? ArticalId { get; set; }
-        public string? Role { get; set; }
+        [ForeignKey("Articel")]
+        public int? ArticelId { get; set; }
+        public string? RoleName { get; set; }
         public virtual Author Author { get; set; }
-        public virtual Artical Artical { get; set; }
+        public virtual Articel Articel { get; set; }
     }
 }

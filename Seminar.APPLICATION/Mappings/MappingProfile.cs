@@ -46,15 +46,12 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Discipline, DisciplineVM>();
             //Faculty
             CreateMap<Faculty, FacultyVM>();
-            //Proceeding
-            CreateMap<Proceeding, ProceedingVM>();
-            CreateMap<CUProceedingDto, Proceeding>();
             //Artical
-            CreateMap<Artical, ArticalVM>();
-            CreateMap<CUArticalsDto, Artical>();
+            //CreateMap<Artical, ArticalVM>();
+            //CreateMap<CUArticalsDto, Artical>();
             //History Update Artical
-            CreateMap<History_Update_Artical, HistoryArticalsVM>();
-            CreateMap<CreateHistoryArticalsDto, History_Update_Artical>();
+            //CreateMap<History_Update_Artical, HistoryArticalsVM>();
+            //CreateMap<CreateHistoryArticalsDto, History_Update_Artical>();
             //Review Form
             CreateMap<Review_Form, ReviewFormVM>();
             CreateMap<CUReviewFormDto, Review_Form>();
