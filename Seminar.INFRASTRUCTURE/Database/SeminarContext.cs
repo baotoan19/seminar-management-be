@@ -33,8 +33,8 @@ namespace Seminar.INFRASTRUCTURE.Database
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<Articel> Articals { get; set; }
-        public DbSet<Conference> Conferences { get; set; }
+        public DbSet<Article> Articles { get; set; }
+        public DbSet<Competition> Competitions { get; set; }
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<RegistrationForm> RegistrationForms { get; set; }
         public DbSet<Review_Assignment> Review_Assignments { get; set; }
@@ -47,9 +47,9 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Post> Posts { get; set; }
         public DbSet<Discipline> Disciplines { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Topic> Topics { get; set; }
-        public DbSet<Author_Topic> Author_Topics { get; set; }
-        public DbSet<History_Update_Topic> History_Update_Topics { get; set; }
+        public DbSet<ResearchTopic> ResearchTopics { get; set; }
+        public DbSet<Author_ResearchTopic> Author_ResearchTopics { get; set; }
+        public DbSet<History_Update_ResearchTopic> History_Update_ResearchTopics { get; set; }
         public DbSet<Acceptance> Acceptances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -73,7 +73,7 @@ namespace Seminar.INFRASTRUCTURE.Database
                 .IsUnique();
 
             modelBuilder.Entity<Acceptance>()
-                .HasIndex(a => a.TopicId)
+                .HasIndex(a => a.ResearchTopicId)
                 .IsUnique();
         }
 

@@ -15,7 +15,7 @@ namespace Seminar.DOMAIN.Entitys
         [Required]
         [StringLength(255)]
         public string DisciplineName { get; set; }
-        public virtual ICollection<Topic> Topics { get; set; } = new List<Topic>();
+        public virtual ICollection<ResearchTopic> ResearchTopics { get; set; } = new List<ResearchTopic>();
         public virtual ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
     }
 }

@@ -1,16 +1,10 @@
 ﻿using Seminar.CORE.Base;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Seminar.DOMAIN.Entitys
 {
-    [Table("Articels")]
-    public class Articel : BaseEntity
+    [Table("Articles")]
+    public class Article : BaseEntity
     {
         [Required]
         [StringLength(255)]
@@ -21,9 +15,9 @@ namespace Seminar.DOMAIN.Entitys
         public string? FilePath { get; set; }
         public DateTime? DateUpload { get; set; }
         public bool IsStatus { get; set; }
-        [ForeignKey("Discipline")]
+        [ForeignKey("Disciplines")]
         public int? DisciplineId { get; set; }
         public virtual Discipline Discipline { get; set; }
-        public virtual ICollection<Author_Articel> Author_Articlas { get; set; } = new List<Author_Articel>();
+        public virtual ICollection<Author_Article> Author_Articles { get; set; } = new List<Author_Article>();
     }
 }

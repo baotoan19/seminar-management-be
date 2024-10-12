@@ -24,11 +24,11 @@ public class RegistrationFormService : IRegistrationFormService
 
     public async Task<RegistrationFormVM> GetRegistrationFormByIdAsync(int id)
     {
-        RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.Include(x => x.Author).Include(x => x.Conference).FirstOrDefaultAsync(x => x.Id == id) ??
+        RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.Include(x => x.Author).Include(x => x.Competition).FirstOrDefaultAsync(x => x.Id == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
         RegistrationFormVM registrationFormVM = _mapper.Map<RegistrationFormVM>(registrationForm);
         registrationFormVM.AuthorName = registrationForm.Author.Name;
-        registrationFormVM.ConferenceName = registrationForm.Conference.ConferenceName;
+        registrationFormVM.CompetitionName = registrationForm.Competition.CompetitionName;
         return registrationFormVM;
     }
 
@@ -37,8 +37,8 @@ public class RegistrationFormService : IRegistrationFormService
         RegistrationForm registrationForm = _mapper.Map<RegistrationForm>(dto);
         Author author = await _unitOfWork.GetRepository<Author>().GetByIdAsync(dto.AuthorId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-        Conference conference = await _unitOfWork.GetRepository<Conference>().GetByIdAsync(dto.ConferenceId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Conference not found!");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(dto.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
         await _unitOfWork.GetRepository<RegistrationForm>().InsertAsync(registrationForm);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -49,8 +49,8 @@ public class RegistrationFormService : IRegistrationFormService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
         Author author = await _unitOfWork.GetRepository<Author>().GetByIdAsync(dto.AuthorId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-        Conference conference = await _unitOfWork.GetRepository<Conference>().GetByIdAsync(dto.ConferenceId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Conference not found!");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(dto.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
         registrationForm.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<RegistrationForm>().UpdateAsync(registrationForm);
         await _unitOfWork.SaveChangesAsync();

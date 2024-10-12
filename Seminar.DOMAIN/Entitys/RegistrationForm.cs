@@ -14,11 +14,11 @@ namespace Seminar.DOMAIN.Entitys
 
         [ForeignKey("Authors")]
         public int AuthorId { get; set; }
-        [ForeignKey("Conferences")]
-        public int ConferenceId { get; set; }
+        [ForeignKey("Competitions")]
+        public int CompetitionId { get; set; }
         public string? FilePath { get; set; }
         public int IsAccepted { get; set; }
         public virtual Author Author { get; set; }
-        public virtual Conference Conference { get; set; }
+        public virtual Competition Competition { get; set; }
     }
 }

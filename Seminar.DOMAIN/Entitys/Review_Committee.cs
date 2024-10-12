@@ -15,9 +15,9 @@ namespace Seminar.DOMAIN.Entitys
         [Required]
         [StringLength(255)]
         public string ReviewCommitteeName { get; set; }
-        [ForeignKey("Conferences")]
-        public int? ConferenceId { get; set; }
-        public virtual Conference Conferences { get; set; }
+        [ForeignKey("Competitions")]
+        public int? CompetitionId { get; set; }
+        public virtual Competition Competitions { get; set; }
         public virtual ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
     }
 }

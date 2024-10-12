@@ -6,8 +6,8 @@ public class CURegistrationFormDto
 {
     [Required(ErrorMessage = "Author Id is required!")]
     public int AuthorId { get; set; }
-    [Required(ErrorMessage = "Conference Id is required!")]
-    public int ConferenceId { get; set; }
+    [Required(ErrorMessage = "Competition Id is required!")]
+    public int CompetitionId { get; set; }
     [Required(ErrorMessage = "File Path is required!")]
     public string FilePath { get; set; }
     [Required(ErrorMessage = "Is Accepted is required!")]

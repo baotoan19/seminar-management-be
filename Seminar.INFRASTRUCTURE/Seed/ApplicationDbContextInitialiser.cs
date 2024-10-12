@@ -57,7 +57,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 await addAccount();
                 await addFaculty();
                 await addOrganizer();
-                await addConference();
+                await addCompetition();
                 await addDiscipline();
                 await addReviewCommittee();
                 await addConclude();
@@ -124,7 +124,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 var adminAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == "admin@gmail.com");
                 if (adminAccount != null)
                 {
-                    var organizer = new Organizer
+                    Organizer organizer = new Organizer
                     {
                         Name = "Admin",
                         NumberPhone = "0372673566",
@@ -192,22 +192,21 @@ namespace Seminar.INFRASTRUCTURE.Seed
             }
         }
 
-        private async Task addConference()
+        private async Task addCompetition()
         {
-            if (!await _context.Conferences.AnyAsync(x => x.DeletedAt == null))
+            if (!await _context.Competitions.AnyAsync(x => x.DeletedAt == null))
             {
-                Conference[] conferences =
+                Competition[] competitions =
                 [
-                    new Conference { ConferenceName = "Hội nghị khoa học thực phẩm" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 1 },
-                    // new Conference { ConferenceName = "Hội nghị khoa học và công nghệ quốc tế" , DateStart = new DateTime(2024, 09, 01), DateEnd = new DateTime(2024, 10, 02) , Destination = "Hồ Chí Minh" , OrganizerId = 2 }
+                    new Competition { CompetitionName = "Hội nghị khoa học thực phẩm" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , OrganizerId = 1 },
                 ];
-                foreach (Conference conference in conferences)
+                foreach (Competition competition in competitions)
                 {
-                    if (!await _unitOfWork.GetRepository<Conference>().Entities.AnyAsync(c => c.ConferenceName == conference.ConferenceName))
+                    if (!await _unitOfWork.GetRepository<Competition>().Entities.AnyAsync(c => c.CompetitionName == competition.CompetitionName))
                     {
-                        conference.CreatedAt = DateTime.Now;
-                        conference.UpdatedAt = DateTime.Now;
-                        await _unitOfWork.GetRepository<Conference>().InsertAsync(conference);
+                        competition.CreatedAt = DateTime.Now;
+                        competition.UpdatedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Competition>().InsertAsync(competition);
                     }
                 }
                 await _unitOfWork.SaveChangesAsync();
@@ -220,8 +219,8 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Review_Committee[] review_Committees =
                 [
-                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", ConferenceId = 1 }
-                    //new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", ConferenceId = 2 }
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", CompetitionId = 1 }
+                    //new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", CompetitionId = 2 }
                 ];
                 foreach (Review_Committee review_Committee in review_Committees)
                 {

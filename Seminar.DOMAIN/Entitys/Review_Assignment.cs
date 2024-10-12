@@ -13,13 +13,13 @@ namespace Seminar.DOMAIN.Entitys
     {
         [ForeignKey("Organizers")]
         public int? OrganizerId { get; set; }
-        [ForeignKey("Topics")]
-        public int TopicId { get; set; }
+        [ForeignKey("ResearchTopics")]
+        public int ResearchTopicId { get; set; }
         [ForeignKey("Reviewers")]
         public int? ReviewerId { get; set; }
         public bool Status { get; set; }
         public virtual Organizer Organizer { get; set; }
-        public virtual Topic Topic { get; set; }
+        public virtual ResearchTopic ResearchTopic { get; set; }
         public virtual Reviewer Reviewer { get; set; }
     }
 }

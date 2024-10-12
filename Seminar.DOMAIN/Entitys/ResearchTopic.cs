@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
-    [Table("Topics")]
-    public class Topic: BaseEntity
+    [Table("ResearchTopics")]
+    public class ResearchTopic: BaseEntity
     {
         public string NameTopic { get; set; }
         public DateTime DateStart { get; set; }
@@ -23,21 +23,21 @@ namespace Seminar.DOMAIN.Entitys
         public string AchievedResults { get; set; }
         public bool IsAcceptanceStatus { get; set; }
         public bool IsReviewStatus { get; set; }
-        public string NewFilePath { get; set; }
-        [ForeignKey("Articels")]
-        public int? ArticelId {get; set;}
+        public string? ProductFilePath { get; set; }
+        public string? ReportFilePath {get; set;}
+        public string? FinalFilePath {get; set;}
+        [ForeignKey("Articles")]
+        public int? ArticleId {get; set;}
         [ForeignKey("Disciplines")]
         public int DisciplineId { get; set; }
-        [ForeignKey("Conferences")]
-        public int ConferenceId { get; set; }
+        [ForeignKey("Competitions")]
+        public int CompetitionId { get; set; }
         public virtual Acceptance Acceptance { get; set; }
-        public virtual ICollection<Author_Topic> Author_Topics { get; set; } = new List<Author_Topic>();
-        public virtual ICollection<History_Update_Topic> History_Update_Topics { get; set; } = new List<History_Update_Topic>();
+        public virtual ICollection<Author_ResearchTopic> Author_ResearchTopics { get; set; } = new List<Author_ResearchTopic>();
+        public virtual ICollection<History_Update_ResearchTopic> History_Update_ResearchTopics { get; set; } = new List<History_Update_ResearchTopic>();
         public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
-        public virtual Conference Conferences { get; set; }
+        public virtual Competition Competitions { get; set; }
         public virtual Discipline Disciplines { get; set; }
-
-
     }
 }
