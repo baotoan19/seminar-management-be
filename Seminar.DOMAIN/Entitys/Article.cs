@@ -5,7 +5,7 @@ namespace Seminar.DOMAIN.Entitys
 {
     [Table("Articles")]
     public class Article : BaseEntity
-    {
+    { 
         [Required]
         [StringLength(255)]
         public string Title { get; set; }
@@ -19,5 +19,6 @@ namespace Seminar.DOMAIN.Entitys
         public int? DisciplineId { get; set; }
         public virtual Discipline Discipline { get; set; }
         public virtual ICollection<Author_Article> Author_Articles { get; set; } = new List<Author_Article>();
+        public virtual ICollection<ResearchTopic> ResearchTopics { get; set; } = new List<ResearchTopic>();
     }
 }

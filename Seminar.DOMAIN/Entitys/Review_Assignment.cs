@@ -1,10 +1,6 @@
 ﻿using Seminar.CORE.Base;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Seminar.DOMAIN.Entitys
 {
@@ -17,6 +13,8 @@ namespace Seminar.DOMAIN.Entitys
         public int ResearchTopicId { get; set; }
         [ForeignKey("Reviewers")]
         public int? ReviewerId { get; set; }
+        public DateTime DateStart { get; set; }
+        public DateTime DateEnd { get; set; }
         public bool Status { get; set; }
         public virtual Organizer Organizer { get; set; }
         public virtual ResearchTopic ResearchTopic { get; set; }
