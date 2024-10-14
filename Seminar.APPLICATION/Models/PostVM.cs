@@ -7,4 +7,6 @@ public class PostVM
     public required DateTime DateUpLoad { get; set; }
     public required int OrganizerId { get; set; }
     public string? OrganizerName { get; set; }
+    public string? FilePath { get; set; }
+    public bool IsStatus { get; set; }
 }

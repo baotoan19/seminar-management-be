@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
@@ -19,6 +14,8 @@ namespace Seminar.DOMAIN.Entitys
         public DateTime? DateUpload { get; set; }
         [ForeignKey("Organizers")]
         public int? OrganizerId { get; set; }
+        public string? FilePath { get; set; }
+        public bool IsStatus { get; set; }
         public virtual Organizer Organizers { get; set; }
     }
 }

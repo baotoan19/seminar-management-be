@@ -12,7 +12,7 @@ namespace Seminar.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;

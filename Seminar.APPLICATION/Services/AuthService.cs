@@ -91,7 +91,7 @@ namespace Seminar.APPLICATION.Services
                         {
                             AccountId = accountId,
                             Name = registerRequestDto.Name,
-                            NumberPhone = registerRequestDto.NumberPhone,
+                            NumberPhone = registerRequestDto.NumberPhone
                         };
                         await _reviewerService.CreateReviewerAsync(createReviewerDto);
                         break;
@@ -116,8 +116,12 @@ namespace Seminar.APPLICATION.Services
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto)
         {
-            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
+            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
             //check status
+            if (account.DeletedAt != null)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account does not exist");
+            }
             if (account.Status == false)
             {
                 throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "This account is not active");

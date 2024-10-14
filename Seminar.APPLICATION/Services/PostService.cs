@@ -1,12 +1,14 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.PostDto;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
+using Seminar.DOMAIN.Common;
 using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Interfaces;
 
@@ -25,7 +27,59 @@ public class PostService : IPostService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task CreatePostAsync(PostDto postDto)
+    public async Task<PaginatedList<PostVM>> GetPagedAsync(int index, int pageSize, string idSearch, string nameSearch)
+    {
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+
+        IQueryable<Post> query = _unitOfWork.GetRepository<Post>().Entities
+            .Include(p => p.Organizers)
+                .Where(p => p.DeletedAt == null)
+                    .OrderByDescending(p => p.CreatedAt);
+
+        //Tìm kiếm theo id
+        if (!string.IsNullOrEmpty(idSearch))
+        {
+            query = query.Where(p => p.Id.ToString().Contains(idSearch));
+            bool isInt = int.TryParse(idSearch, out int idInt);
+            if (!isInt)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+            }
+        }
+
+
+        //Tìm kiếm theo tên
+        if (!string.IsNullOrEmpty(nameSearch))
+        {
+            query = query.Where(p => EF.Functions.Like(p.Title, $"%{nameSearch}%"));
+            var result = await query.ToListAsync();
+            if (result.Count == 0)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+            }
+        }
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<PostVM>(new List<PostVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index -1 )* pageSize).Take(pageSize).ToListAsync();
+        List<PostVM> responeItems = _mapper.Map<List<PostVM>>(resultQuery);
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<PostVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
+    }
+
+    public async Task CreatePostAsync(CreatePostDto postDto)
     {
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int userIdInt))
@@ -36,11 +90,12 @@ public class PostService : IPostService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
         Post post = _mapper.Map<Post>(postDto);
         post.OrganizerId = organizer.Id;
+        post.IsStatus = true;
         await _unitOfWork.GetRepository<Post>().InsertAsync(post);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdatePostAsync(int id, PostDto postDto)
+    public async Task UpdatePostAsync(int id, UpdatePostDto postDto)
     {
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.FirstOrDefaultAsync(p => p.Id == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");

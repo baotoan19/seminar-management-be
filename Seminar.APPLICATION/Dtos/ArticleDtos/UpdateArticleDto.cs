@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 namespace Seminar.APPLICATION.Dtos.ArticleDtos;
 
-public class CUArticleDto
+public class UpdateArticleDto
 {
     [Required(ErrorMessage = "Title is required")]
     public string Title { get; set; }

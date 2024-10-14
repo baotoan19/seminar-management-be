@@ -11,6 +11,7 @@ using Seminar.APPLICATION.Dtos.ReviewFormDtos;
 using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Dtos.RegistrationFormDtos;
+using Seminar.APPLICATION.Dtos.ArticleDtos;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile
@@ -35,8 +36,9 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Reviewer, ReviewerVM>();
             CreateMap<UpdateReviewerDto, Reviewer>();
             //Post
-            CreateMap<PostDto, Post>();
-            CreateMap<Post, PostVM>();
+            CreateMap<CreatePostDto, Post>();
+            CreateMap<Post, PostVM>().ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizers.Name));
+            CreateMap<UpdatePostDto, Post>();
             //Conclude
             CreateMap<Conclude, ConcludeVM>();
             //Discipline
@@ -44,8 +46,9 @@ namespace Seminar.APPLICATION.Mappings
             //Faculty
             CreateMap<Faculty, FacultyVM>();
             //Artical
-            //CreateMap<Artical, ArticalVM>();
-            //CreateMap<CUArticalsDto, Artical>();
+            CreateMap<Article, ArticleVM>();
+            CreateMap<CreateArticleDto, Article>();
+            CreateMap<UpdateArticleDto, Article>();
             //History Update Artical
             //CreateMap<History_Update_Artical, HistoryArticalsVM>();
             //CreateMap<CreateHistoryArticalsDto, History_Update_Artical>();

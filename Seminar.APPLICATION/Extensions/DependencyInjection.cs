@@ -46,7 +46,7 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(IDisciplineService), typeof(DisciplineService));
             services.AddScoped(typeof(IFacultyService), typeof(FacultyService));
             // services.AddScoped(typeof(IProceedingService), typeof(ProceedingService));
-            // services.AddScoped(typeof(IArticalsService), typeof(ArticalService));
+            services.AddScoped(typeof(IArticleService), typeof(ArticleService));
             // services.AddScoped(typeof(IHistoryArticalsService), typeof(HistoryArticalsService));
             // services.AddScoped(typeof(IReviewFormService), typeof(ReviewFormService));
             // services.AddScoped(typeof(IReviewAssignmentService), typeof(ReviewAssignmentService));

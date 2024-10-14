@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Seminar.INFRASTRUCTURE.Database;
 
@@ -11,9 +12,11 @@ using Seminar.INFRASTRUCTURE.Database;
 namespace Seminar.INFRASTRUCTURE.Migrations
 {
     [DbContext(typeof(SeminarContext))]
-    partial class SeminarContextModelSnapshot : ModelSnapshot
+    [Migration("20241014163046_UpdateMigration#V4")]
+    partial class UpdateMigrationV4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -573,12 +576,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("FilePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsStatus")
-                        .HasColumnType("bit");
 
                     b.Property<int?>("OrganizerId")
                         .HasColumnType("int");

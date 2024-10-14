@@ -5,6 +5,7 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Seminar.DOMAIN.Common;
 
 namespace Seminar.API.Controllers;
 
@@ -19,37 +20,47 @@ public class PostController : ControllerBase
         _postService = postService;
     }
 
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllPostAsync(int index = 1,int pageSize = 8,string idSearch = "",string nameSearch = "")
+    {
+        var result = await _postService.GetPagedAsync(index, pageSize, idSearch, nameSearch);
+        return Ok(new BaseResponse<PaginatedList<PostVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            data: result));
+    }
+
     [HttpPost()]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> CreatePostAsync(PostDto postDto)
+    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
+    public async Task<IActionResult> CreatePostAsync(CreatePostDto postDto)
     {
         await _postService.CreatePostAsync(postDto);
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Create post successfully!"));
+            message: "Create post successfully!"));
     }
 
     [HttpPatch("{id}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> UpdatePostAsync(int id, PostDto postDto)
+    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
+    public async Task<IActionResult> UpdatePostAsync(int id, UpdatePostDto postDto)
     {
         await _postService.UpdatePostAsync(id, postDto);
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Update post successfully!"));
+            message: "Update post successfully!"));
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
+    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
     public async Task<IActionResult> DeletePostAsync(int id)
     {
         await _postService.DeletePostAsync(id);
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Delete post successfully!"));
+            message: "Delete post successfully!"));
     }
 
     [HttpGet("{id}")]

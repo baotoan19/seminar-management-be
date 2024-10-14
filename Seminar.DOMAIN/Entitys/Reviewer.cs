@@ -20,7 +20,7 @@ namespace Seminar.DOMAIN.Entitys
         [ForeignKey("Disciplines")]
         public int? DisciplineId { get; set; }
         [ForeignKey("Review_Committees")]
-        public int? ReviewCommitteeId { get; set; }
+        public int? Review_CommitteeId { get; set; }
         [ForeignKey("Accounts")]
         public int AccountId { get; set; }
         public virtual Discipline Discipline { get; set; }

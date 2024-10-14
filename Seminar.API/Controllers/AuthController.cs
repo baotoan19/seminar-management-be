@@ -23,7 +23,7 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Register success "));
+                message: "Register success "));
         }
 
         [HttpPost("login")]
@@ -53,7 +53,7 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Change password success"));
+                message: "Change password success"));
         }
     }
 }
