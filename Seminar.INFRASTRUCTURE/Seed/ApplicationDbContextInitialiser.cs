@@ -75,7 +75,9 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Role[] roles =
                 [
+                    new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN},
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.AUTHOR },
+                    new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR },
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.REVIEWER },
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER },
                 ];
@@ -98,43 +100,88 @@ namespace Seminar.INFRASTRUCTURE.Seed
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             if (!await _context.Accounts.AnyAsync(x => x.DeletedAt == null))
             {
+                var supperAdminRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN);
                 var organizerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER);
-                if (organizerRole != null)
-                {
-                    var account = new Account
-                    {
-                        Email = "admin@gmail.com",
-                        Password = passwordHasher.HashPassword(null, "Admin@123"),
-                        RoleId = organizerRole.Id,
-                        Status = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
-                    };
 
-                    await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+                if (supperAdminRole != null && organizerRole != null)
+                {
+                    Account[] accounts =
+                    [
+                        new Account
+                {
+                    Email = "admin@gmail.com",
+                    Password = passwordHasher.HashPassword(null, "Admin@123"),
+                    RoleId = supperAdminRole.Id,
+                    Status = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Account
+                {
+                    Email = "khoacntt@gmail.com",
+                    Password = passwordHasher.HashPassword(null, "Khoacntt@123"),
+                    RoleId = organizerRole.Id,
+                    Status = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Account
+                {
+                    Email = "khoacntp@gmail.com",
+                    Password = passwordHasher.HashPassword(null, "Khoacntp@123"),
+                    RoleId = organizerRole.Id,
+                    Status = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                        }
+                    ];
+
+                    foreach (var account in accounts)
+                    {
+                        await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+                    }
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
         }
 
+
         private async Task addOrganizer()
         {
             if (!await _context.Organizers.AnyAsync(x => x.DeletedAt == null))
             {
-                var adminAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == "admin@gmail.com");
-                if (adminAccount != null)
-                {
-                    Organizer organizer = new Organizer
-                    {
-                        Name = "Admin",
-                        NumberPhone = "0372673566",
-                        AccountId = adminAccount.Id,
-                        FacultyId = null,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
-                    };
+                var organizerAccounts = await _context.Accounts
+                    .Where(a => a.Email == "khoacntt@gmail.com" || a.Email == "khoacntp@gmail.com")
+                    .ToListAsync();
 
-                    await _unitOfWork.GetRepository<Organizer>().InsertAsync(organizer);
+                if (organizerAccounts.Count == 2)
+                {
+                    Organizer[] organizers =
+                    [
+                        new Organizer
+                {
+                    Name = "Khoa CNTT",
+                    NumberPhone = "0937829271",
+                    AccountId = organizerAccounts[0].Id,
+                    FacultyId = null,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Organizer
+                {
+                    Name = "Khoa CNTP",
+                    NumberPhone = "0938182666",
+                    AccountId = organizerAccounts[1].Id,
+                    FacultyId = null,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                }
+                    ];
+
+                    foreach (var organizer in organizers)
+                    {
+                        await _unitOfWork.GetRepository<Organizer>().InsertAsync(organizer);
+                    }
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
@@ -198,7 +245,8 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Competition[] competitions =
                 [
-                    new Competition { CompetitionName = "Hội nghị khoa học thực phẩm" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , OrganizerId = 1 },
+                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTT lần thứ 1" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , OrganizerId = 1 },
+                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTP lần thứ 1" , DateStart = new DateTime(2024, 09, 09), DateEnd = new DateTime(2024, 10, 10) , OrganizerId = 2 },
                 ];
                 foreach (Competition competition in competitions)
                 {
@@ -219,8 +267,8 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Review_Committee[] review_Committees =
                 [
-                    new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH01", CompetitionId = 1 }
-                    //new Review_Committee { ReviewCommitteeName = "Hội đồng 12DHTH02", CompetitionId = 2 }
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng khoa CNTT", CompetitionId = 1 },
+                    new Review_Committee { ReviewCommitteeName = "Hội đồng khoa CNTP", CompetitionId = 2 }
                 ];
                 foreach (Review_Committee review_Committee in review_Committees)
                 {

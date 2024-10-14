@@ -6,6 +6,7 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Seminar.API.Controllers
 {
