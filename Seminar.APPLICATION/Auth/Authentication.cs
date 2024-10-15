@@ -3,7 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using NLog.LayoutRenderers;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 

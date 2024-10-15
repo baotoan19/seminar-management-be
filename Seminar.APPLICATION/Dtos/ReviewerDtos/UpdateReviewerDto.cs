@@ -18,5 +18,5 @@ public class UpdateReviewerDto
     [Required(ErrorMessage = "Faculty id is required")]
     public int FacultyId { get; set; }
     [Required(ErrorMessage = "Account id is required")]
-    public int AccountId { get; set; }
+    public int Review_CommitteeId { get; set; }
 }

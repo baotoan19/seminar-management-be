@@ -246,8 +246,8 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 Competition[] competitions =
                 [
-                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTT lần thứ 1" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , OrganizerId = 1 },
-                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTP lần thứ 1" , DateStart = new DateTime(2024, 09, 09), DateEnd = new DateTime(2024, 10, 10) , OrganizerId = 2 },
+                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTT lần thứ 1" , DateStart = new DateTime(2024, 06, 01), DateEnd = new DateTime(2024, 07, 02) , OrganizerId = 1 ,Description= "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTT lần thứ 1",Destination = "140 Lê Trọng Tấn, TPHCM" },
+                    new Competition { CompetitionName = "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTP lần thứ 1" , DateStart = new DateTime(2024, 09, 09), DateEnd = new DateTime(2024, 10, 10) , OrganizerId = 2 ,Description= "Cuộc thi nghiên cứu khoa học sinh viên khoa CNTP lần thứ 1",Destination = "140 Lê Trọng Tấn, TPHCM" },
                 ];
                 foreach (Competition competition in competitions)
                 {

@@ -61,7 +61,7 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Update author success"));
+            message: "Update author success"));
     }
 
     [HttpPatch("update-reviewer")]
@@ -72,7 +72,7 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Update reviewer success"));
+            message: "Update reviewer success"));
     }
 
     [HttpPatch("update-organizer")]
@@ -83,50 +83,7 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: "Update organizer success"));
+            message: "Update organizer success"));
     }
 
-    [HttpPost("create-co-author")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> CreateCoAuthor(CreateAuthorDto createAuthorDto)
-    {
-        await _userService.CreateCoAuthorAsync(createAuthorDto);
-        return Ok(new BaseResponse<string>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: "Create co-author success"));
-    }
-
-    [HttpPatch("update-co-author/{idCoAuthor}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> UpdateCoAuthor(int idCoAuthor, UpdateAuthorDto updateAuthorDto)
-    {
-        await _userService.UpdateCoAuthorAsync(idCoAuthor, updateAuthorDto);
-        return Ok(new BaseResponse<string>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: "Update co-author success"));
-    }
-
-    [HttpDelete("delete-co-author/{idCoAuthor}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> DeleteCoAuthor(int idCoAuthor)
-    {
-        await _userService.DeleteCoAuthorAsync(idCoAuthor);
-        return Ok(new BaseResponse<string>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: "Delete co-author success"));
-    }
-
-    [HttpGet("get-co-author/{idCoAuthor}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> GetCoAuthorById(int idCoAuthor)
-    {
-        AuthorVM authorVM = await _userService.GetCoAuthorByIdAsync(idCoAuthor);
-        return Ok(new BaseResponse<AuthorVM>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: authorVM));
-    }
 }

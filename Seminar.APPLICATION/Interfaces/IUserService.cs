@@ -14,9 +14,5 @@ namespace Seminar.APPLICATION.Interfaces
         Task UpdateAuthorAsync(UpdateAuthorDto updateAuthorDto);
         Task UpdateReviewerAsync(UpdateReviewerDto updateReviewerDto);
         Task UpdateOrganizerAsync(UpdateOrganizerDto updateOrganizerDto);
-        Task CreateCoAuthorAsync(CreateAuthorDto createAuthorDto);
-        Task UpdateCoAuthorAsync(int idCoAuthor, UpdateAuthorDto updateAuthorDto);
-        Task DeleteCoAuthorAsync(int idCoAuthor);
-        Task<AuthorVM> GetCoAuthorByIdAsync(int idCoAuthor);
     }
 }

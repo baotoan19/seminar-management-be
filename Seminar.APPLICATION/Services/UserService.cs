@@ -95,24 +95,4 @@ public class UserService : IUserService
         }
         await _organizerService.UpdateOrganizerAsync(accountId, updateOrganizerDto);
     }
-
-    public async Task CreateCoAuthorAsync(CreateAuthorDto createAuthorDto)
-    {
-        await _authorService.CreateCoAuthorAsync(createAuthorDto);
-    }
-
-    public async Task UpdateCoAuthorAsync(int idCoAuthor, UpdateAuthorDto updateAuthorDto)
-    {
-        await _authorService.UpdateCoAuthorAsync(idCoAuthor, updateAuthorDto);
-    }
-
-    public async Task DeleteCoAuthorAsync(int idCoAuthor)
-    {
-        await _authorService.DeleteCoAuthorAsync(idCoAuthor);
-    }
-
-    public async Task<AuthorVM> GetCoAuthorByIdAsync(int idCoAuthor)
-    {
-        return await _authorService.GetCoAuthorByIdAsync(idCoAuthor);
-    }
 }

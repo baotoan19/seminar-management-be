@@ -70,39 +70,6 @@ namespace Seminar.APPLICATION.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task CreateCoAuthorAsync(CreateAuthorDto createAuthorDto)
-        {
-            Author author = _mapper.Map<Author>(createAuthorDto);
-            author.AccountId = null;
-            await _unitOfWork.GetRepository<Author>().InsertAsync(author);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task UpdateCoAuthorAsync(int idCoAuthor, UpdateAuthorDto updateAuthorDto)
-        {
-            Author? author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Id == idCoAuthor) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Co-Author not found!");
-            _mapper.Map(updateAuthorDto, author);
-            await _unitOfWork.GetRepository<Author>().UpdateAsync(author);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task DeleteCoAuthorAsync(int idCoAuthor)
-        {
-            Author? author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Id == idCoAuthor) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Co-Author not found!");
-            await _unitOfWork.GetRepository<Author>().DeleteAsync(author.Id);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task<AuthorVM> GetCoAuthorByIdAsync(int idCoAuthor)
-        {
-            Author? author = await _unitOfWork.GetRepository<Author>().Entities.Include(a => a.Faculty).FirstOrDefaultAsync(a => a.Id == idCoAuthor) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Co-Author not found!");
-            AuthorVM authorVM = _mapper.Map<AuthorVM>(author);
-            authorVM.FacultyName = author.Faculty?.FacultyName ?? null;
-            return authorVM;
-        }
 
     }
 }
