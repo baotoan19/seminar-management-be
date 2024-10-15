@@ -2,6 +2,7 @@ namespace Seminar.APPLICATION.Models;
 
 public class NotificationVM
 {
+    public int Id { get; set; }
     public string NotificationContent { get; set; }
     public DateTime NotificationDate { get; set; }
     public int RecevierId { get; set; }

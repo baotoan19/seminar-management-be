@@ -12,6 +12,7 @@ using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Dtos.RegistrationFormDtos;
 using Seminar.APPLICATION.Dtos.ArticleDtos;
+using Seminar.APPLICATION.Dtos.NotificationDtos;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile
@@ -64,6 +65,10 @@ namespace Seminar.APPLICATION.Mappings
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>();
             CreateMap<CURegistrationFormDto, RegistrationForm>();
+            //Notification
+            CreateMap<CreateNotificationDto, Notification>();
+            CreateMap<Notification, NotificationVM>();
+            CreateMap<UpdateNotificationDto, Notification>();
         }
     }
 }

@@ -10,8 +10,6 @@ public class CreateNotificationDto
     [Required(ErrorMessage = "Receiver ID is required")]
     public int RecevierId {get; set;}
     [Required(ErrorMessage = "Sender ID is required")]
-    public int SenderId {get; set;}
-    [Required(ErrorMessage = "Notification type ID is required")]
     public int NotificationTypeId {get; set;}
     [Required(ErrorMessage = "Target ID is required")]
     public int TargetId {get; set;}
