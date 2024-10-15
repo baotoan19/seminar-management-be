@@ -13,5 +13,6 @@ namespace Seminar.DOMAIN.Entitys
         public string? Description { get; set; }
         public virtual ICollection<Organizer> Organizers { get; set; } = new List<Organizer>();
         public virtual ICollection<Author> Authors { get; set; } = new List<Author>();
+        public virtual ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
     }
 }

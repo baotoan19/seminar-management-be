@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;

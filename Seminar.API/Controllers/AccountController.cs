@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Seminar.APPLICATION.Dtos.AccountDtos;
-using Seminar.APPLICATION.Dtos.AuthDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Seminar.API.Controllers
 {

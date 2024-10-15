@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Seminar.DOMAIN.Common;
+namespace Seminar.INFRASTRUCTURE.Common;
 
 public class PaginatedList<T>
 {

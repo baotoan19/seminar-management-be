@@ -43,18 +43,18 @@ public class ReviewerService : IReviewerService
 
     public async Task<ReviewerVM> GetReviewerInforAsync(int id)
     {
-        Reviewer? reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.Include(r => r.Account).Include(r => r.Discipline).Include(r => r.Review_Committee).FirstOrDefaultAsync(r => r.AccountId == id) ??
+        Reviewer? reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.Include(r => r.Account).Include(r => r.Faculty).Include(r => r.Review_Committee).FirstOrDefaultAsync(r => r.AccountId == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
         ReviewerVM reviewerVM = _mapper.Map<ReviewerVM>(reviewer);
         reviewerVM.Email = reviewer.Account.Email;
-        reviewerVM.DisciplineName = reviewer.Discipline?.DisciplineName ?? null;
+        reviewerVM.FacultyName = reviewer.Faculty?.FacultyName ?? null;
         reviewerVM.ReviewCommitteeName = reviewer.Review_Committee?.ReviewCommitteeName ?? null;
         return reviewerVM;
     }
 
     public async Task UpdateReviewerAsync(int id, UpdateReviewerDto updateReviewerDto)
     {
-        Reviewer? reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.Include(r => r.Account).Include(r => r.Discipline).Include(r => r.Review_Committee).FirstOrDefaultAsync(r => r.AccountId == id) ??
+        Reviewer? reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.Include(r => r.Account).Include(r => r.FacultyId).Include(r => r.Review_Committee).FirstOrDefaultAsync(r => r.AccountId == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
         _mapper.Map(updateReviewerDto, reviewer);
         reviewer.Account.Email = updateReviewerDto.Email;

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys

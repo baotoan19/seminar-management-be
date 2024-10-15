@@ -78,7 +78,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 [
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN},
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.AUTHOR },
-                    new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR },
+                    //new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR },
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.REVIEWER },
                     new Role { RoleName = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER },
                 ];

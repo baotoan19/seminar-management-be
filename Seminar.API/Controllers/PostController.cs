@@ -5,7 +5,7 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
-using Seminar.DOMAIN.Common;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.API.Controllers;
 

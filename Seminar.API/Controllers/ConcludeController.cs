@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Seminar.APPLICATION.Dtos.PostDto;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
-using Seminar.DOMAIN.Entitys;
 
 namespace Seminar.API.Controllers;
 

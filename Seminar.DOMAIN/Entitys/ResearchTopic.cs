@@ -1,12 +1,5 @@
 using Seminar.CORE.Base;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Seminar.DOMAIN.Entitys
 {
@@ -28,6 +21,7 @@ namespace Seminar.DOMAIN.Entitys
         public int DisciplineId { get; set; }
         [ForeignKey("Competitions")]
         public int CompetitionId { get; set; }
+        public string? Supervisor { get; set; }
         public virtual Acceptance Acceptance { get; set; }
         public virtual ICollection<Author_ResearchTopic> Author_ResearchTopics { get; set; } = new List<Author_ResearchTopic>();
         public virtual ICollection<History_Update_ResearchTopic> History_Update_ResearchTopics { get; set; } = new List<History_Update_ResearchTopic>();

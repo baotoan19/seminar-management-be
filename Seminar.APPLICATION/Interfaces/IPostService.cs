@@ -1,7 +1,6 @@
 using Seminar.APPLICATION.Dtos.PostDto;
 using Seminar.APPLICATION.Models;
-using Seminar.DOMAIN.Common;
-using Seminar.DOMAIN.Entitys;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.APPLICATION.Interfaces;
 

@@ -13,7 +13,7 @@ namespace Seminar.DOMAIN.Entitys
         public DateTime DateEnd { get; set; }
         public double Budget { get; set; }
         public string? FinalFilePath { get; set; }
-        public bool IsStatus { get; set; }
+        public bool IsSuccessed { get; set; }
         public virtual ResearchTopic ResearchTopic { get; set; }
     }
 }

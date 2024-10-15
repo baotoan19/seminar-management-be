@@ -1,7 +1,5 @@
 using Seminar.CORE.Base;
 using System.ComponentModel.DataAnnotations.Schema;
-
-
 namespace Seminar.DOMAIN.Entitys
 {
     [Table("Author_ResearchTopics")]

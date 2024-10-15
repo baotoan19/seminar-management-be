@@ -6,8 +6,8 @@ public class ReviewerVM : UserVM
     public string? NumberPhone { get; set; }
     public string? AcademicDegree { get; set; }
     public string? AcademicRank { get; set; }
-    public int? DisciplineId { get; set; }
-    public string? DisciplineName { get; set; }
+    public int? FacultyId { get; set; }
+    public string? FacultyName { get; set; }
     public int? ReviewCommitteeId { get; set; }
     public string? ReviewCommitteeName { get; set; }
 }

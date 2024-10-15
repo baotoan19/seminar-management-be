@@ -1,16 +1,15 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.PostDto;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
-using Seminar.DOMAIN.Common;
 using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Interfaces;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.APPLICATION.Services;
 
@@ -50,7 +49,6 @@ public class PostService : IPostService
             }
         }
 
-
         //Tìm kiếm theo tên
         if (!string.IsNullOrEmpty(nameSearch))
         {
@@ -76,6 +74,7 @@ public class PostService : IPostService
             index,
             pageSize
         );
+        
         return responePaginatedList;
     }
 

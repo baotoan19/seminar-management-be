@@ -15,8 +15,8 @@ public class UpdateReviewerDto
     public string AcademicRank { get; set; }
     [Required(ErrorMessage = "Academic degree is required")]
     public string AcademicDegree { get; set; }
-    [Required(ErrorMessage = "Discipline id is required")]
-    public int DisciplineId { get; set; }
-    [Required(ErrorMessage = "Review committee id is required")]
-    public int ReviewCommitteeId { get; set; }
+    [Required(ErrorMessage = "Faculty id is required")]
+    public int FacultyId { get; set; }
+    [Required(ErrorMessage = "Account id is required")]
+    public int AccountId { get; set; }
 }
