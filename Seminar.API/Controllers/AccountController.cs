@@ -5,6 +5,7 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.API.Controllers
 {
@@ -17,6 +18,16 @@ namespace Seminar.API.Controllers
         public AccountController(IAccountService accountService)
         {
             _accountService = accountService;
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
+        {
+            var accounts = await _accountService.GetPagedAsync(index, pageSize, idSearch, nameSearch);
+            return Ok(new BaseResponse<PaginatedList<AccountVM>>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: accounts));
         }
 
         [HttpGet]

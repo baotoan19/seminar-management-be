@@ -9,7 +9,6 @@ namespace Seminar.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}, {CLAIMS_VALUES.ROLE_TYPE.REVIEWER}")]
 public class ConcludeController : ControllerBase
 {
     private readonly IConcludeService _concludeService;

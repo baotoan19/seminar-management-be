@@ -21,7 +21,7 @@ namespace Seminar.APPLICATION.Mappings
         {
             //Accout
             CreateMap<RegisterRequestDto, Account>();
-            CreateMap<Account, AccountVM>();
+            CreateMap<Account, AccountVM>().ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.RoleName));
             CreateMap<UpdateAccountDto, Account>();
             CreateMap<Account, ResponseAccountDto>();
             //Author
@@ -63,8 +63,11 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Review_Committee, ReviewCommitteeVM>();
             CreateMap<CUReviewCommitteeDto, Review_Committee>();
             //Registration Form
-            CreateMap<RegistrationForm, RegistrationFormVM>();
-            CreateMap<CURegistrationFormDto, RegistrationForm>();
+            CreateMap<RegistrationForm, RegistrationFormVM>()
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
+            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competition.CompetitionName));
+            CreateMap<CreateRegistrationFormDto, RegistrationForm>();
+            CreateMap<UpdateRegistrationFormDto, RegistrationForm>();
             //Notification
             CreateMap<CreateNotificationDto, Notification>();
             CreateMap<Notification, NotificationVM>();

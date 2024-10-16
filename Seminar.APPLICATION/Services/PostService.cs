@@ -26,7 +26,7 @@ public class PostService : IPostService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<PaginatedList<PostVM>> GetPagedAsync(int index, int pageSize, string idSearch, string nameSearch)
+    public async Task<PaginatedList<PostVM>> GetPagedAsync(int index , int pageSize, string idSearch, string nameSearch)
     {
         if (index <= 0 || pageSize <= 0)
         {
