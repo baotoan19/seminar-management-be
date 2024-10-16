@@ -79,6 +79,7 @@ namespace Seminar.APPLICATION.Services
             {
                 AccessToken = accessTokenString,
                 RefreshToken = refreshTokenString,
+                Expires = now.AddMinutes(int.Parse(_configuration["JWT_ACCESS_TOKEN_EXPIRATION_MINUTES"])).ToString(),
 
                 Account = new ResponseAccountDto
                 {

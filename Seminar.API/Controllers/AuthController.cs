@@ -31,6 +31,7 @@ namespace Seminar.API.Controllers
         {
             LoginResponseDto loginResponseDto = await _authService.LoginAsync(loginRequestDto);
             return Ok(new BaseResponse<LoginResponseDto>(
+                message: "Login success",
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 data: loginResponseDto));
