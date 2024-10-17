@@ -8,6 +8,4 @@ public class ReviewerVM : UserVM
     public string AcademicRank { get; set; }
     public int FacultyId { get; set; }
     public string FacultyName { get; set; }
-    public int Review_CommitteeId { get; set; }
-    public string ReviewCommitteeName { get; set; }
 }

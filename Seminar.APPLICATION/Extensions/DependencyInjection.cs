@@ -5,9 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
 using Seminar.APPLICATION.Services;
-using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Interfaces;
-using Seminar.INFRASTRUCTURE.Database;
 using Seminar.INFRASTRUCTURE.Repositories;
 using Seminar.INFRASTRUCTURE.UnitOfWork;
 

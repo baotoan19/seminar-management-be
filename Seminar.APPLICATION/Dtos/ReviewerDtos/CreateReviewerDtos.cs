@@ -12,7 +12,6 @@ namespace Seminar.APPLICATION.Dtos.ReviewerDtos
         public string? AcademicDegree { get; set; }
         public string? AcademicRank { get; set; }
         public int? FacultyId { get; set; }
-        public int? Review_CommitteeId { get; set; }
         [Required(ErrorMessage = "AccountId is required")]
         public int AccountId { get; set; }
     }
