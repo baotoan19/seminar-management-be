@@ -14,6 +14,5 @@ namespace Seminar.DOMAIN.Entitys
         public int? CompetitionId { get; set; }
         public virtual Competition Competitions { get; set; }
         public virtual ICollection<Review_Board_Member> Review_Board_Members { get; set; } = new List<Review_Board_Member>();
-        public virtual ICollection<Reviewer> Reviewers { get; set; } = new List<Reviewer>();
     }
 }
