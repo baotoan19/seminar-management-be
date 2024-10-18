@@ -65,6 +65,7 @@ public class EmailService : IEmailService
     private async Task<string> CreateEmailBodySendAccountInfoAsync(RegisterRequestDto request)
     {
         string UserId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
+        string loginUrl = "http://localhost:3000/login";
         var btcEmail = await _unitOfWork.GetRepository<Organizer>().Entities.Where(x => x.AccountId == int.Parse(UserId)).Select(x => x.Account.Email).FirstOrDefaultAsync();
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("<body style=\"margin: 0; padding: 0; background-color: #f9f9f9; font-family: Arial, sans-serif;\">");
@@ -100,7 +101,7 @@ public class EmailService : IEmailService
         sb.AppendLine("        </p>");
         sb.AppendLine("");
         sb.AppendLine("        <!-- Nút hành động -->");
-        sb.AppendLine("        <a href=\"{{Link đăng nhập}}\" style=\"display: inline-block; padding: 14px 28px; background-color: #4CAF50; color: white; text-decoration: none; font-size: 18px; border-radius: 8px; margin-top: 10px; font-weight: bold;\">");
+        sb.AppendLine("        <a href=\"" + loginUrl + "\" style=\"display: inline-block; padding: 14px 28px; background-color: #4CAF50; color: white; text-decoration: none; font-size: 18px; border-radius: 8px; margin-top: 10px; font-weight: bold;\">");
         sb.AppendLine("          Đăng nhập ngay");
         sb.AppendLine("        </a>");
         sb.AppendLine("");
