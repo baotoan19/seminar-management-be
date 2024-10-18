@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Microsoft.EntityFrameworkCore.Storage;
 namespace Seminar.DOMAIN.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
         IRepository<T> GetRepository<T>() where T : class;
         Task SaveChangesAsync();
+        IExecutionStrategy CreateExecutionStrategy();
+        Task BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollBackAsync();
     }
 }
