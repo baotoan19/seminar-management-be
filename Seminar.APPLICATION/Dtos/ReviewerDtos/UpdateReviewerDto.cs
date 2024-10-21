@@ -11,6 +11,10 @@ public class UpdateReviewerDto
     public string Email { get; set; }
     [Required(ErrorMessage = "Phone number is required")]
     public string NumberPhone { get; set; }
+    [Required(ErrorMessage = "Date of birth is required")]
+    public DateTime DateOfBirth { get; set; }
+    [Required(ErrorMessage = "Sex is required")]
+    public string Sex { get; set; }
     [Required(ErrorMessage = "Academic rank is required")]
     public string AcademicRank { get; set; }
     [Required(ErrorMessage = "Academic degree is required")]

@@ -13,6 +13,10 @@ public class UpdateAuthorDto
     public string NumberPhone { get; set; }
     [Required(ErrorMessage = "Internal code is required")]
     public string InternalCode { get; set; }
+    [Required(ErrorMessage = "Date of birth is required")]
+    public DateTime DateOfBirth { get; set; }
+    [Required(ErrorMessage = "Sex is required")]
+    public string Sex { get; set; }
     [Required(ErrorMessage = "Faculty id is required")]
     public int FacultyId { get; set; }
 }
