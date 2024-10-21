@@ -18,12 +18,14 @@ public class PostService : IPostService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IFirebaseService _firebaseService;
 
-    public PostService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+    public PostService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IFirebaseService firebaseService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _firebaseService = firebaseService;
     }
 
     public async Task<PaginatedList<PostVM>> GetPagedAsync(int index , int pageSize, string idSearch, string nameSearch)
@@ -35,7 +37,7 @@ public class PostService : IPostService
 
         IQueryable<Post> query = _unitOfWork.GetRepository<Post>().Entities
             .Include(p => p.Organizers)
-                .Where(p => p.DeletedAt == null)
+                .Where(p => p.DeletedAt == null && p.IsStatus == true)
                     .OrderByDescending(p => p.CreatedAt);
 
         //Tìm kiếm theo id
@@ -89,6 +91,11 @@ public class PostService : IPostService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
         Post post = _mapper.Map<Post>(postDto);
         post.OrganizerId = organizer.Id;
+        if (postDto.FilePath != null)
+        {
+            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath);
+            post.FilePath = secureUrl;
+        }
         post.IsStatus = true;
         await _unitOfWork.GetRepository<Post>().InsertAsync(post);
         await _unitOfWork.SaveChangesAsync();
@@ -96,9 +103,21 @@ public class PostService : IPostService
 
     public async Task UpdatePostAsync(int id, UpdatePostDto postDto)
     {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.FirstOrDefaultAsync(p => p.Id == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+        if (post.OrganizerId != organizer.Id)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this post!");
+        }
         _mapper.Map(postDto, post);
+        if (postDto.FilePath != null)
+        {
+            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath);
+            post.FilePath = secureUrl;
+        }
         post.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Post>().UpdateAsync(post);
         await _unitOfWork.SaveChangesAsync();
@@ -106,8 +125,15 @@ public class PostService : IPostService
 
     public async Task DeletePostAsync(int id)
     {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.FirstOrDefaultAsync(p => p.Id == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+        if (post.OrganizerId != organizer.Id)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to delete this post!");
+        }
         post.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Post>().UpdateAsync(post);
         await _unitOfWork.SaveChangesAsync();

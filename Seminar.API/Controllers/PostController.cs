@@ -31,8 +31,8 @@ public class PostController : ControllerBase
     }
 
     [HttpPost()]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> CreatePostAsync(CreatePostDto postDto)
+    [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> CreatePostAsync([FromForm]CreatePostDto postDto)
     {
         await _postService.CreatePostAsync(postDto);
         return Ok(new BaseResponse<string>(
@@ -41,9 +41,9 @@ public class PostController : ControllerBase
             message: "Create post successfully!"));
     }
 
-    [HttpPatch("{id}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
-    public async Task<IActionResult> UpdatePostAsync(int id, UpdatePostDto postDto)
+    [HttpPatch()]
+    [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> UpdatePostAsync([FromForm]int id, UpdatePostDto postDto)
     {
         await _postService.UpdatePostAsync(id, postDto);
         return Ok(new BaseResponse<string>(
@@ -53,7 +53,7 @@ public class PostController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN}, {CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
+    [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
     public async Task<IActionResult> DeletePostAsync(int id)
     {
         await _postService.DeletePostAsync(id);
