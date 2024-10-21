@@ -52,6 +52,7 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(INotificationService), typeof(NotificationService));
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
             services.AddScoped(typeof(IFirebaseService), typeof(FirebaseService));
+            services.AddScoped(typeof(ICompetitionService), typeof(CompetitionService));
         }
 
         //Đăng ký mapper

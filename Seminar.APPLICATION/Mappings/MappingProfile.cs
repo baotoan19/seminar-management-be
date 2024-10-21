@@ -13,6 +13,7 @@ using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Dtos.RegistrationFormDtos;
 using Seminar.APPLICATION.Dtos.ArticleDtos;
 using Seminar.APPLICATION.Dtos.NotificationDtos;
+using Seminar.APPLICATION.Dtos.CompetitionDtos;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile
@@ -47,7 +48,9 @@ namespace Seminar.APPLICATION.Mappings
             //Faculty
             CreateMap<Faculty, FacultyVM>();
             //Artical
-            CreateMap<Article, ArticleVM>();
+            CreateMap<Article, ArticleVM>()
+            .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Discipline.DisciplineName));
+
             CreateMap<CreateArticleDto, Article>();
             CreateMap<UpdateArticleDto, Article>();
             //History Update Artical
@@ -72,6 +75,11 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<CreateNotificationDto, Notification>();
             CreateMap<Notification, NotificationVM>();
             CreateMap<UpdateNotificationDto, Notification>();
+            //Competition
+            CreateMap<Competition, CompetitionVM>()
+            .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizer.Name));
+            CreateMap<CreateCompetitionDto, Competition>();
+            CreateMap<UpdateCompetitionDto, Competition>();
         }
     }
 }
