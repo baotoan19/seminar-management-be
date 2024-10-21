@@ -40,17 +40,16 @@ namespace Seminar.APPLICATION.Services
         {
             return $"https://firebasestorage.googleapis.com/v0/b/{_bucketName}/o/{Uri.EscapeDataString(fileName)}?alt=media";
         }
-        public async Task<bool> DeleteFileAsync(string fileName)
+        public async Task DeleteFileAsync(string fileUrl)
         {
             try
             {
+                string fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
                 await _storageClient.DeleteObjectAsync(_bucketName, fileName);
-                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to delete file: {ex.Message}");
-                return false;
             }
         }
     }

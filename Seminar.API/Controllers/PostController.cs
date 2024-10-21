@@ -30,6 +30,17 @@ public class PostController : ControllerBase
             data: result));
     }
 
+    [HttpGet("organizer")]
+    [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> GetPagedByOrganizerIdAsync(int index = 1,int pageSize = 8,string idSearch = "",string nameSearch = "")
+    {
+        var result = await _postService.GetPagedByOrganizerIdAsync(index, pageSize, idSearch, nameSearch);
+        return Ok(new BaseResponse<PaginatedList<PostVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            data: result));
+    }
+
     [HttpPost()]
     [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
     public async Task<IActionResult> CreatePostAsync([FromForm]CreatePostDto postDto)

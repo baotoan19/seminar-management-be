@@ -7,6 +7,7 @@ namespace Seminar.APPLICATION.Interfaces;
 public interface IPostService
 {
     Task<PaginatedList<PostVM>> GetPagedAsync(int index, int pageSize,string idSearch,string nameSearch);
+    Task<PaginatedList<PostVM>> GetPagedByOrganizerIdAsync(int index, int pageSize,string idSearch,string nameSearch);
     Task CreatePostAsync(CreatePostDto postDto);
     Task UpdatePostAsync(int id, UpdatePostDto postDto);
     Task DeletePostAsync(int id);

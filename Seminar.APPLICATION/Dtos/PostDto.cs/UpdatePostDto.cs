@@ -10,6 +10,6 @@ public class UpdatePostDto
     [Required(ErrorMessage = "Content is required")]
     public string Content { get; set; }
     public DateTime DateUpload { get; set; }
-    public IFormFile? FilePath { get; set; }
-    public bool IsStatus { get; set; }
+    public string? FilePath { get; set; }
+    public IFormFile? NewFilePath { get; set; }
 }

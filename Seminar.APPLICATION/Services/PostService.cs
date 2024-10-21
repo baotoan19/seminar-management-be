@@ -28,7 +28,7 @@ public class PostService : IPostService
         _firebaseService = firebaseService;
     }
 
-    public async Task<PaginatedList<PostVM>> GetPagedAsync(int index , int pageSize, string idSearch, string nameSearch)
+    public async Task<PaginatedList<PostVM>> GetPagedAsync(int index, int pageSize, string idSearch, string nameSearch)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -67,7 +67,7 @@ public class PostService : IPostService
         {
             return new PaginatedList<PostVM>(new List<PostVM>(), 0, index, pageSize);
         }
-        var resultQuery = await query.Skip((index -1 )* pageSize).Take(pageSize).ToListAsync();
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
         List<PostVM> responeItems = _mapper.Map<List<PostVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<PostVM>(
@@ -76,7 +76,60 @@ public class PostService : IPostService
             index,
             pageSize
         );
-        
+
+        return responePaginatedList;
+    }
+
+    public async Task<PaginatedList<PostVM>> GetPagedByOrganizerIdAsync(int index, int pageSize, string idSearch, string nameSearch)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+
+        IQueryable<Post> query = _unitOfWork.GetRepository<Post>().Entities
+            .Include(p => p.Organizers)
+                .Where(p => p.DeletedAt == null && p.IsStatus == true && p.OrganizerId == organizer.Id)
+                    .OrderByDescending(p => p.CreatedAt);
+
+        //Tìm kiếm theo id
+        if (!string.IsNullOrEmpty(idSearch))
+        {
+            query = query.Where(p => p.Id.ToString().Contains(idSearch));
+            bool isInt = int.TryParse(idSearch, out int idInt);
+            if (!isInt)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+            }
+        }
+
+        //Tìm kiếm theo tên
+        if (!string.IsNullOrEmpty(nameSearch))
+        {
+            query = query.Where(p => EF.Functions.Like(p.Title, $"%{nameSearch}%"));
+            var result = await query.ToListAsync();
+            if (result.Count == 0)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+            }
+        }
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<PostVM>(new List<PostVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        List<PostVM> responeItems = _mapper.Map<List<PostVM>>(resultQuery);
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<PostVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
         return responePaginatedList;
     }
 
@@ -113,9 +166,13 @@ public class PostService : IPostService
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this post!");
         }
         _mapper.Map(postDto, post);
-        if (postDto.FilePath != null)
+        if (postDto.NewFilePath != null)
         {
-            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath);
+            if (!string.IsNullOrEmpty(post.FilePath))
+            {
+                await _firebaseService.DeleteFileAsync(post.FilePath);
+            }
+            string secureUrl = await _firebaseService.UploadFileAsync(postDto.NewFilePath);
             post.FilePath = secureUrl;
         }
         post.UpdatedAt = DateTime.Now;
@@ -134,6 +191,7 @@ public class PostService : IPostService
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to delete this post!");
         }
+        post.IsStatus = false;
         post.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Post>().UpdateAsync(post);
         await _unitOfWork.SaveChangesAsync();
