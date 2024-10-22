@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Seminar.API.Extensions;
 using Seminar.API.Middleware;
 using Seminar.APPLICATION.Extensions;
+using Seminar.APPLICATION.Mappings;
 using Seminar.INFRASTRUCTURE.Database;
 
 //Load env
@@ -16,6 +17,7 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Configuration.AddEnvironmentVariables();
+
 
 var app = builder.Build();
 

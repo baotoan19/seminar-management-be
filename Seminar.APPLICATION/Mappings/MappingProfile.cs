@@ -68,7 +68,10 @@ namespace Seminar.APPLICATION.Mappings
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>()
             .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
-            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competition.CompetitionName));
+            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competition.CompetitionName))
+            .ForMember(dest => dest.InternalCode, opt => opt.MapFrom(src => src.Author.InternalCode))
+            .ForMember(dest => dest.DateStart, opt => opt.MapFrom(src => src.Competition.DateStart))
+            .ForMember(dest => dest.DateEnd, opt => opt.MapFrom(src => src.Competition.DateEnd));
             CreateMap<CreateRegistrationFormDto, RegistrationForm>();
             CreateMap<UpdateRegistrationFormDto, RegistrationForm>();
             //Notification

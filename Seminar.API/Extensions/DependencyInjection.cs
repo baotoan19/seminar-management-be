@@ -88,13 +88,16 @@ namespace Seminar.API.Extensions
             try
             {
                 services.AddDbContext<SeminarContext>(options =>
+                {
+                    options.UseLazyLoadingProxies();
                     options.UseSqlServer(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"), sqlOptions =>
                     {
                         sqlOptions.EnableRetryOnFailure(
                             maxRetryCount: 10,
                             maxRetryDelay: TimeSpan.FromSeconds(60),
                             errorNumbersToAdd: null);
-                    }));
+                    });
+                });
             }
             catch (Exception ex)
             {

@@ -5,6 +5,7 @@ using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Seminar.DOMAIN.Enum;
 using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.API.Controllers;
@@ -20,10 +21,11 @@ public class RegistrationFormController : ControllerBase
         _registrationFormService = registrationFormService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
+    [HttpGet("competition")]
+    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
+    public async Task<IActionResult> GetAllByCompetitionIdAsync(int competitionId, int index = 1, int pageSize = 8, string idSearch = "", string internalCodeSearch = "", int isAccepted = (int)RegistrationFormEnum.All)
     {
-        PaginatedList<RegistrationFormVM> registrationFormVMs = await _registrationFormService.GetPagedAsync(index, pageSize, idSearch, nameSearch);
+        PaginatedList<RegistrationFormVM> registrationFormVMs = await _registrationFormService.GetAllByCompetitionIdAsync(competitionId, index, pageSize, idSearch, internalCodeSearch, isAccepted);
         return Ok(new BaseResponse<PaginatedList<RegistrationFormVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
@@ -41,7 +43,7 @@ public class RegistrationFormController : ControllerBase
             data: registrationFormVMs));
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("id")]
     public async Task<IActionResult> GetRegistrationFormByIdAsync(int id)
     {
         RegistrationFormVM registrationFormVM = await _registrationFormService.GetRegistrationFormByIdAsync(id);
@@ -53,7 +55,7 @@ public class RegistrationFormController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}")]
-    public async Task<IActionResult> CreateRegistrationFormAsync(CreateRegistrationFormDto createRegistrationFormDto)
+    public async Task<IActionResult> CreateRegistrationFormAsync([FromForm]CreateRegistrationFormDto createRegistrationFormDto)
     {
         await _registrationFormService.CreateRegistrationFormAsync(createRegistrationFormDto);
         return Ok(new BaseResponse<string>(

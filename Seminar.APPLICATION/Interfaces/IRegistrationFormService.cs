@@ -6,7 +6,7 @@ namespace Seminar.APPLICATION.Interfaces;
 
 public interface IRegistrationFormService
 {
-    public Task<PaginatedList<RegistrationFormVM>> GetPagedAsync(int page, int pageSize, string idSearch, string nameSearch);
+    public Task<PaginatedList<RegistrationFormVM>> GetAllByCompetitionIdAsync(int competitionId, int index, int pageSize, string idSearch, string internalCodeSearch, int isAccepted);
     public Task<List<RegistrationFormVM>> GetAllByAuthorIdAsync();
     public Task<RegistrationFormVM> GetRegistrationFormByIdAsync(int id);
     public Task CreateRegistrationFormAsync(CreateRegistrationFormDto dto);
