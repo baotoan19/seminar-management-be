@@ -24,11 +24,13 @@ namespace Seminar.APPLICATION.Services
             var credential = GoogleCredential.FromFile(credentialPath);
             _storageClient = StorageClient.Create(credential);
         }
-        public async Task<string> UploadFileAsync(IFormFile file)
+        public async Task<string> UploadFileAsync(IFormFile file, string folderName)
         {
             if (file == null || file.Length == 0)
                 throw new ArgumentException("No file uploaded.");
-            var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+
+            // Tạo tên file với prefix là tên thư mục
+            var fileName = $"{folderName}/{Guid.NewGuid()}_{file.FileName}";
             using var stream = file.OpenReadStream();
             await _storageClient.UploadObjectAsync(
                 _bucketName, fileName, file.ContentType ?? "application/octet-stream", stream,
@@ -36,20 +38,27 @@ namespace Seminar.APPLICATION.Services
             );
             return GetFileUrl(fileName);
         }
+
         public string GetFileUrl(string fileName)
         {
             return $"https://firebasestorage.googleapis.com/v0/b/{_bucketName}/o/{Uri.EscapeDataString(fileName)}?alt=media";
         }
+
         public async Task DeleteFileAsync(string fileUrl)
         {
             try
             {
-                string fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+                // Trích xuất tên file từ URL, bao gồm cả đường dẫn thư mục
+                var uri = new Uri(fileUrl);
+                var fileName = uri.Segments[uri.Segments.Length - 1];
+                fileName = Uri.UnescapeDataString(fileName);
+
                 await _storageClient.DeleteObjectAsync(_bucketName, fileName);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to delete file: {ex.Message}");
+                throw; // Re-throw để caller có thể xử lý
             }
         }
     }
