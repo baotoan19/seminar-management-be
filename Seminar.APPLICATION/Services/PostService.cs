@@ -146,7 +146,7 @@ public class PostService : IPostService
         post.OrganizerId = organizer.Id;
         if (postDto.FilePath != null)
         {
-            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath);
+            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath, FirebaseConstants.PostFolder);
             post.FilePath = secureUrl;
         }
         post.IsStatus = true;
@@ -172,7 +172,7 @@ public class PostService : IPostService
             {
                 await _firebaseService.DeleteFileAsync(post.FilePath);
             }
-            string secureUrl = await _firebaseService.UploadFileAsync(postDto.NewFilePath);
+            string secureUrl = await _firebaseService.UploadFileAsync(postDto.NewFilePath, FirebaseConstants.PostFolder);
             post.FilePath = secureUrl;
         }
         post.UpdatedAt = DateTime.Now;

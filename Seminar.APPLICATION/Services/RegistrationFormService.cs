@@ -129,7 +129,7 @@ public class RegistrationFormService : IRegistrationFormService
         }
         RegistrationForm registrationForm = _mapper.Map<RegistrationForm>(dto);
         registrationForm.AuthorId = author.Id;
-        string filePath = await _firebaseService.UploadFileAsync(dto.FilePath);
+        string filePath = await _firebaseService.UploadFileAsync(dto.FilePath, FirebaseConstants.RegistrationFormsFolder);
         registrationForm.FilePath = filePath;
         registrationForm.IsAccepted = (int)RegistrationFormEnum.Pending;
         await _unitOfWork.GetRepository<RegistrationForm>().InsertAsync(registrationForm);

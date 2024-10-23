@@ -27,4 +27,14 @@ namespace Seminar.CORE.Constants
         public const string INVALID_DATA = "Invalid data!";
     }
 
+    public static class FirebaseConstants
+    {
+        public const string ArticleFolder = "Article";
+        public const string FinalFileFolder = "FinalFile";
+        public const string PostFolder = "Post";
+        public const string ProductFileFolder = "ProductFile";
+        public const string RegistrationFormsFolder = "RegistrationForms";
+        public const string ReportFileFolder = "ReportFile";
+    }
+
 }
