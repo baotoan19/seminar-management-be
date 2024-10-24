@@ -35,6 +35,7 @@ namespace Seminar.CORE.Constants
         public const string ProductFileFolder = "ProductFile";
         public const string RegistrationFormsFolder = "RegistrationForms";
         public const string ReportFileFolder = "ReportFile";
+        public static readonly List<string> AllFolders = new List<string> { ArticleFolder, FinalFileFolder, ProductFileFolder, ReportFileFolder, RegistrationFormsFolder, PostFolder };
     }
 
 }

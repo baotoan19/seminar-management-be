@@ -29,7 +29,7 @@ namespace Seminar.APPLICATION.Services
         }
         public async Task<string> UploadFileAsync(CreateFirebaseDto createFirebaseDto)
         {
-            if (createFirebaseDto.FolderName != FirebaseConstants.RegistrationFormsFolder && createFirebaseDto.FolderName != FirebaseConstants.PostFolder)
+            if (!FirebaseConstants.AllFolders.Contains(createFirebaseDto.FolderName))
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid folder name.");
             }
