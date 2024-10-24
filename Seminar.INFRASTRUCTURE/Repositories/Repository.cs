@@ -37,6 +37,11 @@ namespace Seminar.INFRASTRUCTURE.Repositories
             await _dbSet.AddAsync(entity);
         }
 
+        public async Task InsertRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
+
         public async Task UpdateAsync(T entity)
         {
             _dbSet.Update(entity);

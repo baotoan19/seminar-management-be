@@ -24,9 +24,9 @@ namespace Seminar.INFRASTRUCTURE.UnitOfWork
             await _context.SaveChangesAsync();
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
-            await _context.Database.BeginTransactionAsync();
+            return await _context.Database.BeginTransactionAsync();
         }
 
         public async Task CommitTransactionAsync()

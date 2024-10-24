@@ -12,6 +12,7 @@ namespace Seminar.DOMAIN.Interfaces
         Task<IList<T>> GetAllAsync();
         Task<T> GetByIdAsync(int id);
         Task InsertAsync(T entity);
+        Task InsertRangeAsync(IEnumerable<T> entities);
         Task DeleteAsync(int id);
         Task UpdateAsync(T entity);
 

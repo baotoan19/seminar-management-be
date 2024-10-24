@@ -6,7 +6,7 @@ namespace Seminar.DOMAIN.Interfaces
         IRepository<T> GetRepository<T>() where T : class;
         Task SaveChangesAsync();
         IExecutionStrategy CreateExecutionStrategy();
-        Task BeginTransactionAsync();
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollBackAsync();
     }
