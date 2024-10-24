@@ -15,6 +15,8 @@ namespace Seminar.DOMAIN.Entitys
         public bool IsReviewStatus { get; set; }
         public string? ProductFilePath { get; set; }
         public string? ReportFilePath {get; set;}
+        public DateTime? DateStart { get; set; }
+        public DateTime? DateEnd { get; set; }
         [ForeignKey("Articles")]
         public int? ArticleId {get; set;}
         [ForeignKey("Disciplines")]
