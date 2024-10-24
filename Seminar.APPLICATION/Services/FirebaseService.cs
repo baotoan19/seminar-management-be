@@ -2,7 +2,10 @@ using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Seminar.APPLICATION.Dtos.FirebaseDtos;
 using Seminar.APPLICATION.Interfaces;
+using Seminar.CORE.Constants;
+using Seminar.CORE.ExceptionCustom;
 
 namespace Seminar.APPLICATION.Services
 {
@@ -24,16 +27,18 @@ namespace Seminar.APPLICATION.Services
             var credential = GoogleCredential.FromFile(credentialPath);
             _storageClient = StorageClient.Create(credential);
         }
-        public async Task<string> UploadFileAsync(IFormFile file, string folderName)
+        public async Task<string> UploadFileAsync(CreateFirebaseDto createFirebaseDto)
         {
-            if (file == null || file.Length == 0)
+            if (createFirebaseDto.FolderName != FirebaseConstants.RegistrationFormsFolder && createFirebaseDto.FolderName != FirebaseConstants.PostFolder)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid folder name.");
+            }
+            if (createFirebaseDto.File == null || createFirebaseDto.File.Length == 0)
                 throw new ArgumentException("No file uploaded.");
-
-            // Tạo tên file với prefix là tên thư mục
-            var fileName = $"{folderName}/{Guid.NewGuid()}_{file.FileName}";
-            using var stream = file.OpenReadStream();
+            var fileName = $"{createFirebaseDto.FolderName}/{Guid.NewGuid()}_{createFirebaseDto.File.FileName}";
+            using var stream = createFirebaseDto.File.OpenReadStream();
             await _storageClient.UploadObjectAsync(
-                _bucketName, fileName, file.ContentType ?? "application/octet-stream", stream,
+                _bucketName, fileName, createFirebaseDto.File.ContentType ?? "application/octet-stream", stream,
                 new UploadObjectOptions { PredefinedAcl = PredefinedObjectAcl.PublicRead }
             );
             return GetFileUrl(fileName);
