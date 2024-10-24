@@ -144,11 +144,6 @@ public class PostService : IPostService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
         Post post = _mapper.Map<Post>(postDto);
         post.OrganizerId = organizer.Id;
-        if (postDto.FilePath != null)
-        {
-            string secureUrl = await _firebaseService.UploadFileAsync(postDto.FilePath, FirebaseConstants.PostFolder);
-            post.FilePath = secureUrl;
-        }
         post.IsStatus = true;
         await _unitOfWork.GetRepository<Post>().InsertAsync(post);
         await _unitOfWork.SaveChangesAsync();
@@ -166,15 +161,6 @@ public class PostService : IPostService
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this post!");
         }
         _mapper.Map(postDto, post);
-        if (postDto.NewFilePath != null)
-        {
-            if (!string.IsNullOrEmpty(post.FilePath))
-            {
-                await _firebaseService.DeleteFileAsync(post.FilePath);
-            }
-            string secureUrl = await _firebaseService.UploadFileAsync(postDto.NewFilePath, FirebaseConstants.PostFolder);
-            post.FilePath = secureUrl;
-        }
         post.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Post>().UpdateAsync(post);
         await _unitOfWork.SaveChangesAsync();

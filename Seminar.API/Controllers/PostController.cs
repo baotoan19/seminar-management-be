@@ -43,7 +43,7 @@ public class PostController : ControllerBase
 
     [HttpPost()]
     [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> CreatePostAsync([FromForm]CreatePostDto postDto)
+    public async Task<IActionResult> CreatePostAsync(CreatePostDto postDto)
     {
         await _postService.CreatePostAsync(postDto);
         return Ok(new BaseResponse<string>(
@@ -54,7 +54,7 @@ public class PostController : ControllerBase
 
     [HttpPatch()]
     [Authorize(Roles =CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> UpdatePostAsync([FromForm]int id, UpdatePostDto postDto)
+    public async Task<IActionResult> UpdatePostAsync(int id, UpdatePostDto postDto)
     {
         await _postService.UpdatePostAsync(id, postDto);
         return Ok(new BaseResponse<string>(

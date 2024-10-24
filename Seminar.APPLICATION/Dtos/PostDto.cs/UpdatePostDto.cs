@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
-
 namespace Seminar.APPLICATION.Dtos.PostDto;
 
 public class UpdatePostDto
@@ -11,5 +9,4 @@ public class UpdatePostDto
     public string Content { get; set; }
     public DateTime DateUpload { get; set; }
     public string? FilePath { get; set; }
-    public IFormFile? NewFilePath { get; set; }
 }
