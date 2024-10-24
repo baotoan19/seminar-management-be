@@ -8,5 +8,5 @@ public class CreateRegistrationFormDto
     [Required(ErrorMessage = "Competition Id is required!")]
     public int CompetitionId { get; set; }
     [Required(ErrorMessage = "File Path is required!")]
-    public IFormFile FilePath { get; set; }
+    public string FilePath { get; set; }
 }

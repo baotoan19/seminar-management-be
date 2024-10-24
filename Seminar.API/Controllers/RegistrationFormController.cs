@@ -55,7 +55,7 @@ public class RegistrationFormController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}")]
-    public async Task<IActionResult> CreateRegistrationFormAsync([FromForm]CreateRegistrationFormDto createRegistrationFormDto)
+    public async Task<IActionResult> CreateRegistrationFormAsync(CreateRegistrationFormDto createRegistrationFormDto)
     {
         await _registrationFormService.CreateRegistrationFormAsync(createRegistrationFormDto);
         return Ok(new BaseResponse<string>(
