@@ -1,5 +1,5 @@
-using Microsoft.Identity.Client;
 using Seminar.APPLICATION.Dtos.AuthDtos;
+using Seminar.APPLICATION.Dtos.AuthorDtos;
 
 namespace Seminar.APPLICATION.Interfaces{
     public interface IAuthService{

@@ -11,8 +11,8 @@ namespace Seminar.DOMAIN.Entitys
         public string Description { get; set; }
         public string Target { get; set; }
         public string AchievedResults { get; set; }
-        public bool IsAcceptanceStatus { get; set; }
-        public bool IsReviewStatus { get; set; }
+        public bool IsAcceptanceApproved { get; set; }
+        public bool IsReviewAcceptance { get; set; }
         public string? ProductFilePath { get; set; }
         public string? ReportFilePath {get; set;}
         public DateTime? DateStart { get; set; }

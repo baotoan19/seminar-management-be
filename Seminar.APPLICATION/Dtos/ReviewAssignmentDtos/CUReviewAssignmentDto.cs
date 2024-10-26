@@ -10,6 +10,6 @@ public class CUReviewAssignmentDto
     public int ReviewerId { get; set; }
     [Required(ErrorMessage = "ArticalId is required")]
     public int ArticalId { get; set; }
-    [Required(ErrorMessage = "IsAccepted is required")]
-    public bool Status { get; set; }
+    [Required(ErrorMessage = "IsReviewExpired is required")]
+    public bool IsReviewExpired { get; set; }
 }

@@ -46,7 +46,7 @@ namespace Seminar.APPLICATION.Services
 
         public async Task RegisterAsync(RegisterRequestDto registerRequestDto)
         {
-            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == registerRequestDto.Email && x.DeletedAt == null && x.Status == true);
+            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == registerRequestDto.Email && x.DeletedAt == null && x.IsSuspended == false);
             if (existAccount != null)
             {
                 throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.EXISTED, "This email is already registered.");
@@ -59,7 +59,7 @@ namespace Seminar.APPLICATION.Services
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             account.Password = passwordHasher.HashPassword(account, account.Password);
             account.RoleId = role.Id;
-            account.Status = true;
+            account.IsSuspended = false;
 
             await _unitOfWork.GetRepository<Account>().InsertAsync(account);
             await _unitOfWork.SaveChangesAsync();
@@ -125,7 +125,7 @@ namespace Seminar.APPLICATION.Services
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account does not exist");
             }
-            if (account.Status == false)
+            if (account.IsSuspended == true)
             {
                 throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "This account is not active");
             }
@@ -155,7 +155,7 @@ namespace Seminar.APPLICATION.Services
         }
         public async Task ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
-            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == changePasswordDto.Email && x.DeletedAt == null && x.Status == true) ??
+            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == changePasswordDto.Email && x.DeletedAt == null && x.IsSuspended == false) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             string hashedInputPassWord = passwordHasher.HashPassword(null, changePasswordDto.Password);

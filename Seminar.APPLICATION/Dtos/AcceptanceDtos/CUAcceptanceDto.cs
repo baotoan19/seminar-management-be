@@ -12,6 +12,6 @@ public class CUAcceptanceDto
     public string Title { get; set; }
     [Required(ErrorMessage = "Content is required!")]
     public string Content { get; set; }
-    [Required(ErrorMessage = "IsStatus is required!")]
-    public bool IsStatus { get; set; }
+    [Required(ErrorMessage = "IsAcceptedForPublication is required!")]
+    public bool IsAcceptedForPublication { get; set; }
 }

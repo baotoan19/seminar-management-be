@@ -13,7 +13,7 @@ namespace Seminar.DOMAIN.Entitys
         public int? ReviewerId { get; set; }
         public DateTime DateStart { get; set; }
         public DateTime DateEnd { get; set; }
-        public bool Status { get; set; }
+        public bool IsReviewExpired { get; set; }
         public virtual Organizer Organizer { get; set; }
         public virtual ResearchTopic ResearchTopic { get; set; }
         public virtual Reviewer Reviewer { get; set; }

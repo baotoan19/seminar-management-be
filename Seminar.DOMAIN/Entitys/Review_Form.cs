@@ -8,14 +8,14 @@ namespace Seminar.DOMAIN.Entitys
     {
         public string? Content { get; set; }
         [ForeignKey("History_Update_ResearchTopics")]
-        public int? HistoryId { get; set; }
+        public int? History_Update_ResearchTopicId { get; set; }
         [ForeignKey("Reviewers")]
         public int? ReviewerId { get; set; }
         [ForeignKey("Concludes")]
         public int? ConcludeId { get; set; }
         public DateTime? Date_Upload { get; set; }
-        public virtual History_Update_ResearchTopic History_Update_ResearchTopic { get; set; }
         public virtual Reviewer Reviewer { get; set; }
         public virtual Conclude Conclude { get; set; }
+        public virtual History_Update_ResearchTopic History_Update_ResearchTopic { get; set; }
     }
 }

@@ -9,5 +9,5 @@ public class ReviewAssignmentVM
     public string? ReviewerName { get; set; }
     public int ArticalId { get; set; }
     public string ArticalTitle { get; set; }
-    public bool Status { get; set; }
+    public bool IsReviewExpired { get; set; }
 }

@@ -14,7 +14,7 @@ namespace Seminar.DOMAIN.Entitys
         public string Password { get; set; }
         [ForeignKey("Role")]
         public int? RoleId { get; set; }
-        public bool Status { get; set; }
+        public bool IsSuspended { get; set; }
         public virtual Role Role { get; set; }
         public virtual Author Author { get; set; }
         public virtual Reviewer Reviewer { get; set; }

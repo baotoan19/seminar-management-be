@@ -2,6 +2,6 @@ namespace Seminar.APPLICATION.Dtos.AccountDtos
 {
     public class UpdateAccountDto
     {
-        public required bool Status { get; set; }
+        public required bool IsSuspended { get; set; }
     }
 }

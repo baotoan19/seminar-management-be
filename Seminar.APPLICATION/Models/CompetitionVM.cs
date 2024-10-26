@@ -10,5 +10,4 @@ public class CompetitionVM
     public string Destination { get; set; }
     public int OrganizerId { get; set; }
     public string OrganizerName { get; set; }
-    public string Status { get; set; }
 }

@@ -3,6 +3,7 @@ using Seminar.CORE.Base;
 
 namespace Seminar.DOMAIN.Entitys
 {
+    [Table("History_Update_ResearchTopics")]
     public class History_Update_ResearchTopic : BaseEntity
     {
         [ForeignKey("ResearchTopics")]
