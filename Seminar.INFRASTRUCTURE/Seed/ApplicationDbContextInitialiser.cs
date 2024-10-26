@@ -113,7 +113,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                     Email = "admin@gmail.com",
                     Password = passwordHasher.HashPassword(null, "Admin@123"),
                     RoleId = supperAdminRole.Id,
-                    IsSuspended = true,
+                    IsSuspended = false,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 },
@@ -122,7 +122,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                     Email = "khoacntt@gmail.com",
                     Password = passwordHasher.HashPassword(null, "Khoacntt@123"),
                     RoleId = organizerRole.Id,
-                    IsSuspended = true,
+                    IsSuspended = false,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 },
@@ -131,7 +131,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
                     Email = "khoacntp@gmail.com",
                     Password = passwordHasher.HashPassword(null, "Khoacntp@123"),
                     RoleId = organizerRole.Id,
-                    IsSuspended = true,
+                    IsSuspended = false,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                         }
