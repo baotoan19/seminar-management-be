@@ -32,9 +32,9 @@ public class NotificationController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllNotificationByReceiverAsync(int receiverId)
+    public async Task<IActionResult> GetAllNotificationByReceiverAsync()
     {
-        List<NotificationVM> notifications = await _notificationService.GetAllNotificationByReceiverAsync(receiverId);
+        List<NotificationVM> notifications = await _notificationService.GetAllNotificationByReceiverAsync();
         return Ok(new BaseResponse<List<NotificationVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,

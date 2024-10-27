@@ -78,10 +78,8 @@ public class ResearchTopicService : IResearchTopicService
                         RoleName = "author"
                     }
                     };
-
                     // Kiểm tra email trùng lặp
                     var processedEmails = new HashSet<string>();
-
                     // Xử lý co-authors
                     if (createResearchTopicDto.CoAuthors != null)
                     {

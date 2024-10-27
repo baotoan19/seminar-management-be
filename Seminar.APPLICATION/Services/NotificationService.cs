@@ -60,9 +60,10 @@ public class NotificationService : INotificationService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<List<NotificationVM>> GetAllNotificationByReceiverAsync(int receiverId)
+    public async Task<List<NotificationVM>> GetAllNotificationByReceiverAsync()
     {
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
+        int receiverId = int.Parse(userId);
         if (receiverId.ToString() != userId)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to view these notifications.");
