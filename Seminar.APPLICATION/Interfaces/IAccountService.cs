@@ -12,5 +12,8 @@ namespace Seminar.APPLICATION.Interfaces
         Task UpdateAccountAsync(int id, UpdateAccountDto updateAccountDto);
         Task DeleteAccountAsync(int id);
         Task<bool> IsEmailUniqueAsync(string email, int? excludeAccountId = null);
+
+        Task<string> GetNameByAccountId(int accountId);
+        Task<string> GetEmailByAccountId(int accountId);
     }
 }

@@ -17,11 +17,13 @@ public class NotificationService : INotificationService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+    private readonly IAccountService _accountService;
+    public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IAccountService accountService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _accountService = accountService;
     }
 
     public async Task<NotificationVM> GetNotificationByIdAsync(int id)
@@ -37,6 +39,10 @@ public class NotificationService : INotificationService
         }
         NotificationVM notificationVM = _mapper.Map<NotificationVM>(notification);
         notificationVM.NotificationTypeName = notification.NotificationTypes?.Name ?? "";
+        notificationVM.RecevierName = await _accountService.GetNameByAccountId(notification?.RecevierId ?? 0);
+        notificationVM.RecevierEmail = await _accountService.GetEmailByAccountId(notification?.RecevierId ?? 0);
+        notificationVM.SenderName = await _accountService.GetNameByAccountId(notification?.SenderId ?? 0);
+        notificationVM.SenderEmail = await _accountService.GetEmailByAccountId(notification?.SenderId ?? 0);
         return notificationVM;
     }
 
@@ -68,17 +74,27 @@ public class NotificationService : INotificationService
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to view these notifications.");
         }
+
         List<Notification> notifications = await _unitOfWork.GetRepository<Notification>().Entities
             .Include(n => n.NotificationTypes)
             .Where(n => n.RecevierId == receiverId && n.DeletedAt == null)
             .ToListAsync();
+
         List<NotificationVM> notificationVMs = _mapper.Map<List<NotificationVM>>(notifications);
+
         foreach (NotificationVM notificationVM in notificationVMs)
         {
-            notificationVM.NotificationTypeName = notifications.FirstOrDefault(n => n.Id == notificationVM.Id)?.NotificationTypes?.Name ?? "";
+            var notification = notifications.FirstOrDefault(n => n.Id == notificationVM.Id);
+            notificationVM.NotificationTypeName = notification?.NotificationTypes?.Name ?? "";
+            // Lấy tên người nhận và người gửi
+            notificationVM.RecevierName = await _accountService.GetNameByAccountId(notification?.RecevierId ?? 0);
+            notificationVM.RecevierEmail = await _accountService.GetEmailByAccountId(notification?.RecevierId ?? 0);
+            notificationVM.SenderName = await _accountService.GetNameByAccountId(notification?.SenderId ?? 0);
+            notificationVM.SenderEmail = await _accountService.GetEmailByAccountId(notification?.SenderId ?? 0);
         }
         return notificationVMs;
     }
+
 
     public async Task DeleteNotificationAsync(int id)
     {
@@ -87,6 +103,5 @@ public class NotificationService : INotificationService
         await _unitOfWork.GetRepository<Notification>().UpdateAsync(notification);
         await _unitOfWork.SaveChangesAsync();
     }
-
 
 }

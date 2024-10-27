@@ -115,5 +115,29 @@ namespace Seminar.APPLICATION.Services
         {
             return await _unitOfWork.GetRepository<Account>().Entities.AnyAsync(x => x.Email == email && x.Id != excludeAccountId);
         }
+
+        public async Task<string> GetNameByAccountId(int accountId)
+        {
+            var author = await _unitOfWork.GetRepository<Author>().Entities
+                .FirstOrDefaultAsync(a => a.AccountId == accountId);
+            if (author != null) return author.Name ?? string.Empty;
+
+            var reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities
+                .FirstOrDefaultAsync(r => r.AccountId == accountId);
+            if (reviewer != null) return reviewer.Name ?? string.Empty;
+
+            var organizer = await _unitOfWork.GetRepository<Organizer>().Entities
+                .FirstOrDefaultAsync(o => o.AccountId == accountId);
+            if (organizer != null) return organizer.Name ?? string.Empty;
+
+            return "Super Admin";
+        }
+
+        public async Task<string> GetEmailByAccountId(int accountId)
+        {
+            Account account = await _unitOfWork.GetRepository<Account>().Entities
+                .FirstOrDefaultAsync(a => a.Id == accountId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found!");
+            return account.Email ?? string.Empty;
+        }
     }
 }
