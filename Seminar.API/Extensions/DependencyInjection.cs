@@ -1,8 +1,10 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Seminar.CORE.Base;
 using Seminar.INFRASTRUCTURE.Database;
 using Seminar.INFRASTRUCTURE.Seed;
@@ -19,6 +21,7 @@ namespace Seminar.API.Extensions
             AddDatabases(services, configuration);
             AddSwagger(services);
             AddInitialiseDatabase(services);
+            ConfigureControllers(services);
         }
 
         // JWT Setting
@@ -112,7 +115,6 @@ namespace Seminar.API.Extensions
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Seminar Management API", Version = "v1" });
-
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme.",
@@ -151,6 +153,28 @@ namespace Seminar.API.Extensions
             ApplicationDbContextInitialiser initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
             await initialiser.InitialiseAsync();
             await initialiser.SeedAsync();
+        }
+
+        private static void ConfigureControllers(IServiceCollection services)
+        {
+            services.AddControllers(options =>
+            {
+                options.EnableEndpointRouting = false;
+            })
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            });
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
         }
     }
 }

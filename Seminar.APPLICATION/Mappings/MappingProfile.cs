@@ -14,6 +14,7 @@ using Seminar.APPLICATION.Dtos.RegistrationFormDtos;
 using Seminar.APPLICATION.Dtos.ArticleDtos;
 using Seminar.APPLICATION.Dtos.NotificationDtos;
 using Seminar.APPLICATION.Dtos.CompetitionDtos;
+using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile
@@ -83,6 +84,8 @@ namespace Seminar.APPLICATION.Mappings
             .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizer.Name));
             CreateMap<CreateCompetitionDto, Competition>();
             CreateMap<UpdateCompetitionDto, Competition>();
+            //Research Topic
+            CreateMap<CreateResearchTopicDto, ResearchTopic>();
         }
     }
 }

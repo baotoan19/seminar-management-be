@@ -9,6 +9,7 @@ namespace Seminar.APPLICATION.Dtos.AuthorDtos
         [Required(ErrorMessage = "Name is required")]
         public string Name { get; set; }
         [EmailAddress(ErrorMessage = "Email is not valid")]
+        [Required(ErrorMessage = "Email is required")]
         public string? Email { get; set; }
         [Phone(ErrorMessage = "Phone number is not valid")]
         [StringLength(10, MinimumLength = 10, ErrorMessage = "Phone number must be 10 digits")]

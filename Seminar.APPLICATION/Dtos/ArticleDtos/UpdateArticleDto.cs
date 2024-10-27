@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 namespace Seminar.APPLICATION.Dtos.ArticleDtos;
 
 public class UpdateArticleDto
@@ -15,6 +16,4 @@ public class UpdateArticleDto
     public DateTime DateUpload { get; set; }
     [Required(ErrorMessage = "DisciplineId is required")]
     public int DisciplineId { get; set; }
-    [Required(ErrorMessage = "IsStatus is required")]
-    public bool IsStatus { get; set; }
 }

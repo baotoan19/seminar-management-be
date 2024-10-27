@@ -44,15 +44,12 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(IDisciplineService), typeof(DisciplineService));
             services.AddScoped(typeof(IFacultyService), typeof(FacultyService));
             services.AddScoped(typeof(IArticleService), typeof(ArticleService));
-            // services.AddScoped(typeof(IHistoryArticalsService), typeof(HistoryArticalsService));
-            // services.AddScoped(typeof(IReviewFormService), typeof(ReviewFormService));
-            // services.AddScoped(typeof(IReviewAssignmentService), typeof(ReviewAssignmentService));
-            // services.AddScoped(typeof(IReviewCommitteeService), typeof(ReviewCommitteeService));
             services.AddScoped(typeof(IRegistrationFormService), typeof(RegistrationFormService));
             services.AddScoped(typeof(INotificationService), typeof(NotificationService));
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
             services.AddScoped(typeof(IFirebaseService), typeof(FirebaseService));
             services.AddScoped(typeof(ICompetitionService), typeof(CompetitionService));
+            services.AddScoped(typeof(IResearchTopicService), typeof(ResearchTopicService));
         }
 
         //Đăng ký mapper

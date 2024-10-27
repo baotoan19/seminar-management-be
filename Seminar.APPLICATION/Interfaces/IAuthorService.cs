@@ -9,5 +9,8 @@ namespace Seminar.APPLICATION.Interfaces
         Task<Author> CreateAuthorAsync(CreateAuthorDto createAuthorDto);
         Task<AuthorVM> GetAuthorInforAsync(int id);
         Task UpdateAuthorAsync(int accountId, UpdateAuthorDto updateAuthorDto);
+        Task CreateCoAuthorAsync(int articleId, CreateCoAuthorDto CreateCoAuthorDto);
+        Task CreateMemberAsync(int researchTopicId, CreateCoAuthorDto createCoAuthorDto);
+        Task DeleteCoAuthorAsync(int articleId, int authorArticleId);
     }
 }
