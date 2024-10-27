@@ -123,7 +123,7 @@ public class RegistrationFormService : IRegistrationFormService
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(dto.CompetitionId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
         DateTime now = DateTime.Now;
-        if (now < competition.DateStart || now > competition.DateEnd)
+        if (now > competition.DateEndSubmit || now < competition.DateStart)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Registration period for this competition is not active!");
         }

@@ -12,7 +12,7 @@ namespace Seminar.DOMAIN.Entitys
         public string CompetitionName { get; set; }
         public DateTime? DateStart { get; set; }
         public DateTime? DateEnd { get; set; }
-        [StringLength(255)]
+        public DateTime? DateEndSubmit {get; set;}
         [ForeignKey("Organizers")]
         public int? OrganizerId { get; set; }
         public string Description { get; set; }

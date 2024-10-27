@@ -127,9 +127,12 @@ public class CompetitionService : ICompetitionService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified organizer was not found. Please provide a valid organizer.");
+        if(createCompetitionDto.DateEndSubmit > createCompetitionDto.DateEnd || createCompetitionDto.DateEndSubmit < createCompetitionDto.DateStart)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end and greater than date start!");
+        }
         Competition competition = _mapper.Map<Competition>(createCompetitionDto);
         competition.OrganizerId = organizer.Id;
-
         await _unitOfWork.GetRepository<Competition>().InsertAsync(competition);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -142,6 +145,10 @@ public class CompetitionService : ICompetitionService
         if (competition.OrganizerId != organizer.Id)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this competition!");
+        }
+        if(updateCompetitionDto.DateEndSubmit > updateCompetitionDto.DateEnd || updateCompetitionDto.DateEndSubmit < updateCompetitionDto.DateStart)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end and greater than date start!");
         }
         _mapper.Map(updateCompetitionDto, competition);
         competition.UpdatedAt = DateTime.Now;
