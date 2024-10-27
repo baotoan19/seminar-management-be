@@ -78,11 +78,12 @@ public class ResearchTopicService : IResearchTopicService
                         RoleName = "author"
                     }
                     };
-                    // Kiểm tra email trùng lặp
-                    var processedEmails = new HashSet<string>();
+
                     // Xử lý co-authors
-                    if (createResearchTopicDto.CoAuthors != null)
+                    if (createResearchTopicDto.CoAuthors != null && createResearchTopicDto.CoAuthors.Count > 0)
                     {
+                        // Kiểm tra email trùng lặp
+                        var processedEmails = new HashSet<string>();
                         foreach (CoAuthorDto coAuthorDto in createResearchTopicDto.CoAuthors)
                         {
                             if (!processedEmails.Add(coAuthorDto.Email))
@@ -147,7 +148,6 @@ public class ResearchTopicService : IResearchTopicService
 
                     await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
                     await _unitOfWork.SaveChangesAsync();
-
                     // Insert history article version 1
                     History_Update_ResearchTopic history_Update_ResearchTopic = new History_Update_ResearchTopic
                     {
