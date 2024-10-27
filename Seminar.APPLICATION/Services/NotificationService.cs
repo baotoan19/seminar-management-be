@@ -78,6 +78,7 @@ public class NotificationService : INotificationService
         List<Notification> notifications = await _unitOfWork.GetRepository<Notification>().Entities
             .Include(n => n.NotificationTypes)
             .Where(n => n.RecevierId == receiverId && n.DeletedAt == null)
+            .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
 
         List<NotificationVM> notificationVMs = _mapper.Map<List<NotificationVM>>(notifications);
