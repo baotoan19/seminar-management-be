@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Seminar.APPLICATION.Dtos.AuthorDtos;
 
 namespace Seminar.APPLICATION.Models;
 
@@ -13,4 +14,6 @@ public class ArticleVM
     public int DisciplineId { get; set; }
     public string DisciplineName { get; set; }
     public bool IsAcceptedForPublication { get; set; }
+    public List<ArticleAuthorVM> CoAuthors { get; set; }
+
 }
