@@ -21,17 +21,13 @@ public class ResearchTopicService : IResearchTopicService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IFirebaseService _firebaseService;
     private readonly IEmailService _emailService;
-    private readonly IAuthorService _authorService;
-    public ResearchTopicService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IFirebaseService firebaseService, IEmailService emailService, IAuthorService authorService)
+    public ResearchTopicService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
-        _firebaseService = firebaseService;
         _emailService = emailService;
-        _authorService = authorService;
     }
     public async Task CreateResearchTopicAsync(CreateResearchTopicDto createResearchTopicDto)
     {
