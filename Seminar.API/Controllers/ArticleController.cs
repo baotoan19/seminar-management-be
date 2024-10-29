@@ -99,9 +99,9 @@ public class ArticleController : ControllerBase
 
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
     [HttpGet("author")]
-    public async Task<IActionResult> GetAuthorArticleByAuthorIdAsync()
+    public async Task<IActionResult> GetAuthorArticleByAuthorIdAsync(bool isAcceptedForPublication)
     {
-        List<AuthorArticleVM> authorArticleVMs = await _articleService.GetAuthorArticleByAuthorIdAsync();
+        List<AuthorArticleVM> authorArticleVMs = await _articleService.GetAuthorArticleByAuthorIdAsync(isAcceptedForPublication);
         return Ok(new BaseResponse<List<AuthorArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,

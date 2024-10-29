@@ -15,7 +15,7 @@ public interface IArticleService
     Task UpdateArticleAsync(int id, UpdateArticleDto updateArticleDto);
     Task DeleteArticleAsync(int id);
     Task<List<AuthorArticleVM>> GetAuthorArticleByRoleAsync(string roleName);
-    Task<List<AuthorArticleVM>> GetAuthorArticleByAuthorIdAsync();
+    Task<List<AuthorArticleVM>> GetAuthorArticleByAuthorIdAsync(bool isAcceptedForPublication);
     Task<List<ArticleAuthorVM>> GetAuthorByArticleIdAsync(int articleId);
     Task ApproveArticleAsync(int id, ApproveArticleDto approveArticleDto);
 

@@ -315,7 +315,7 @@ public class ArticleService : IArticleService
 
         return authorArticleVMs;
     }
-    public async Task<List<AuthorArticleVM>> GetAuthorArticleByAuthorIdAsync()
+    public async Task<List<AuthorArticleVM>> GetAuthorArticleByAuthorIdAsync(bool isAcceptedForPublication)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities
@@ -327,7 +327,7 @@ public class ArticleService : IArticleService
             .Where(aa => aa.AuthorId == author.Id)
             .Include(aa => aa.Article)
             .ThenInclude(a => a.Discipline)
-            .Where(aa => aa.Article != null && aa.Article.IsAcceptedForPublication == true && aa.Article.DeletedAt == null && aa.DeletedAt == null)
+            .Where(aa => aa.Article != null && aa.Article.IsAcceptedForPublication == isAcceptedForPublication && aa.Article.DeletedAt == null && aa.DeletedAt == null)
             .ToListAsync();
         List<AuthorArticleVM> authorArticleVMs = authorArticles
             .Select(aa => new AuthorArticleVM
