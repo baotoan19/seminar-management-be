@@ -72,6 +72,11 @@ public class ArticleService : IArticleService
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
         List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
+        foreach (ArticleVM articleVM in responeItems)
+        {
+            List<ArticleAuthorVM> coAuthors = await GetAuthorByArticleIdAsync(articleVM.Id);
+            articleVM.CoAuthors = coAuthors;
+        }
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<ArticleVM>(
             responeItems,
@@ -367,6 +372,7 @@ public class ArticleService : IArticleService
             .Select(aa => new ArticleAuthorVM
             {
                 Id = aa.Author.Id,
+                AccountId = aa.Author.AccountId ?? 0,
                 Name = aa.Author.Name ?? "Unknown",
                 Email = aa.Author.Email ?? "No email",
                 NumberPhone = aa.Author.NumberPhone ?? "No phone",

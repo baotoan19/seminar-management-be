@@ -29,7 +29,6 @@ namespace Seminar.APPLICATION.Mappings
             //Author
             CreateMap<CreateAuthorDto, Author>();
             CreateMap<Author, AuthorVM>();
-            CreateMap<UpdateAuthorDto, Author>();
             //Organizers
             CreateMap<CreateOrganizerDto, Organizer>();
             CreateMap<Organizer, OrganizerVM>();

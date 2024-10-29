@@ -10,5 +10,6 @@ public class AuthorVM : UserVM
     public int? FacultyId { get; set; }
     public string? FacultyName { get; set; }
     public string? InternalCode { get; set; }
+    public required int AccountId { get; set; }
 
 }
