@@ -67,6 +67,7 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<CUReviewCommitteeDto, Review_Committee>();
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>()
+            .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Author.AccountId))
             .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.Name))
             .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competition.CompetitionName))
             .ForMember(dest => dest.InternalCode, opt => opt.MapFrom(src => src.Author.InternalCode))
@@ -80,7 +81,8 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<UpdateNotificationDto, Notification>();
             //Competition
             CreateMap<Competition, CompetitionVM>()
-            .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizer.Name));
+            .ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizer.Name))
+            .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Organizer.AccountId));
             CreateMap<CreateCompetitionDto, Competition>();
             CreateMap<UpdateCompetitionDto, Competition>();
             //Research Topic

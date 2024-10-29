@@ -4,6 +4,7 @@ public class RegistrationFormVM
 {
     public int Id { get; set; }
     public int AuthorId { get; set; }
+    public int AccountId { get; set; }
     public string? AuthorName { get; set; }
     public string? InternalCode { get; set; }
     public int CompetitionId { get; set; }

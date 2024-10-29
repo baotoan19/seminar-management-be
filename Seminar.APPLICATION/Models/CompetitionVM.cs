@@ -10,5 +10,6 @@ public class CompetitionVM
     public string Description { get; set; }
     public string Destination { get; set; }
     public int OrganizerId { get; set; }
+    public int AccountId { get; set; }
     public string OrganizerName { get; set; }
 }
