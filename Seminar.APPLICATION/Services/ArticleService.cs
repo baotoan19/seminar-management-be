@@ -146,6 +146,8 @@ public class ArticleService : IArticleService
         Article article = await _unitOfWork.GetRepository<Article>().Entities.Include(a => a.Discipline)
         .FirstOrDefaultAsync(a => a.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Artical not found!");
         ArticleVM articleVM = _mapper.Map<ArticleVM>(article);
+        List<ArticleAuthorVM> coAuthors = await GetAuthorByArticleIdAsync(articleVM.Id);
+        articleVM.CoAuthors = coAuthors;
         return articleVM;
     }
 
