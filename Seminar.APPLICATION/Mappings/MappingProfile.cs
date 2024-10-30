@@ -50,7 +50,6 @@ namespace Seminar.APPLICATION.Mappings
             //Artical
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Discipline.DisciplineName));
-
             CreateMap<CreateArticleDto, Article>();
             CreateMap<UpdateArticleDto, Article>();
             //History Update Artical
@@ -87,6 +86,10 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<UpdateCompetitionDto, Competition>();
             //Research Topic
             CreateMap<CreateResearchTopicDto, ResearchTopic>();
+            CreateMap<ResearchTopic, ResearchTopicVM>()
+            .ForMember(dest => dest.ArticleName, opt => opt.MapFrom(src => src.Articles.Title))
+            .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Disciplines.DisciplineName))
+            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName));
         }
     }
 }

@@ -8,6 +8,7 @@ using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Interfaces;
+using Seminar.APPLICATION.Models;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.CORE.Utils;
@@ -166,4 +167,35 @@ public class ResearchTopicService : IResearchTopicService
             }
         });
     }
+
+    public async Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id)
+    {
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        ResearchTopicVM researchTopicVM = _mapper.Map<ResearchTopicVM>(researchTopic);
+        List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(id);
+        researchTopicVM.CoAuthors = coAuthors;
+        return researchTopicVM;
+    }
+
+    public async Task<List<ResearchTopicAuthorVM>> GetAuthorByResearchTopicIdAsync(int id)
+    {
+        List<Author_ResearchTopic> author_ResearchTopics = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.Where(a => a.ResearchTopicId == id && a.DeletedAt == null).ToListAsync();
+        List<ResearchTopicAuthorVM> researchTopicAuthorVMs = author_ResearchTopics.Select(a => new ResearchTopicAuthorVM
+        {
+            Id = a.Author.Id,
+            AccountId = a.Author.AccountId ?? 0,
+            Name = a.Author.Name ?? "Unknown",
+            Email = a.Author.Email ?? "No email",
+            NumberPhone = a.Author.NumberPhone ?? "No phone",
+            DateOfBirth = a.Author.DateOfBirth ?? DateTime.MinValue,
+            Sex = a.Author.Sex ?? "Unknown",
+            FacultyId = a.Author.FacultyId,
+            FacultyName = a.Author.Faculty?.FacultyName ?? "Unknown Faculty",
+            InternalCode = a.Author.InternalCode ?? "No code",
+            RoleName = a.RoleName ?? "Unknown Role"
+        }).ToList();
+        return researchTopicAuthorVMs;
+    }
+
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Interfaces;
+using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
 
@@ -27,5 +28,15 @@ public class ResearchTopicController : ControllerBase
             code: ResponseCodeConstants.SUCCESS,
             message: "Research topic created successfully"));
     }
-    
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetResearchTopicById(int id)
+    {
+        ResearchTopicVM researchTopicVM = await _researchTopicService.GetResearchTopicByIdAsync(id);
+        return Ok(new BaseResponse<ResearchTopicVM>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Research topic retrieved successfully",
+            data: researchTopicVM));
+    }
 }
