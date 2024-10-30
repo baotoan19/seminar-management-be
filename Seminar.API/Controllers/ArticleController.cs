@@ -63,7 +63,7 @@ public class ArticleController : ControllerBase
     }
 
 
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
     [HttpPatch()]
     public async Task<IActionResult> UpdateArticleAsync(int ArticleId, UpdateArticleDto updateArticleDto)
     {
@@ -74,7 +74,7 @@ public class ArticleController : ControllerBase
             message: "Article updated successfully!"));
     }
 
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN + "," + CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
     [HttpDelete()]
     public async Task<IActionResult> DeleteArticleAsync(int id)
     {

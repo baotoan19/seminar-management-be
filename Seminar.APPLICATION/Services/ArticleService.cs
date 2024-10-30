@@ -262,6 +262,11 @@ public class ArticleService : IArticleService
     {
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
         article.Discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(updateArticleDto.DisciplineId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+        if (article.IsAcceptedForPublication)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
+                "You cannot update published articles");
+        }
         _mapper.Map(updateArticleDto, article);
         string keyword = string.Join(",", updateArticleDto.Keywords);
         article.KeyWord = keyword;
@@ -272,7 +277,24 @@ public class ArticleService : IArticleService
 
     public async Task DeleteArticleAsync(int id)
     {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        string roleName = Authentication.GetUserRoleFromHttpContext(_httpContextAccessor.HttpContext);
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+        if (article.IsAcceptedForPublication == true && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
+                "Only administrators can delete published articles");
+        }
+        if (roleName.ToLower() == CLAIMS_VALUES.ROLE_TYPE.AUTHOR)
+        {
+            Author_Article? authorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
+            .FirstOrDefaultAsync(aa => aa.ArticleId == id && aa.Author.AccountId == userId && aa.RoleName == "author");
+            if (authorArticle == null)
+            {
+                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
+                "You can only delete your own articles");
+            }
+        }
         article.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
         await _unitOfWork.SaveChangesAsync();
