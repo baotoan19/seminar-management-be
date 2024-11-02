@@ -153,6 +153,21 @@ public class ArticleService : IArticleService
 
     public async Task CreateArticleAsync(CreateArticleDto createArticalsDto)
     {
+        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw 
+        new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+
+        var processedEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (createArticalsDto.CoAuthors != null)
+        {
+            foreach (var coAuthor in createArticalsDto.CoAuthors)
+            {
+                if (string.IsNullOrEmpty(coAuthor.Email))
+                    throw new ErrorException(StatusCodes.Status400BadRequest, "INVALID_EMAIL", "Co-author email cannot be empty");
+
+                if (!processedEmails.Add(coAuthor.Email))
+                    throw new ErrorException(StatusCodes.Status400BadRequest, "DUPLICATE_EMAIL", $"Duplicate email found: {coAuthor.Email}");
+            }
+        }
         var strategy = _unitOfWork.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
@@ -182,13 +197,9 @@ public class ArticleService : IArticleService
                     //Insert co-authors
                     if (createArticalsDto.CoAuthors != null && createArticalsDto.CoAuthors.Count > 0)
                     {
-                        var processedEmails = new HashSet<string>();
+                        
                         foreach (CoAuthorDto coAuthorDto in createArticalsDto.CoAuthors)
                         {
-                            if (!processedEmails.Add(coAuthorDto.Email))
-                            {
-                                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
-                            }
                             Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
                             int coAuthorId;
 
@@ -256,7 +267,6 @@ public class ArticleService : IArticleService
             }
         });
     }
-
 
     public async Task UpdateArticleAsync(int id, UpdateArticleDto updateArticleDto)
     {
