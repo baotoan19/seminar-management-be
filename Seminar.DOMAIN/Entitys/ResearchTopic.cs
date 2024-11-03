@@ -10,13 +10,16 @@ namespace Seminar.DOMAIN.Entitys
         public DateTime DateUpLoad { get; set; }
         public string Description { get; set; }
         public string Target { get; set; }
+        public float Budget { get; set; }
         public string AchievedResults { get; set; }
         public bool IsAcceptanceApproved { get; set; }
         public bool IsReviewAcceptance { get; set; }
         public string? ProductFilePath { get; set; }
         public string? ReportFilePath {get; set;}
+        public string? BudgetFilePath {get; set;}
         public DateTime? DateStart { get; set; }
         public DateTime? DateEnd { get; set; }
+        public int? ProjectDuration { get; set; }
         [ForeignKey("Articles")]
         public int? ArticleId {get; set;}
         [ForeignKey("Disciplines")]

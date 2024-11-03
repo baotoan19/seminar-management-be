@@ -12,8 +12,8 @@ using Seminar.INFRASTRUCTURE.Database;
 namespace Seminar.INFRASTRUCTURE.Migrations
 {
     [DbContext(typeof(SeminarContext))]
-    [Migration("20241027041651_UpdateMigration#V2")]
-    partial class UpdateMigrationV2
+    [Migration("20241103171923_UpdateMigration#V1")]
+    partial class UpdateMigrationV1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,16 +33,10 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Budget")
-                        .HasColumnType("float");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DateEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateStart")
+                    b.Property<DateTime?>("DateAcceptance")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -52,6 +46,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsAcceptedForPublication")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFacultyAccepted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -670,6 +667,12 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<int?>("ArticleId")
                         .HasColumnType("int");
 
+                    b.Property<float>("Budget")
+                        .HasColumnType("real");
+
+                    b.Property<string>("BudgetFilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("CompetitionId")
                         .HasColumnType("int");
 
@@ -707,6 +710,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.Property<string>("ProductFilePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ProjectDuration")
+                        .HasColumnType("int");
 
                     b.Property<string>("ReportFilePath")
                         .HasColumnType("nvarchar(max)");
