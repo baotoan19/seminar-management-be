@@ -314,7 +314,7 @@ namespace Seminar.INFRASTRUCTURE.Seed
             {
                 NotificationType[] notificationTypes =
                 [
-                    new NotificationType { Name = "Aritcle" },
+                    new NotificationType { Name = "Article" },
                     new NotificationType { Name = "ResearchTopic" },
                     new NotificationType { Name = "History_Update_ResearchTopic" },
                     new NotificationType { Name = "RegistrationForm" }
