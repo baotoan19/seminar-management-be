@@ -61,7 +61,7 @@ namespace Seminar.APPLICATION.Services
                 AccountId = author.AccountId ?? 0,
                 FacultyId = author.FacultyId ?? 0,
                 FacultyName = author.Faculty?.FacultyName ?? "Unknown",
-                DateOfBirth = author.DateOfBirth,
+                DateOfBirth = author.DateOfBirth ?? DateTime.MinValue,
                 Sex = author.Sex ?? "Unknown",
                 NumberPhone = author.NumberPhone ?? "Unknown",
                 InternalCode = author.InternalCode ?? "Unknown",

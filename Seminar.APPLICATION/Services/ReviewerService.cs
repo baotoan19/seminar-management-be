@@ -53,7 +53,7 @@ public class ReviewerService : IReviewerService
             FacultyId = reviewer.FacultyId ?? 0,
             FacultyName = reviewer.Faculty?.FacultyName ?? "Unknown",
             AccountId = reviewer.AccountId,
-            DateOfBirth = reviewer.DateOfBirth,
+            DateOfBirth = reviewer.DateOfBirth ?? DateTime.MinValue,
             Sex = reviewer.Sex ?? "Unknown",
             NumberPhone = reviewer.NumberPhone ?? "Unknown",
             AcademicDegree = reviewer.AcademicDegree ?? "Unknown",
