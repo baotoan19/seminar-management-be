@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Seminar.APPLICATION.Models;
 
 public class AuthorVM : UserVM
@@ -11,5 +13,4 @@ public class AuthorVM : UserVM
     public string? FacultyName { get; set; }
     public string? InternalCode { get; set; }
     public required int AccountId { get; set; }
-
 }

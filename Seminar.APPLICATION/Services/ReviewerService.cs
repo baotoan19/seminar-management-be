@@ -45,9 +45,20 @@ public class ReviewerService : IReviewerService
     {
         Reviewer? reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.Include(r => r.Account).Include(r => r.Faculty).FirstOrDefaultAsync(r => r.AccountId == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
-        ReviewerVM reviewerVM = _mapper.Map<ReviewerVM>(reviewer);
-        reviewerVM.Email = reviewer.Account.Email;
-        reviewerVM.FacultyName = reviewer.Faculty?.FacultyName ?? "";
+        ReviewerVM reviewerVM = new ReviewerVM
+        {
+            Id = reviewer.Id,
+            Name = reviewer.Name ?? "Unknown",
+            Email = reviewer.Account.Email ?? "Unknown",
+            FacultyId = reviewer.FacultyId ?? 0,
+            FacultyName = reviewer.Faculty?.FacultyName ?? "Unknown",
+            AccountId = reviewer.AccountId,
+            DateOfBirth = reviewer.DateOfBirth,
+            Sex = reviewer.Sex ?? "Unknown",
+            NumberPhone = reviewer.NumberPhone ?? "Unknown",
+            AcademicDegree = reviewer.AcademicDegree ?? "Unknown",
+            AcademicRank = reviewer.AcademicRank ?? "Unknown"
+        };
         return reviewerVM;
     }
 

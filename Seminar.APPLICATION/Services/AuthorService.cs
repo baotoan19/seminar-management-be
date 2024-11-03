@@ -51,11 +51,21 @@ namespace Seminar.APPLICATION.Services
 
         public async Task<AuthorVM> GetAuthorInforAsync(int id)
         {
-            Author? author = await _unitOfWork.GetRepository<Author>().Entities.Include(a => a.Account).Include(a => a.Faculty).FirstOrDefaultAsync(a => a.AccountId == id) ??
+            Author? author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == id) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-            AuthorVM authorVM = _mapper.Map<AuthorVM>(author);
-            authorVM.FacultyName = author.Faculty?.FacultyName ?? null;
-            authorVM.Email = author.Account.Email;
+            AuthorVM authorVM = new AuthorVM
+            {
+                Id = author.Id,
+                Name = author.Name ?? "Unknown",
+                Email = author.Email ?? "Unknown",
+                AccountId = author.AccountId ?? 0,
+                FacultyId = author.FacultyId ?? 0,
+                FacultyName = author.Faculty?.FacultyName ?? "Unknown",
+                DateOfBirth = author.DateOfBirth,
+                Sex = author.Sex ?? "Unknown",
+                NumberPhone = author.NumberPhone ?? "Unknown",
+                InternalCode = author.InternalCode ?? "Unknown",
+            };
             return authorVM;
         }
 

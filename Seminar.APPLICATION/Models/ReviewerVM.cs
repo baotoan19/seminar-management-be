@@ -10,4 +10,5 @@ public class ReviewerVM : UserVM
     public string AcademicRank { get; set; }
     public int FacultyId { get; set; }
     public string FacultyName { get; set; }
+    public int AccountId { get; set; }
 }

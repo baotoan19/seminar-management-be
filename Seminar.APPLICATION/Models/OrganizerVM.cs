@@ -7,4 +7,5 @@ public class OrganizerVM : UserVM
     public string? Description { get; set; }
     public int? FacultyId { get; set; }
     public string? FacultyName { get; set; }
+    public int AccountId { get; set; }
 }

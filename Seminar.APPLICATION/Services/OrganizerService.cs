@@ -46,9 +46,19 @@ public class OrganizerService : IOrganizerService
     {
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.Include(o => o.Account).Include(o => o.Faculty).FirstOrDefaultAsync(o => o.AccountId == id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
-        OrganizerVM organizerVM = _mapper.Map<OrganizerVM>(organizer);
-        organizerVM.FacultyName = organizer.Faculty?.FacultyName ?? null;
-        organizerVM.Email = organizer.Account.Email;
+        // OrganizerVM organizerVM = _mapper.Map<OrganizerVM>(organizer);
+        // organizerVM.FacultyName = organizer.Faculty?.FacultyName ?? null;
+        // organizerVM.Email = organizer.Account.Email;
+        OrganizerVM organizerVM = new OrganizerVM
+        {
+            Id = organizer.Id,
+            Name = organizer.Name ?? "Unknown",
+            Email = organizer.Account.Email ?? "Unknown",
+            Description = organizer.Description ?? "Unknown",
+            FacultyId = organizer.FacultyId ?? 0,
+            FacultyName = organizer.Faculty?.FacultyName ?? "Unknown",
+            AccountId = organizer.AccountId
+        };
         return organizerVM;
     }
 
