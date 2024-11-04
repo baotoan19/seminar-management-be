@@ -54,6 +54,7 @@ public class OrganizerService : IOrganizerService
             Id = organizer.Id,
             Name = organizer.Name ?? "Unknown",
             Email = organizer.Account.Email ?? "Unknown",
+            NumberPhone = organizer.NumberPhone ?? "Unknown",
             Description = organizer.Description ?? "Unknown",
             FacultyId = organizer.FacultyId ?? 0,
             FacultyName = organizer.Faculty?.FacultyName ?? "Unknown",
