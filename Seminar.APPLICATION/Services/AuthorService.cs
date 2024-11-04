@@ -8,6 +8,7 @@ using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
+using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.CORE.Utils;
@@ -48,7 +49,6 @@ namespace Seminar.APPLICATION.Services
             await _unitOfWork.SaveChangesAsync();
             return author;
         }
-
         public async Task<AuthorVM> GetAuthorInforAsync(int id)
         {
             Author? author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == id) ??
@@ -68,7 +68,6 @@ namespace Seminar.APPLICATION.Services
             };
             return authorVM;
         }
-
         public async Task UpdateAuthorAsync(int accountId, UpdateAuthorDto updateAuthorDto)
         {
             Author? author = await _unitOfWork.GetRepository<Author>().Entities.Include(a => a.Account).Include(a => a.Faculty).FirstOrDefaultAsync(a => a.AccountId == accountId) ??
@@ -84,7 +83,6 @@ namespace Seminar.APPLICATION.Services
             await _unitOfWork.GetRepository<Author>().UpdateAsync(author);
             await _unitOfWork.SaveChangesAsync();
         }
-
         public async Task CreateCoAuthorAsync(int articleId, CreateCoAuthorDto createCoAuthorDto)
         {
             var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -175,7 +173,6 @@ namespace Seminar.APPLICATION.Services
                 }
             });
         }
-
         public async Task CreateMemberAsync(int researchTopicId, CreateCoAuthorDto createCoAuthorDto)
         {
             int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -244,7 +241,6 @@ namespace Seminar.APPLICATION.Services
                 await _unitOfWork.SaveChangesAsync();
             }
         }
-
         public async Task DeleteCoAuthorAsync(int articleId, int coAuthorId)
         {
             int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -268,6 +264,38 @@ namespace Seminar.APPLICATION.Services
             }
             // Xóa Author_Article của tác giả phụ
             coAuthorArticle.DeletedAt = DateTime.Now;
+            await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task DeleteMemberAsync(int researchTopicId, int memberId)
+        {
+            int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+            Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+            ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+            // Kiểm tra xem người đăng nhập có phải là tác giả chính của research topic hay không
+            Author_ResearchTopic authorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>()
+            .Entities.FirstOrDefaultAsync(art =>
+                art.AuthorId == author.Id &&
+                art.ResearchTopicId == researchTopicId &&
+                art.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR &&
+                art.DeletedAt == null) ??
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
+            "You are not the main author of this research topic!");
+            // Tìm Author_ResearchTopic của thành viên cần xóa
+            Author_ResearchTopic memberToDelete = await _unitOfWork.GetRepository<Author_ResearchTopic>()
+            .Entities.FirstOrDefaultAsync(art =>
+                art.AuthorId == memberId &&
+                art.ResearchTopicId == researchTopicId &&
+                art.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR &&
+                art.DeletedAt == null) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
+            "Member not found or is not a co-author!");
+            // Kiểm tra xem research topic có được chấp nhận hay không
+            if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
+                    "Cannot delete member from an approved research topic!");
+            }
+            memberToDelete.DeletedAt = DateTime.Now;
             await _unitOfWork.SaveChangesAsync();
         }
     }

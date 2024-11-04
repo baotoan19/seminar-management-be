@@ -15,6 +15,7 @@ using Seminar.APPLICATION.Dtos.ArticleDtos;
 using Seminar.APPLICATION.Dtos.NotificationDtos;
 using Seminar.APPLICATION.Dtos.CompetitionDtos;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
+using Seminar.APPLICATION.Dtos.HistoryResearchTopicDtos;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile
@@ -29,6 +30,7 @@ namespace Seminar.APPLICATION.Mappings
             //Author
             CreateMap<CreateAuthorDto, Author>();
             CreateMap<Author, AuthorVM>();
+            CreateMap<UpdateAuthorDto, Author>();
             //Organizers
             CreateMap<CreateOrganizerDto, Organizer>();
             CreateMap<Organizer, OrganizerVM>();
@@ -52,9 +54,6 @@ namespace Seminar.APPLICATION.Mappings
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Discipline.DisciplineName));
             CreateMap<CreateArticleDto, Article>();
             CreateMap<UpdateArticleDto, Article>();
-            //History Update Artical
-            //CreateMap<History_Update_Artical, HistoryArticalsVM>();
-            //CreateMap<CreateHistoryArticalsDto, History_Update_Artical>();
             //Review Form
             CreateMap<Review_Form, ReviewFormVM>();
             CreateMap<CUReviewFormDto, Review_Form>();
@@ -90,6 +89,10 @@ namespace Seminar.APPLICATION.Mappings
             .ForMember(dest => dest.ArticleName, opt => opt.MapFrom(src => src.Articles.Title))
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Disciplines.DisciplineName))
             .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName));
+            //History Research Topic
+            CreateMap<CreateHistoryResearchTopicDto, History_Update_ResearchTopic>();
+            CreateMap<UpdateResearchTopicDto, ResearchTopic>();
+            CreateMap<History_Update_ResearchTopic, HistoryUpdateResearchTopicVM>();
         }
     }
 }
