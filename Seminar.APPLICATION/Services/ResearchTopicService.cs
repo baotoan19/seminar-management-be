@@ -443,6 +443,17 @@ public class ResearchTopicService : IResearchTopicService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(createHistoryResearchTopicDto.ResearchTopicId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        DateTime now = DateTime.Now;
+        if (competition.DateEnd < now)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+        }
+        if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+        }
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == createHistoryResearchTopicDto.ResearchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
         History_Update_ResearchTopic history_Update_ResearchTopic = _mapper.Map<History_Update_ResearchTopic>(createHistoryResearchTopicDto);
