@@ -7,9 +7,12 @@ public class ResearchTopicVM
     public DateTime DateUpLoad { get; set; }
     public string Description { get; set; }
     public string Target { get; set; }
+    public float Budget { get; set; }
+    public int ProjectDuration { get; set; }
     public string AchievedResult { get; set; }
     public bool IsAcceptanceApproved { get; set; }
     public bool IsReviewerAcceptance { get; set; }
+    public string BudgetFilePath { get; set; }
     public string ProductFilePath { get; set; }
     public string ReportFilePath { get; set; }
     public DateTime DateStart { get; set; }
