@@ -2,19 +2,21 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
+using Seminar.APPLICATION.Dtos.HistoryResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
+using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.CORE.Utils;
 using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Enum;
 using Seminar.DOMAIN.Interfaces;
+using Seminar.INFRASTRUCTURE.Common;
 namespace Seminar.APPLICATION.Services;
 
 public class ResearchTopicService : IResearchTopicService
@@ -29,6 +31,99 @@ public class ResearchTopicService : IResearchTopicService
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _emailService = emailService;
+    }
+
+    // Research Topic
+    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int index, int pageSize, string nameTopicSearch, int disciplineId)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(competitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        if (competition.OrganizerId != organizer.Id)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this competition!");
+        }
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+        IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
+        .Where(r => r.DeletedAt == null && r.CompetitionId == competitionId)
+        .OrderByDescending(r => r.CreatedAt);
+
+        if (!string.IsNullOrEmpty(nameTopicSearch))
+        {
+            query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
+        }
+        if (disciplineId > 0)
+        {
+            query = query.Where(r => r.DisciplineId == disciplineId);
+        }
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
+        foreach (ResearchTopicVM researchTopicVM in responeItems)
+        {
+            List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(researchTopicVM.Id);
+            researchTopicVM.CoAuthors = coAuthors;
+        }
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<ResearchTopicVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
+    }
+    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        if (roleName != CLAIMS_VALUES.ROLE_TYPE.AUTHOR && roleName != CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR && roleName != "")
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid role name!");
+        }
+        IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
+            .Include(r => r.Author_ResearchTopics)
+            .Where(r => r.DeletedAt == null && r.Author_ResearchTopics.Any(a => a.AuthorId == author.Id))
+            .OrderByDescending(r => r.CreatedAt);
+
+        if (!string.IsNullOrEmpty(nameTopicSearch))
+        {
+            query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
+        }
+        if (!string.IsNullOrEmpty(roleName))
+        {
+            query = query.Where(r => r.Author_ResearchTopics.Any(a => a.RoleName == roleName));
+        }
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
+        foreach (ResearchTopicVM researchTopicVM in responeItems)
+        {
+            List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(researchTopicVM.Id);
+            researchTopicVM.CoAuthors = coAuthors;
+        }
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<ResearchTopicVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
     }
     public async Task CreateResearchTopicAsync(CreateResearchTopicDto createResearchTopicDto)
     {
@@ -167,7 +262,121 @@ public class ResearchTopicService : IResearchTopicService
             }
         });
     }
+    public async Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.ResearchTopicId == researchTopicId && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+        }
+        var strategy = _unitOfWork.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            using (await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    ResearchTopic updateResearchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+                    _mapper.Map(updateResearchTopicDto, updateResearchTopic);
+                    updateResearchTopic.UpdatedAt = DateTime.Now;
+                    updateResearchTopic.ArticleId = updateResearchTopicDto.ArticleId == 0 ? null : updateResearchTopicDto.ArticleId;
+                    if (updateResearchTopicDto.CoAuthors != null && updateResearchTopicDto.CoAuthors.Count > 0)
+                    {
+                        // Lấy co-authors hiện tại
+                        List<Author_ResearchTopic> existingCoAuthors = await _unitOfWork.GetRepository<Author_ResearchTopic>()
+                        .Entities.Where(a => a.ResearchTopicId == researchTopicId && a.RoleName == "co-author")
+                        .ToListAsync();
+                        var processedEmails = new HashSet<string>();
+                        List<Author_ResearchTopic> author_ResearchTopics = new List<Author_ResearchTopic>();
+                        foreach (CoAuthorDto coAuthorDto in updateResearchTopicDto.CoAuthors)
+                        {
+                            if (!processedEmails.Add(coAuthorDto.Email))
+                            {
+                                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+                            }
+                            // Kiểm tra xem co-author đã tồn tại trong research topic chưa
+                            var existingAuthorResearchTopic = existingCoAuthors
+                                .FirstOrDefault(x => x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower());
+                            if (existingAuthorResearchTopic != null)
+                            {
+                                continue;
+                            }
+                            Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>()
+                            .Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+                            int coAuthorId;
+                            if (existingCoAuthor == null)
+                            {
+                                // Tạo mới co-author
+                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ??
+                                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
 
+                                FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+                                Account account = new Account
+                                {
+                                    Email = coAuthorDto.Email,
+                                    Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
+                                    RoleId = role.Id,
+                                    IsSuspended = false,
+                                };
+                                await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+                                await _unitOfWork.SaveChangesAsync();
+
+                                Author newCoAuthor = new Author
+                                {
+                                    AccountId = account.Id,
+                                    Name = coAuthorDto.Name,
+                                    Email = account.Email,
+                                    NumberPhone = coAuthorDto.NumberPhone,
+                                    DateOfBirth = coAuthorDto.DateOfBirth,
+                                    Sex = coAuthorDto.Sex
+                                };
+                                await _unitOfWork.GetRepository<Author>().InsertAsync(newCoAuthor);
+                                await _unitOfWork.SaveChangesAsync();
+                                Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
+                                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                                await _emailService.SendMemberAccountInfoEmail(coAuthorDto, competition.CompetitionName);
+                                coAuthorId = newCoAuthor.Id;
+                            }
+                            else
+                            {
+                                coAuthorId = existingCoAuthor.Id;
+                                Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
+                                    .FirstOrDefaultAsync(a => a.AuthorId == coAuthorId && a.ResearchTopicId == researchTopic.Id);
+                                if (existingCoAuthorResearchTopic != null)
+                                {
+                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
+                                }
+                            }
+
+                            author_ResearchTopics.Add(new Author_ResearchTopic
+                            {
+                                AuthorId = coAuthorId,
+                                ResearchTopicId = researchTopic.Id,
+                                RoleName = "co-author"
+                            });
+                        }
+                        await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    await _unitOfWork.GetRepository<ResearchTopic>().UpdateAsync(updateResearchTopic);
+                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+                }
+                catch
+                {
+                    await _unitOfWork.RollBackAsync();
+                    throw;
+                }
+            }
+        });
+    }
     public async Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id)
     {
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
@@ -177,7 +386,6 @@ public class ResearchTopicService : IResearchTopicService
         researchTopicVM.CoAuthors = coAuthors;
         return researchTopicVM;
     }
-
     public async Task<List<ResearchTopicAuthorVM>> GetAuthorByResearchTopicIdAsync(int id)
     {
         List<Author_ResearchTopic> author_ResearchTopics = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.Where(a => a.ResearchTopicId == id && a.DeletedAt == null).ToListAsync();
@@ -197,5 +405,58 @@ public class ResearchTopicService : IResearchTopicService
         }).ToList();
         return researchTopicAuthorVMs;
     }
-
+    public async Task UpdateIsAcceptanceApprovedAsync(UpdateIsAcceptanceApprovedDto updateIsAcceptanceApprovedDto)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == updateIsAcceptanceApprovedDto.ResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        if (competition.OrganizerId != organizer.Id)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this competition!");
+        }
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(updateIsAcceptanceApprovedDto.ResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        researchTopic.IsAcceptanceApproved = updateIsAcceptanceApprovedDto.IsAcceptanceApproved;
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task UpdateIsReviewAcceptanceAsync(UpdateIsReviewAcceptanceDto updateIsReviewAcceptanceDto)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(updateIsReviewAcceptanceDto.ResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        if (researchTopic.Competitions.OrganizerId != organizer.Id)
+        {
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this research topic!");
+        }
+        researchTopic.IsReviewAcceptance = updateIsReviewAcceptanceDto.IsReviewAcceptance;
+        await _unitOfWork.SaveChangesAsync();
+    }
+    // History Research Topic
+    public async Task CreateNewVersionResearchTopicAsync(CreateHistoryResearchTopicDto createHistoryResearchTopicDto)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(createHistoryResearchTopicDto.ResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == createHistoryResearchTopicDto.ResearchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        History_Update_ResearchTopic history_Update_ResearchTopic = _mapper.Map<History_Update_ResearchTopic>(createHistoryResearchTopicDto);
+        history_Update_ResearchTopic.DateUpdate = DateTime.Now;
+        await _unitOfWork.GetRepository<History_Update_ResearchTopic>().InsertAsync(history_Update_ResearchTopic);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task<List<HistoryUpdateResearchTopicVM>> GetAllHistoryResearchTopicByResearchTopicIdAsync(int researchTopicId)
+    {
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        List<History_Update_ResearchTopic> history_Update_ResearchTopics = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().Entities.Where(h => h.ResearchTopicId == researchTopicId).ToListAsync();
+        List<HistoryUpdateResearchTopicVM> historyUpdateResearchTopicVMs = _mapper
+        .Map<List<HistoryUpdateResearchTopicVM>>(history_Update_ResearchTopics);
+        return historyUpdateResearchTopicVMs;
+    }
 }

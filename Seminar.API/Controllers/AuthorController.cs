@@ -37,4 +37,14 @@ public class AuthorController : ControllerBase
             code: ResponseCodeConstants.SUCCESS,
             message: "Delete co-author success!"));
     }
+
+    [HttpDelete("delete-member")]
+    public async Task<IActionResult> DeleteMember(int researchTopicId, int memberId)
+    {
+        await _authorService.DeleteMemberAsync(researchTopicId, memberId);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Delete member success!"));
+    }
 }
