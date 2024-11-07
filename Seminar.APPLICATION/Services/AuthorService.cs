@@ -93,32 +93,41 @@ namespace Seminar.APPLICATION.Services
                     try
                     {
                         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-                        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-                        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(articleId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-                        //Kiểm tra article đã được publish chưa
-                        if (article.IsAcceptedForPublication == false)
+                        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId)
+                            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+
+                        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(articleId)
+                            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+
+                        // Kiểm tra xem article đã được chấp nhận để xuất bản chưa
+                        if (!article.IsAcceptedForPublication)
                         {
                             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Article is not accepted for publication!");
                         }
-                        // Kiểm tra xem user đã là author của article hay chưa
+
+                        // Kiểm tra quyền tác giả của user trên article
                         Author_Article? existingAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
-                        .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == author.Id && aa.RoleName == "author");
+                            .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == author.Id && aa.RoleName == "author");
                         if (existingAuthorArticle == null)
                         {
                             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to create co-author for this article!");
                         }
-                        //Kiểm tra email của co-author đã tồn tại chưa
+
                         FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
-                        int coAuthorId;
+                        List<CoAuthorDto> emailsToSend = new List<CoAuthorDto>();
+
                         foreach (var coAuthorDto in createCoAuthorDto.CoAuthors)
                         {
                             await ValidateCoAuthorEmailsAsync(createCoAuthorDto.CoAuthors);
                             Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities
-                            .FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+                                .FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+                            int coAuthorId;
 
                             if (existingCoAuthor == null)
                             {
-                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author")
+                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+
                                 Account account = new Account
                                 {
                                     Email = coAuthorDto.Email,
@@ -128,6 +137,7 @@ namespace Seminar.APPLICATION.Services
                                 };
                                 await _unitOfWork.GetRepository<Account>().InsertAsync(account);
                                 await _unitOfWork.SaveChangesAsync();
+
                                 Author newAuthor = new Author
                                 {
                                     AccountId = account.Id,
@@ -139,15 +149,15 @@ namespace Seminar.APPLICATION.Services
                                 };
                                 await _unitOfWork.GetRepository<Author>().InsertAsync(newAuthor);
                                 await _unitOfWork.SaveChangesAsync();
+
                                 coAuthorId = newAuthor.Id;
-                                await _emailService.SendCoAuthorAccountInfoEmail(coAuthorDto);
+                                emailsToSend.Add(coAuthorDto); // Thêm vào danh sách email cần gửi
                             }
                             else
                             {
                                 coAuthorId = existingCoAuthor.Id;
-                                // Kiểm tra co-author đã tồn tại chưa
                                 Author_Article? existingCoAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
-                                .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == coAuthorId);
+                                    .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == coAuthorId);
                                 if (existingCoAuthorArticle != null)
                                 {
                                     throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Co-author with email {coAuthorDto.Email} is existed!");
@@ -163,7 +173,15 @@ namespace Seminar.APPLICATION.Services
                             await _unitOfWork.GetRepository<Author_Article>().InsertAsync(authorArticle);
                             await _unitOfWork.SaveChangesAsync();
                         }
+
+                        // Commit transaction
                         await _unitOfWork.CommitTransactionAsync();
+
+                        // Gửi email sau khi transaction đã commit thành công
+                        foreach (var coAuthor in emailsToSend)
+                        {
+                            await _emailService.SendCoAuthorAccountInfoEmail(coAuthor);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -200,70 +218,102 @@ namespace Seminar.APPLICATION.Services
         public async Task CreateMemberAsync(int researchTopicId, CreateCoAuthorDto createCoAuthorDto)
         {
             int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-            Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-            ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
-            // Kiểm tra xem user đã là author của research topic hay chưa
+            Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+            ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+
             Author_ResearchTopic? existingAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
-            .FirstOrDefaultAsync(a => a.ResearchTopicId == researchTopicId && a.AuthorId == author.Id && a.RoleName == "author");
+                .FirstOrDefaultAsync(a => a.ResearchTopicId == researchTopicId && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR);
             if (existingAuthorResearchTopic == null)
             {
                 throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to create a member for this research topic!");
             }
-            //Kiểm tra email của co-author đã tồn tại chưa
-            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
-            int coAuthorId;
-            foreach (var coAuthorDto in createCoAuthorDto.CoAuthors)
-            {
-                Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities
-                .FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
-                if (existingCoAuthor == null)
-                {
-                    Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
-                    Account account = new Account
-                    {
-                        Email = coAuthorDto.Email,
-                        Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
-                        RoleId = role.Id,
-                        IsSuspended = false,
-                    };
-                    await _unitOfWork.GetRepository<Account>().InsertAsync(account);
-                    await _unitOfWork.SaveChangesAsync();
-                    Author newAuthor = new Author
-                    {
-                        AccountId = account.Id,
-                        Name = coAuthorDto.Name,
-                        Email = account.Email,
-                        NumberPhone = coAuthorDto.NumberPhone,
-                        DateOfBirth = coAuthorDto.DateOfBirth,
-                        Sex = coAuthorDto.Sex
-                    };
-                    await _unitOfWork.GetRepository<Author>().InsertAsync(newAuthor);
-                    await _unitOfWork.SaveChangesAsync();
-                    coAuthorId = newAuthor.Id;
 
-                    await _emailService.SendMemberAccountInfoEmail(coAuthorDto, researchTopic.NameTopic);
-                }
-                else
+            var strategy = _unitOfWork.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                using (await _unitOfWork.BeginTransactionAsync())
                 {
-                    coAuthorId = existingCoAuthor.Id;
-                    // Kiểm tra co-author đã tồn tại chưa
-                    Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
-                    .FirstOrDefaultAsync(aa => aa.ResearchTopicId == researchTopicId && aa.AuthorId == coAuthorId);
-                    if (existingCoAuthorResearchTopic != null)
+                    try
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Co-author with email {coAuthorDto.Email} is existed!");
+                        FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+                        List<CoAuthorDto> emailsToSend = new List<CoAuthorDto>();
+
+                        foreach (var coAuthorDto in createCoAuthorDto.CoAuthors)
+                        {
+                            await ValidateCoAuthorEmailsAsync(createCoAuthorDto.CoAuthors);
+
+                            Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities
+                                .FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+                            int coAuthorId;
+
+                            if (existingCoAuthor == null)
+                            {
+                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR)
+                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+
+                                Account account = new Account
+                                {
+                                    Email = coAuthorDto.Email,
+                                    Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
+                                    RoleId = role.Id,
+                                    IsSuspended = false,
+                                };
+                                await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+                                await _unitOfWork.SaveChangesAsync();
+
+                                Author newAuthor = new Author
+                                {
+                                    AccountId = account.Id,
+                                    Name = coAuthorDto.Name,
+                                    Email = account.Email,
+                                    NumberPhone = coAuthorDto.NumberPhone,
+                                    DateOfBirth = coAuthorDto.DateOfBirth,
+                                    Sex = coAuthorDto.Sex
+                                };
+                                await _unitOfWork.GetRepository<Author>().InsertAsync(newAuthor);
+                                await _unitOfWork.SaveChangesAsync();
+
+                                coAuthorId = newAuthor.Id;
+                                emailsToSend.Add(coAuthorDto); // Thêm vào danh sách email cần gửi
+                            }
+                            else
+                            {
+                                coAuthorId = existingCoAuthor.Id;
+                                Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
+                                    .FirstOrDefaultAsync(aa => aa.ResearchTopicId == researchTopicId && aa.AuthorId == coAuthorId);
+                                if (existingCoAuthorResearchTopic != null)
+                                {
+                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Co-author with email {coAuthorDto.Email} is existed!");
+                                }
+                            }
+
+                            Author_ResearchTopic authorResearchTopic = new Author_ResearchTopic
+                            {
+                                ResearchTopicId = researchTopicId,
+                                AuthorId = coAuthorId,
+                                RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
+                            };
+                            await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertAsync(authorResearchTopic);
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+
+                        await _unitOfWork.CommitTransactionAsync();
+
+                        // Gửi email sau khi tất cả đã được lưu thành công
+                        foreach (var coAuthor in emailsToSend)
+                        {
+                            await _emailService.SendMemberAccountInfoEmail(coAuthor, researchTopic.NameTopic);
+                        }
+                    }
+                    catch
+                    {
+                        await _unitOfWork.RollBackAsync();
+                        throw;
                     }
                 }
-
-                Author_ResearchTopic authorResearchTopic = new Author_ResearchTopic
-                {
-                    ResearchTopicId = researchTopicId,
-                    AuthorId = coAuthorId,
-                    RoleName = "co-author"
-                };
-                await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertAsync(authorResearchTopic);
-                await _unitOfWork.SaveChangesAsync();
-            }
+            });
         }
         public async Task DeleteCoAuthorAsync(int articleId, int coAuthorId)
         {

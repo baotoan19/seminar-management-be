@@ -137,11 +137,11 @@ public class ResearchTopicService : IResearchTopicService
                     // Lấy main author
                     int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
                     Author mainAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
 
                     // Kiểm tra competition còn thời gian nộp đề tài không
                     Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == createResearchTopicDto.CompetitionId) ??
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
                     if (competition.DateEndSubmit < DateTime.Now || competition.DateStart > DateTime.Now)
                     {
                         throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired or not started yet!");
@@ -149,8 +149,17 @@ public class ResearchTopicService : IResearchTopicService
 
                     // Kiểm tra author có đăng ký đề tài thành công không
                     RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.FirstOrDefaultAsync(r => r.AuthorId == mainAuthor.Id && r.CompetitionId == createResearchTopicDto.CompetitionId && r.IsAccepted == (int)RegistrationFormEnum.Approved) ??
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author has not successfully registered a topic for this competition!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author has not successfully registered a topic for this competition!");
 
+                    // Kiểm tra article có tồn tại không và article có phải của author không
+                    Article? article = await _unitOfWork.GetRepository<Article>().Entities.FirstOrDefaultAsync(a => a.Id == createResearchTopicDto.ArticleId)
+                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                    Author_Article? author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities.FirstOrDefaultAsync(a => a.ArticleId == createResearchTopicDto.ArticleId && a.AuthorId == mainAuthor.Id) ??
+                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found!");
+                    if (author_Article.AuthorId != mainAuthor.Id)
+                    {
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Article is not owned by the author!");
+                    }
                     // Thêm đề tài
                     ResearchTopic researchTopic = _mapper.Map<ResearchTopic>(createResearchTopicDto);
                     researchTopic.DateUpLoad = DateTime.Now;
@@ -167,7 +176,7 @@ public class ResearchTopicService : IResearchTopicService
                     {
                         AuthorId = mainAuthor.Id,
                         ResearchTopicId = researchTopic.Id,
-                        RoleName = "author"
+                        RoleName = CLAIMS_VALUES.ROLE_TYPE.AUTHOR
                     }
                     };
 
@@ -175,71 +184,24 @@ public class ResearchTopicService : IResearchTopicService
                     if (createResearchTopicDto.CoAuthors != null && createResearchTopicDto.CoAuthors.Count > 0)
                     {
                         // Kiểm tra email trùng lặp
-                        var processedEmails = new HashSet<string>();
+                        await ValidateCoAuthorEmailsAsync(createResearchTopicDto.CoAuthors);
+
                         foreach (CoAuthorDto coAuthorDto in createResearchTopicDto.CoAuthors)
                         {
-                            if (!processedEmails.Add(coAuthorDto.Email))
-                            {
-                                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
-                            }
-
-                            Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
-                            int coAuthorId;
-
-                            if (existingCoAuthor == null)
-                            {
-                                // Tạo mới co-author
-                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ??
-                                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
-
-                                FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
-                                Account account = new Account
-                                {
-                                    Email = coAuthorDto.Email,
-                                    Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
-                                    RoleId = role.Id,
-                                    IsSuspended = false,
-                                };
-                                await _unitOfWork.GetRepository<Account>().InsertAsync(account);
-                                await _unitOfWork.SaveChangesAsync();
-
-                                Author newCoAuthor = new Author
-                                {
-                                    AccountId = account.Id,
-                                    Name = coAuthorDto.Name,
-                                    Email = account.Email,
-                                    NumberPhone = coAuthorDto.NumberPhone,
-                                    DateOfBirth = coAuthorDto.DateOfBirth,
-                                    Sex = coAuthorDto.Sex
-                                };
-                                await _unitOfWork.GetRepository<Author>().InsertAsync(newCoAuthor);
-                                await _unitOfWork.SaveChangesAsync();
-
-                                await _emailService.SendMemberAccountInfoEmail(coAuthorDto, competition.CompetitionName);
-                                coAuthorId = newCoAuthor.Id;
-                            }
-                            else
-                            {
-                                coAuthorId = existingCoAuthor.Id;
-                                Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
-                                    .FirstOrDefaultAsync(a => a.AuthorId == coAuthorId && a.ResearchTopicId == researchTopic.Id);
-                                if (existingCoAuthorResearchTopic != null)
-                                {
-                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
-                                }
-                            }
+                            int coAuthorId = await CreateOrUpdateCoAuthorAsync(coAuthorDto, competition, researchTopic);
 
                             author_ResearchTopics.Add(new Author_ResearchTopic
                             {
                                 AuthorId = coAuthorId,
                                 ResearchTopicId = researchTopic.Id,
-                                RoleName = "co-author"
+                                RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
                             });
                         }
                     }
 
                     await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
                     await _unitOfWork.SaveChangesAsync();
+
                     // Insert history article version 1
                     History_Update_ResearchTopic history_Update_ResearchTopic = new History_Update_ResearchTopic
                     {
@@ -261,6 +223,79 @@ public class ResearchTopicService : IResearchTopicService
                 }
             }
         });
+    }
+    private async Task ValidateCoAuthorEmailsAsync(IEnumerable<CoAuthorDto> coAuthors)
+    {
+        var processedEmails = new HashSet<string>();
+        foreach (CoAuthorDto coAuthor in coAuthors)
+        {
+            // Kiểm tra email trùng lặp trong danh sách
+            if (!processedEmails.Add(coAuthor.Email))
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+            }
+
+            // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
+            Account? account = await _unitOfWork.GetRepository<Account>().Entities
+                .FirstOrDefaultAsync(a => a.Email == coAuthor.Email);
+            if (account != null)
+            {
+                if (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)
+                {
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                }
+            }
+        }
+    }
+    private async Task<int> CreateOrUpdateCoAuthorAsync(CoAuthorDto coAuthorDto, Competition competition, ResearchTopic researchTopic)
+    {
+        Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+        int coAuthorId;
+
+        if (existingCoAuthor == null)
+        {
+            // Tạo mới co-author
+            Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+
+            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+            Account account = new Account
+            {
+                Email = coAuthorDto.Email,
+                Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
+                RoleId = role.Id,
+                IsSuspended = false,
+            };
+            await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+            await _unitOfWork.SaveChangesAsync();
+
+            Author newCoAuthor = new Author
+            {
+                AccountId = account.Id,
+                Name = coAuthorDto.Name,
+                Email = account.Email,
+                NumberPhone = coAuthorDto.NumberPhone,
+                DateOfBirth = coAuthorDto.DateOfBirth,
+                Sex = coAuthorDto.Sex
+            };
+            await _unitOfWork.GetRepository<Author>().InsertAsync(newCoAuthor);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _emailService.SendMemberAccountInfoEmail(coAuthorDto, competition.CompetitionName);
+            coAuthorId = newCoAuthor.Id;
+        }
+        else
+        {
+            coAuthorId = existingCoAuthor.Id;
+            Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
+                .FirstOrDefaultAsync(a => a.AuthorId == coAuthorId && a.ResearchTopicId == researchTopic.Id);
+            if (existingCoAuthorResearchTopic != null)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
+            }
+        }
+
+        return coAuthorId;
     }
     public async Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto)
     {
@@ -291,16 +326,12 @@ public class ResearchTopicService : IResearchTopicService
                     {
                         // Lấy co-authors hiện tại
                         List<Author_ResearchTopic> existingCoAuthors = await _unitOfWork.GetRepository<Author_ResearchTopic>()
-                        .Entities.Where(a => a.ResearchTopicId == researchTopicId && a.RoleName == "co-author")
+                        .Entities.Where(a => a.ResearchTopicId == researchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR)
                         .ToListAsync();
-                        var processedEmails = new HashSet<string>();
                         List<Author_ResearchTopic> author_ResearchTopics = new List<Author_ResearchTopic>();
                         foreach (CoAuthorDto coAuthorDto in updateResearchTopicDto.CoAuthors)
                         {
-                            if (!processedEmails.Add(coAuthorDto.Email))
-                            {
-                                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
-                            }
+                            await ValidateCoAuthorEmailsAsync(updateResearchTopicDto.CoAuthors);
                             // Kiểm tra xem co-author đã tồn tại trong research topic chưa
                             var existingAuthorResearchTopic = existingCoAuthors
                                 .FirstOrDefault(x => x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower());
@@ -310,56 +341,14 @@ public class ResearchTopicService : IResearchTopicService
                             }
                             Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>()
                             .Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
-                            int coAuthorId;
-                            if (existingCoAuthor == null)
-                            {
-                                // Tạo mới co-author
-                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ??
-                                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
-
-                                FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
-                                Account account = new Account
-                                {
-                                    Email = coAuthorDto.Email,
-                                    Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
-                                    RoleId = role.Id,
-                                    IsSuspended = false,
-                                };
-                                await _unitOfWork.GetRepository<Account>().InsertAsync(account);
-                                await _unitOfWork.SaveChangesAsync();
-
-                                Author newCoAuthor = new Author
-                                {
-                                    AccountId = account.Id,
-                                    Name = coAuthorDto.Name,
-                                    Email = account.Email,
-                                    NumberPhone = coAuthorDto.NumberPhone,
-                                    DateOfBirth = coAuthorDto.DateOfBirth,
-                                    Sex = coAuthorDto.Sex
-                                };
-                                await _unitOfWork.GetRepository<Author>().InsertAsync(newCoAuthor);
-                                await _unitOfWork.SaveChangesAsync();
-                                Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
-                                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
-                                await _emailService.SendMemberAccountInfoEmail(coAuthorDto, competition.CompetitionName);
-                                coAuthorId = newCoAuthor.Id;
-                            }
-                            else
-                            {
-                                coAuthorId = existingCoAuthor.Id;
-                                Author_ResearchTopic? existingCoAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
-                                    .FirstOrDefaultAsync(a => a.AuthorId == coAuthorId && a.ResearchTopicId == researchTopic.Id);
-                                if (existingCoAuthorResearchTopic != null)
-                                {
-                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
-                                }
-                            }
-
+                            Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
+                            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                            int coAuthorId = existingCoAuthor?.Id ?? await CreateOrUpdateCoAuthorAsync(coAuthorDto, competition, researchTopic);
                             author_ResearchTopics.Add(new Author_ResearchTopic
                             {
                                 AuthorId = coAuthorId,
                                 ResearchTopicId = researchTopic.Id,
-                                RoleName = "co-author"
+                                RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
                             });
                         }
                         await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
@@ -470,4 +459,5 @@ public class ResearchTopicService : IResearchTopicService
         .Map<List<HistoryUpdateResearchTopicVM>>(history_Update_ResearchTopics);
         return historyUpdateResearchTopicVMs;
     }
+
 }
