@@ -27,11 +27,9 @@ namespace Seminar.APPLICATION.Services
         private readonly ITokenService _tokenService;
         private readonly IAuthorService _authorService;
         private readonly IOrganizerService _organizerService;
-        private readonly IReviewerService _reviewerService;
-        private readonly IEmailService _emailService;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, ITokenService tokenService, IAuthorService authorService, IOrganizerService organizerService, IReviewerService reviewerService, IEmailService emailService, ILogger<AuthService> logger)
+        public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, ITokenService tokenService, IAuthorService authorService, IOrganizerService organizerService, ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -39,8 +37,6 @@ namespace Seminar.APPLICATION.Services
             _tokenService = tokenService;
             _authorService = authorService;
             _organizerService = organizerService;
-            _reviewerService = reviewerService;
-            _emailService = emailService;
             _logger = logger;
         }
 
@@ -88,16 +84,16 @@ namespace Seminar.APPLICATION.Services
                         };
                         await _authorService.CreateAuthorAsync(createAuthorDto);
                         break;
-                    case CLAIMS_VALUES.ROLE_TYPE.REVIEWER:
-                        CreateReviewerDto createReviewerDto = new CreateReviewerDto()
-                        {
-                            AccountId = accountId,
-                            Name = registerRequestDto.Name,
-                            NumberPhone = registerRequestDto.NumberPhone
-                        };
-                        await _reviewerService.CreateReviewerAsync(createReviewerDto);
-                        await _emailService.SendReviewerAccountInfoEmail(registerRequestDto);
-                        break;
+                    // case CLAIMS_VALUES.ROLE_TYPE.REVIEWER:
+                    //     CreateReviewerDto createReviewerDto = new CreateReviewerDto()
+                    //     {
+                    //         AccountId = accountId,
+                    //         Name = registerRequestDto.Name,
+                    //         NumberPhone = registerRequestDto.NumberPhone
+                    //     };
+                    //     await _reviewerService.CreateReviewerAsync(createReviewerDto);
+                    //     await _emailService.SendReviewerAccountInfoEmail(registerRequestDto);
+                    //     break;
                     case CLAIMS_VALUES.ROLE_TYPE.ORGANIZER:
                         CreateOrganizerDto createOrganizerDto = new CreateOrganizerDto()
                         {
