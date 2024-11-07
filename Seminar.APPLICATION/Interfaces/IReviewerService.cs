@@ -6,7 +6,7 @@ namespace Seminar.APPLICATION.Interfaces
 {
     public interface IReviewerService
     {
-        Task<Reviewer> CreateReviewerAsync(CreateReviewerDto createReviewerDto);
+        //Task<Reviewer> CreateReviewerAsync(CreateReviewerDto createReviewerDto);
         Task<ReviewerVM> GetReviewerInforAsync(int id);
         Task UpdateReviewerAsync(int id, UpdateReviewerDto updateReviewerDto);
     }
