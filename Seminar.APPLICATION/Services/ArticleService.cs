@@ -1,7 +1,9 @@
 using AutoMapper;
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.ArticleDtos;
@@ -24,13 +26,15 @@ public class ArticleService : IArticleService
     private readonly IMapper _mapper;
     private readonly IAuthorService _authorService;
     private readonly IEmailService _emailService;
+    private readonly ILogger<ArticleService> _logger;
 
-    public ArticleService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+    public ArticleService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService, ILogger<ArticleService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<PaginatedList<ArticleVM>> GetAllArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
@@ -153,21 +157,8 @@ public class ArticleService : IArticleService
 
     public async Task CreateArticleAsync(CreateArticleDto createArticalsDto)
     {
-        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw 
+        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw
         new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
-
-        var processedEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (createArticalsDto.CoAuthors != null)
-        {
-            foreach (var coAuthor in createArticalsDto.CoAuthors)
-            {
-                if (string.IsNullOrEmpty(coAuthor.Email))
-                    throw new ErrorException(StatusCodes.Status400BadRequest, "INVALID_EMAIL", "Co-author email cannot be empty");
-
-                if (!processedEmails.Add(coAuthor.Email))
-                    throw new ErrorException(StatusCodes.Status400BadRequest, "DUPLICATE_EMAIL", $"Duplicate email found: {coAuthor.Email}");
-            }
-        }
         var strategy = _unitOfWork.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
@@ -191,83 +182,111 @@ public class ArticleService : IArticleService
                         {
                             AuthorId = author.Id,
                             ArticleId = article.Id,
-                            RoleName = "author"
+                            RoleName = CLAIMS_VALUES.ROLE_TYPE.AUTHOR
                         }
                     };
                     //Insert co-authors
-                    if (createArticalsDto.CoAuthors != null && createArticalsDto.CoAuthors.Count > 0)
+                    if (createArticalsDto.CoAuthors != null)
                     {
-                        
+                        await ValidateCoAuthorEmailsAsync(createArticalsDto.CoAuthors);
+
                         foreach (CoAuthorDto coAuthorDto in createArticalsDto.CoAuthors)
                         {
-                            Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
-                            int coAuthorId;
-
-                            if (existingCoAuthor == null)
-                            {
-                                // Tạo mới co-author
-                                Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author") ??
-                                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
-
-                                FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
-                                Account account = new Account
-                                {
-                                    Email = coAuthorDto.Email,
-                                    Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
-                                    RoleId = role.Id,
-                                    IsSuspended = false,
-                                };
-                                await _unitOfWork.GetRepository<Account>().InsertAsync(account);
-                                await _unitOfWork.SaveChangesAsync();
-
-                                Author newCoAuthor = new Author
-                                {
-                                    AccountId = account.Id,
-                                    Name = coAuthorDto.Name,
-                                    Email = account.Email,
-                                    NumberPhone = coAuthorDto.NumberPhone,
-                                    DateOfBirth = coAuthorDto.DateOfBirth,
-                                    Sex = coAuthorDto.Sex
-                                };
-                                await _unitOfWork.GetRepository<Author>().InsertAsync(newCoAuthor);
-                                await _unitOfWork.SaveChangesAsync();
-
-                                await _emailService.SendCoAuthorAccountInfoEmail(coAuthorDto);
-                                coAuthorId = newCoAuthor.Id;
-                            }
-                            else
-                            {
-                                coAuthorId = existingCoAuthor.Id;
-                                Author_Article? existingCoAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
-                                    .FirstOrDefaultAsync(a => a.AuthorId == coAuthorId && a.ArticleId == article.Id);
-                                if (existingCoAuthorArticle != null)
-                                {
-                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
-                                }
-                            }
-
+                            int coAuthorId = await CreateOrUpdateAuthorAsync(coAuthorDto, article);
                             author_Articles.Add(new Author_Article
                             {
                                 AuthorId = coAuthorId,
                                 ArticleId = article.Id,
-                                RoleName = "co-author"
+                                RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
                             });
-
                         }
+
                     }
                     await _unitOfWork.GetRepository<Author_Article>().InsertRangeAsync(author_Articles);
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
                 }
-                catch (Exception ex)
+                catch
                 {
                     await _unitOfWork.RollBackAsync();
-                    throw new ErrorException(StatusCodes.Status500InternalServerError, ResponseCodeConstants.INTERNAL_SERVER_ERROR, ex.Message);
+                    throw;
                 }
             }
         });
     }
+    private async Task ValidateCoAuthorEmailsAsync(List<CoAuthorDto> coAuthors)
+    {
+        var processedEmails = new HashSet<string>();
+        foreach (CoAuthorDto coAuthor in coAuthors)
+        {
+            // Kiểm tra email trùng lặp trong danh sách
+            if (!processedEmails.Add(coAuthor.Email))
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+            }
+            // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
+            Account? account = await _unitOfWork.GetRepository<Account>().Entities
+                .FirstOrDefaultAsync(a => a.Email == coAuthor.Email);
+            if (account != null)
+            {
+                _logger.LogError($"Account found for email: {coAuthor.Email}, Role: {account.Role.RoleName}");
+                if (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)
+                {
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                }
+            }
+        }
+    }
 
+    private async Task<int> CreateOrUpdateAuthorAsync(CoAuthorDto coAuthorDto, Article article)
+    {
+        Author? existingAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+
+        if (existingAuthor == null)
+        {
+            // Tạo tài khoản và author mới nếu không tồn tại
+            Role role = await _unitOfWork.GetRepository<Role>().Entities
+            .FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+
+            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+            Account account = new Account
+            {
+                Email = coAuthorDto.Email,
+                Password = passwordHasher.HashPassword(new Account(), "Huit@1245"),
+                RoleId = role.Id,
+                IsSuspended = false,
+            };
+
+            await _unitOfWork.GetRepository<Account>().InsertAsync(account);
+            await _unitOfWork.SaveChangesAsync();
+
+            Author newAuthor = new Author
+            {
+                AccountId = account.Id,
+                Name = coAuthorDto.Name,
+                Email = account.Email,
+                NumberPhone = coAuthorDto.NumberPhone,
+                DateOfBirth = coAuthorDto.DateOfBirth,
+                Sex = coAuthorDto.Sex
+            };
+
+            await _unitOfWork.GetRepository<Author>().InsertAsync(newAuthor);
+            await _unitOfWork.SaveChangesAsync();
+            await _emailService.SendCoAuthorAccountInfoEmail(coAuthorDto);
+            return newAuthor.Id;
+        }
+        else
+        {
+            Author_Article? existingAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
+                .FirstOrDefaultAsync(a => a.AuthorId == existingAuthor.Id && a.ArticleId == article.Id);
+            if (existingAuthorArticle != null)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
+            }
+            return existingAuthor.Id;
+        }
+    }
     public async Task UpdateArticleAsync(int id, UpdateArticleDto updateArticleDto)
     {
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
@@ -284,7 +303,6 @@ public class ArticleService : IArticleService
         await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
         await _unitOfWork.SaveChangesAsync();
     }
-
     public async Task DeleteArticleAsync(int id)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -309,7 +327,6 @@ public class ArticleService : IArticleService
         await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
         await _unitOfWork.SaveChangesAsync();
     }
-
     public async Task<List<AuthorArticleVM>> GetAuthorArticleByRoleAsync(string roleName)
     {
         if (roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.AUTHOR && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR)
@@ -419,7 +436,6 @@ public class ArticleService : IArticleService
             }).ToList();
         return authorArticleVMs;
     }
-
     public async Task ApproveArticleAsync(int id, ApproveArticleDto approveArticleDto)
     {
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
