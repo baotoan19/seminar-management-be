@@ -28,6 +28,16 @@ public class AuthorController : ControllerBase
             message: "Create co-author success!"));
     }
 
+    [HttpPost("create-member")]
+    public async Task<IActionResult> CreateMember(int researchTopicId, CreateCoAuthorDto createCoAuthorDto)
+    {
+        await _authorService.CreateMemberAsync(researchTopicId, createCoAuthorDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Create member success!"));
+    }
+
     [HttpDelete("delete-coauthor")]
     public async Task<IActionResult> DeleteCoAuthor(int articleId, int coAuthorId)
     {
