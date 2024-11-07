@@ -9,6 +9,7 @@ namespace Seminar.DOMAIN.Entitys
     {
         public string? Name { get; set; }
         public string? NumberPhone { get; set; }
+        public string Email { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? Sex { get; set; }
         [StringLength(255)]
