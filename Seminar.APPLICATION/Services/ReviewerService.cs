@@ -28,18 +28,18 @@ public class ReviewerService : IReviewerService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<Reviewer> CreateReviewerAsync(CreateReviewerDto createReviewerDto)
-    {
-        Reviewer? existsReviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.FirstOrDefaultAsync(r => r.AccountId == createReviewerDto.AccountId);
-        if (existsReviewer != null)
-        {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Reviewer is existed!");
-        }
-        Reviewer reviewer = _mapper.Map<Reviewer>(createReviewerDto);
-        await _unitOfWork.GetRepository<Reviewer>().InsertAsync(reviewer);
-        await _unitOfWork.SaveChangesAsync();
-        return reviewer;
-    }
+    // public async Task<Reviewer> CreateReviewerAsync(CreateReviewerDto createReviewerDto)
+    // {
+    //     Reviewer? existsReviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.FirstOrDefaultAsync(r => r.AccountId == createReviewerDto.AccountId);
+    //     if (existsReviewer != null)
+    //     {
+    //         throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Reviewer is existed!");
+    //     }
+    //     Reviewer reviewer = _mapper.Map<Reviewer>(createReviewerDto);
+    //     await _unitOfWork.GetRepository<Reviewer>().InsertAsync(reviewer);
+    //     await _unitOfWork.SaveChangesAsync();
+    //     return reviewer;
+    // }
 
     public async Task<ReviewerVM> GetReviewerInforAsync(int id)
     {
