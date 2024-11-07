@@ -1,11 +1,11 @@
-using Seminar.APPLICATION.Dtos.AuthDtos;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
+using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 
 namespace Seminar.APPLICATION.Interfaces;
 
 public interface IEmailService
 {
-    Task SendReviewerAccountInfoEmail(RegisterRequestDto request);
+    Task SendReviewerAccountInfoEmail(ReviewBoardMemberDto request, string reviewCommitteeName);
     Task SendCoAuthorAccountInfoEmail(CoAuthorDto coAuthorDto);
     Task SendMemberAccountInfoEmail(CoAuthorDto coAuthorDto, string competitionName);
 }

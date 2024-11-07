@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.AuthDtos;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
+using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
@@ -64,9 +65,9 @@ public class EmailService : IEmailService
             }
         }
     }
-    public async Task SendReviewerAccountInfoEmail(RegisterRequestDto request)
+    public async Task SendReviewerAccountInfoEmail(ReviewBoardMemberDto request, string reviewCommitteeName)
     {
-        var emailBody = await CreateEmailBodySendAccountReviewerAsync(request);
+        var emailBody = await CreateEmailBodySendAccountReviewerAsync(request, reviewCommitteeName);
         await SendEmailAsync(request.Email, "Xác nhận đăng ký tài khoản phản biện", emailBody);
     }
 
@@ -82,30 +83,32 @@ public class EmailService : IEmailService
         await SendEmailAsync(coAuthorDto.Email, "Xác nhận đăng ký tài khoản thành viên", emailBody);
     }
 
-    private async Task<string> CreateEmailBodySendAccountReviewerAsync(RegisterRequestDto request)
+    private async Task<string> CreateEmailBodySendAccountReviewerAsync(ReviewBoardMemberDto request, string reviewCommitteeName)
     {
         string UserId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         string loginUrl = "http://localhost:3000/login";
-        var btcEmail = await _unitOfWork.GetRepository<Organizer>().Entities.Where(x => x.AccountId == int.Parse(UserId)).Select(x => x.Account.Email).FirstOrDefaultAsync();
+        var btcEmail = await _unitOfWork.GetRepository<Organizer>().Entities
+                        .Where(x => x.AccountId == int.Parse(UserId))
+                        .Select(x => x.Account.Email)
+                        .FirstOrDefaultAsync();
+
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("<body style=\"margin: 0; padding: 0; background-color: #f9f9f9; font-family: Arial, sans-serif;\">");
         sb.AppendLine("    <div style=\"width: 100%; max-width: 650px; margin: 50px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);\">");
-        sb.AppendLine("      ");
-        sb.AppendLine("      <!-- Header -->");
+        sb.AppendLine("");
         sb.AppendLine("      <div style=\"background-color: #4CAF50; padding: 30px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px;\">");
         sb.AppendLine("        <h1 style=\"margin: 0; font-size: 26px; font-weight: bold; color: #fff; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);\">");
-        sb.AppendLine("          🎉 Rất vui được đồng hành cùng bạn trong vai trò Người Phản Biện!");
+        sb.AppendLine($"          🎉 Chào mừng bạn đến với {reviewCommitteeName} - nơi bạn sẽ đóng vai trò quan trọng với tư cách là một Người Phản Biện xuất sắc!");
         sb.AppendLine("        </h1>");
         sb.AppendLine("      </div>");
         sb.AppendLine("");
-        sb.AppendLine("      <!-- Nội dung chính -->");
+        sb.AppendLine("      <!-- Main Content -->");
         sb.AppendLine("      <div style=\"padding: 25px 35px; color: #444;\">");
         sb.AppendLine("        <p style=\"font-size: 17px; line-height: 1.8; margin-bottom: 20px;\">");
         sb.AppendLine($"          Xin chào <strong>{request.Name}</strong>, 👋");
         sb.AppendLine("        </p>");
         sb.AppendLine("        <p style=\"font-size: 17px; line-height: 1.8; margin-bottom: 20px;\">");
-        sb.AppendLine("          Chúng tôi rất vui mừng khi bạn đã đồng ý trở thành một phần của đội ngũ phản biện. ");
-        sb.AppendLine("          Vai trò của bạn sẽ giúp chúng tôi nâng cao chất lượng và giá trị của các công trình nghiên cứu khoa học.");
+        sb.AppendLine($"          Chúng tôi rất vinh dự được bạn gia nhập vào hội đồng {reviewCommitteeName}. Vai trò của bạn là chìa khóa giúp nâng cao chất lượng và giá trị của các công trình nghiên cứu khoa học.");
         sb.AppendLine("        </p>");
         sb.AppendLine("");
         sb.AppendLine("        <h2 style=\"font-size: 22px; margin-bottom: 15px; color: #333; border-bottom: 2px solid #4CAF50; display: inline-block; padding-bottom: 5px;\">");
@@ -113,21 +116,20 @@ public class EmailService : IEmailService
         sb.AppendLine("        </h2>");
         sb.AppendLine("        <ul style=\"font-size: 17px; line-height: 1.8; margin-bottom: 20px; padding-left: 20px;\">");
         sb.AppendLine($"          <li><strong>Tên đăng nhập:</strong> {request.Email}</li>");
-        sb.AppendLine($"          <li><strong>Mật khẩu:</strong> {request.Password}</li>");
+        sb.AppendLine($"          <li><strong>Mật khẩu:</strong> Huit@1245</li>");
         sb.AppendLine("        </ul>");
         sb.AppendLine("");
         sb.AppendLine("        <p style=\"font-size: 17px; line-height: 1.8; margin-bottom: 20px;\">");
-        sb.AppendLine("          Vì lý do bảo mật, chúng tôi khuyến nghị bạn <strong>đổi mật khẩu ngay sau khi đăng nhập lần đầu</strong>. ");
+        sb.AppendLine("          Vì lý do bảo mật, chúng tôi khuyến nghị bạn <strong>đổi mật khẩu ngay sau khi đăng nhập lần đầu</strong>.");
         sb.AppendLine("        </p>");
         sb.AppendLine("");
-        sb.AppendLine("        <!-- Nút hành động -->");
+        sb.AppendLine("        <!-- Action Button -->");
         sb.AppendLine("        <a href=\"" + loginUrl + "\" style=\"display: inline-block; padding: 14px 28px; background-color: #4CAF50; color: white; text-decoration: none; font-size: 18px; border-radius: 8px; margin-top: 10px; font-weight: bold;\">");
         sb.AppendLine("          Đăng nhập ngay");
         sb.AppendLine("        </a>");
         sb.AppendLine("");
         sb.AppendLine("        <p style=\"font-size: 17px; line-height: 1.8; margin-top: 25px;\">");
-        sb.AppendLine("          Nếu gặp vấn đề khi đăng nhập, đừng ngần ngại liên hệ với chúng tôi. ");
-        sb.AppendLine("          Chúng tôi luôn sẵn sàng hỗ trợ bạn! 💬");
+        sb.AppendLine("          Nếu bạn gặp bất kỳ vấn đề nào khi đăng nhập, đừng ngần ngại liên hệ với chúng tôi. Chúng tôi luôn sẵn sàng hỗ trợ bạn! 💬");
         sb.AppendLine("        </p>");
         sb.AppendLine("      </div>");
         sb.AppendLine("");
@@ -135,7 +137,7 @@ public class EmailService : IEmailService
         sb.AppendLine("      <div style=\"text-align: center; padding: 15px; background-color: #f0f0f0; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; font-size: 14px; color: #777;\">");
         sb.AppendLine("        <p>");
         sb.AppendLine("          📧 Liên hệ: <a href=\"mailto:support@example.com\" style=\"color: #4CAF50; text-decoration: none;\">");
-        sb.AppendLine($" {btcEmail}");
+        sb.AppendLine($"            {btcEmail}");
         sb.AppendLine("          </a>");
         sb.AppendLine("        </p>");
         sb.AppendLine($"        <p>📅 Ngày gửi: {DateTime.Now.ToString("dd/MM/yyyy")}</p>");
@@ -145,6 +147,7 @@ public class EmailService : IEmailService
         sb.AppendLine("  </body>");
         return sb.ToString();
     }
+
 
     private async Task<string> CreateEmailBodySendAccountCoAuthorAsync(CoAuthorDto coAuthorDto)
     {
