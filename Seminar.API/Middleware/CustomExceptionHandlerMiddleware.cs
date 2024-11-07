@@ -21,6 +21,21 @@ public class CustomExceptionHandlerMiddleware
         {
             await _next(context);
         }
+
+        catch (ModelValidationException ex)
+        {
+            _logger.LogError(ex, "Validation failed");
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            var result = JsonSerializer.Serialize(new
+            {
+                code = "VALIDATION_ERROR",
+                message = "Validation failed",
+                errors = ex.Errors
+            });
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(result);
+        }
+
         catch (CoreException ex)
         {
             _logger.LogError(ex, ex.Message);

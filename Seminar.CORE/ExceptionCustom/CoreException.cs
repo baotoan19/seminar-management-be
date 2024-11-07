@@ -66,5 +66,15 @@ namespace Seminar.CORE.ExceptionCustom
         [JsonPropertyName("errorMessage")] public object? ErrorMessage { get; set; }
     }
 
+    public class ModelValidationException : Exception
+    {
+        public IDictionary<string, string[]> Errors { get; }
+
+        public ModelValidationException(IDictionary<string, string[]> errors)
+        {
+            Errors = errors;
+        }
+    }
+
 
 }

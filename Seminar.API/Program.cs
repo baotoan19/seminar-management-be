@@ -1,6 +1,7 @@
 using dotenv.net;
 using Microsoft.EntityFrameworkCore;
 using Seminar.API.Extensions;
+using Seminar.API.Filters;
 using Seminar.API.Middleware;
 using Seminar.APPLICATION.Extensions;
 using Seminar.APPLICATION.Mappings;
@@ -18,6 +19,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Configuration.AddEnvironmentVariables();
 
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
 
 var app = builder.Build();
 
