@@ -90,7 +90,6 @@ public class ArticleService : IArticleService
         );
         return responePaginatedList;
     }
-
     public async Task<PaginatedList<ArticleVM>> GetApprovedArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
     {
         if (index <= 0 || pageSize <= 0)
@@ -144,7 +143,6 @@ public class ArticleService : IArticleService
         );
         return responePaginatedList;
     }
-
     public async Task<ArticleVM> GetArticleByIdAsync(int id)
     {
         Article article = await _unitOfWork.GetRepository<Article>().Entities.Include(a => a.Discipline)
@@ -154,7 +152,6 @@ public class ArticleService : IArticleService
         articleVM.CoAuthors = coAuthors;
         return articleVM;
     }
-
     public async Task CreateArticleAsync(CreateArticleDto createArticalsDto)
     {
         Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw
@@ -237,7 +234,6 @@ public class ArticleService : IArticleService
             }
         }
     }
-
     private async Task<int> CreateOrUpdateAuthorAsync(CoAuthorDto coAuthorDto, Article article)
     {
         Author? existingAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);

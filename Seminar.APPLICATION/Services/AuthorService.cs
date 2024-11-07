@@ -112,6 +112,7 @@ namespace Seminar.APPLICATION.Services
                         int coAuthorId;
                         foreach (var coAuthorDto in createCoAuthorDto.CoAuthors)
                         {
+                            await ValidateCoAuthorEmailsAsync(createCoAuthorDto.CoAuthors);
                             Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>().Entities
                             .FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
 
@@ -172,6 +173,29 @@ namespace Seminar.APPLICATION.Services
                     }
                 }
             });
+        }
+        private async Task ValidateCoAuthorEmailsAsync(List<CoAuthorDto> coAuthors)
+        {
+            var processedEmails = new HashSet<string>();
+            foreach (CoAuthorDto coAuthor in coAuthors)
+            {
+                // Kiểm tra email trùng lặp trong danh sách
+                if (!processedEmails.Add(coAuthor.Email))
+                {
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+                }
+                // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
+                Account? account = await _unitOfWork.GetRepository<Account>().Entities
+                    .FirstOrDefaultAsync(a => a.Email == coAuthor.Email);
+                if (account != null)
+                {
+                    _logger.LogError($"Account found for email: {coAuthor.Email}, Role: {account.Role.RoleName}");
+                    if (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)
+                    {
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                    }
+                }
+            }
         }
         public async Task CreateMemberAsync(int researchTopicId, CreateCoAuthorDto createCoAuthorDto)
         {
