@@ -39,6 +39,7 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<CreateReviewerDto, Reviewer>();
             CreateMap<Reviewer, ReviewerVM>();
             CreateMap<UpdateReviewerDto, Reviewer>();
+            CreateMap<ReviewBoardMemberDto, Reviewer>();
             //Post
             CreateMap<CreatePostDto, Post>();
             CreateMap<Post, PostVM>().ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizers.Name));
@@ -61,8 +62,12 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Review_Assignment, ReviewAssignmentVM>();
             CreateMap<CUReviewAssignmentDto, Review_Assignment>();
             //Review Committee
-            CreateMap<Review_Committee, ReviewCommitteeVM>();
-            CreateMap<CUReviewCommitteeDto, Review_Committee>();
+            CreateMap<Review_Committee, ReviewCommitteeVM>()
+            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName));
+            CreateMap<Review_Committee, ReviewCommitteeDto>();
+            CreateMap<CreateReviewCommitteeDto, Review_Committee>()
+            .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
+            CreateMap<UpdateReviewCommitteeDto, Review_Committee>();
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>()
             .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Author.AccountId))
