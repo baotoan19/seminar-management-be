@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
+using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.API.Controllers;
 
@@ -28,6 +30,17 @@ public class OrganizerController : ControllerBase
             code: ResponseCodeConstants.SUCCESS,
             message: "Review Committee created successfully",
             data: null));
+    }
+
+    [HttpGet("review-committee")]
+    public async Task<IActionResult> GetReviewCommitteeByCompetitionIdAsync(int competitionId, int page = 1, int pageSize = 10, int idSearch = 0, string nameSearch = "")
+    {
+        var result = await _organizerService.GetReviewCommitteeByCompetitionIdAsync(competitionId, page, pageSize, idSearch, nameSearch);
+        return Ok(new BaseResponse<PaginatedList<ReviewCommitteeVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee retrieved successfully",
+            data: result));
     }
 
 

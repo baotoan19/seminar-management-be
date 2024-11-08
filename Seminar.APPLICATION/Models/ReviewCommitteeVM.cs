@@ -1,17 +1,21 @@
 namespace Seminar.APPLICATION.Models;
 
-public class ReviewCommitteeVM 
+public class ReviewCommitteeVM
 {
     public int Id { get; set; }
     public string ReviewCommitteeName { get; set; }
-    public string CompetitionName { get; set; }
     public int CompetitionId { get; set; }
+    public string CompetitionName { get; set; }
+    public ICollection<ReviewBoardMemberVM> ReviewBoardMembers { get; set; }
 }
 
-public class ReviewCommitteeDto
+public class ReviewBoardMemberVM : ReviewerVM
 {
-    public int Id { get; set; }
-    public string ReviewCommitteeName { get; set; }
+    public bool IsStatus { get; set; }
+    public string Description { get; set; }
 }
+
+
+
 
 

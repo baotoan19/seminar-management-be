@@ -62,9 +62,6 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Review_Assignment, ReviewAssignmentVM>();
             CreateMap<CUReviewAssignmentDto, Review_Assignment>();
             //Review Committee
-            CreateMap<Review_Committee, ReviewCommitteeVM>()
-            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName));
-            CreateMap<Review_Committee, ReviewCommitteeDto>();
             CreateMap<CreateReviewCommitteeDto, Review_Committee>()
             .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
             CreateMap<UpdateReviewCommitteeDto, Review_Committee>();
