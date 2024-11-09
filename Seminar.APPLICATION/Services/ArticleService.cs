@@ -285,19 +285,117 @@ public class ArticleService : IArticleService
     }
     public async Task UpdateArticleAsync(int id, UpdateArticleDto updateArticleDto)
     {
-        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-        article.Discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(updateArticleDto.DisciplineId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+        // Kiểm tra tài khoản và quyền sở hữu bài báo
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities
+            .FirstOrDefaultAsync(a => a.AccountId == userId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        // Kiểm tra bài báo có tồn tại không
+        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+        // Kiểm tra tài khoản và quyền sở hữu bài báo
+        Author_Article author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities
+            .FirstOrDefaultAsync(a => a.ArticleId == id && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found or not an author!");
+        // Kiểm tra bài báo có được phép cập nhật không
         if (article.IsAcceptedForPublication)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
                 "You cannot update published articles");
         }
-        _mapper.Map(updateArticleDto, article);
-        string keyword = string.Join(",", updateArticleDto.Keywords);
-        article.KeyWord = keyword;
-        article.UpdatedAt = DateTime.Now;
-        await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
-        await _unitOfWork.SaveChangesAsync();
+        // Thực hiện cập nhật bài báo
+        var strategy = _unitOfWork.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            using (await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Cập nhật thông tin cơ bản của bài báo
+                    _mapper.Map(updateArticleDto, article);
+                    string keyword = string.Join(",", updateArticleDto.Keywords);
+                    article.KeyWord = keyword;
+                    article.UpdatedAt = DateTime.Now;
+                    article.DisciplineId = updateArticleDto.DisciplineId;
+
+                    // Cập nhật co-authors nếu có
+                    if (updateArticleDto.CoAuthors != null && updateArticleDto.CoAuthors.Count > 0)
+                    {
+                        // Get existing co-authors (including deleted ones)
+                        List<Author_Article> existingCoAuthors = await _unitOfWork.GetRepository<Author_Article>().Entities
+                            .Where(a => a.ArticleId == id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR)
+                            .ToListAsync();
+
+                        // Lấy danh sách email từ yêu cầu
+                        var newCoAuthorEmails = updateArticleDto.CoAuthors.Select(x => x.Email.ToLower()).ToList();
+
+                        // Đánh dấu co-authors cần xóa nếu không có trong yêu cầu
+                        var coAuthorsToDelete = existingCoAuthors.Where(x => x.DeletedAt == null &&
+                            !newCoAuthorEmails.Contains((x.Author?.Email ?? string.Empty).ToLower())).ToList();
+                        foreach (var coAuthor in coAuthorsToDelete)
+                        {
+                            coAuthor.DeletedAt = DateTime.Now;
+                        }
+
+                        // Xử lý co-authors mới
+                        List<Author_Article> author_Articles = new List<Author_Article>();
+                        foreach (var coAuthorDto in updateArticleDto.CoAuthors)
+                        {
+                            await ValidateCoAuthorEmailsAsync(updateArticleDto.CoAuthors);
+
+                            // Bỏ qua nếu co-author đã tồn tại và chưa bị xóa
+                            var activeCoAuthor = existingCoAuthors.FirstOrDefault(x =>
+                                x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower() && x.DeletedAt == null);
+                            if (activeCoAuthor != null)
+                            {
+                                continue;
+                            }
+
+                            // Kích hoạt lại co-author nếu tồn tại
+                            var deletedCoAuthor = existingCoAuthors.FirstOrDefault(x =>
+                                x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower() && x.DeletedAt != null);
+                            if (deletedCoAuthor != null)
+                            {
+                                deletedCoAuthor.DeletedAt = null;
+                                Author? authorToUpdate = await _unitOfWork.GetRepository<Author>()
+                                    .Entities.FirstOrDefaultAsync(a => a.Id == deletedCoAuthor.AuthorId);
+                                if (authorToUpdate != null)
+                                {
+                                    authorToUpdate.Name = coAuthorDto.Name;
+                                    authorToUpdate.NumberPhone = coAuthorDto.NumberPhone;
+                                    authorToUpdate.DateOfBirth = coAuthorDto.DateOfBirth;
+                                    authorToUpdate.Sex = coAuthorDto.Sex;
+                                    authorToUpdate.UpdatedAt = DateTime.Now;
+                                }
+                                continue;
+                            }
+
+                            // Tạo co-author mới nếu không tồn tại
+                            int coAuthorId = await CreateOrUpdateAuthorAsync(coAuthorDto, article);
+                            author_Articles.Add(new Author_Article
+                            {
+                                AuthorId = coAuthorId,
+                                ArticleId = article.Id,
+                                RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
+                            });
+                        }
+
+                        if (author_Articles.Any())
+                        {
+                            await _unitOfWork.GetRepository<Author_Article>().InsertRangeAsync(author_Articles);
+                        }
+                    }
+
+                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+                }
+                catch
+                {
+                    await _unitOfWork.RollBackAsync();
+                    throw;
+                }
+            }
+        });
     }
     public async Task DeleteArticleAsync(int id)
     {

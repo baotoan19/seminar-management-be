@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Seminar.APPLICATION.Dtos.AuthorDtos;
 namespace Seminar.APPLICATION.Dtos.ArticleDtos;
 
 public class UpdateArticleDto
@@ -16,4 +17,5 @@ public class UpdateArticleDto
     public DateTime DateUpload { get; set; }
     [Required(ErrorMessage = "DisciplineId is required")]
     public int DisciplineId { get; set; }
+    public List<CoAuthorDto> CoAuthors { get; set; }
 }
