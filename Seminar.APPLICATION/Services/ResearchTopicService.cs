@@ -150,15 +150,22 @@ public class ResearchTopicService : IResearchTopicService
                     // Kiểm tra author có đăng ký đề tài thành công không
                     RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.FirstOrDefaultAsync(r => r.AuthorId == mainAuthor.Id && r.CompetitionId == createResearchTopicDto.CompetitionId && r.IsAccepted == (int)RegistrationFormEnum.Approved) ??
                         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author has not successfully registered a topic for this competition!");
-
                     // Kiểm tra article có tồn tại không và article có phải của author không
-                    Article? article = await _unitOfWork.GetRepository<Article>().Entities.FirstOrDefaultAsync(a => a.Id == createResearchTopicDto.ArticleId)
-                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-                    Author_Article? author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities.FirstOrDefaultAsync(a => a.ArticleId == createResearchTopicDto.ArticleId && a.AuthorId == mainAuthor.Id) ??
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found!");
-                    if (author_Article.AuthorId != mainAuthor.Id)
+                    // ... existing code ...
+                    if (createResearchTopicDto.ArticleId == 0)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Article is not owned by the author!");
+                        createResearchTopicDto.ArticleId = null;
+                    }
+                    else
+                    {
+                        Article? article = await _unitOfWork.GetRepository<Article>().Entities.FirstOrDefaultAsync(a => a.Id == createResearchTopicDto.ArticleId)
+                            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                        Author_Article? author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities.FirstOrDefaultAsync(a => a.ArticleId == createResearchTopicDto.ArticleId && a.AuthorId == mainAuthor.Id) ??
+                            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found!");
+                        if (author_Article.AuthorId != mainAuthor.Id)
+                        {
+                            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Article is not owned by the author!");
+                        }
                     }
                     // Thêm đề tài
                     ResearchTopic researchTopic = _mapper.Map<ResearchTopic>(createResearchTopicDto);

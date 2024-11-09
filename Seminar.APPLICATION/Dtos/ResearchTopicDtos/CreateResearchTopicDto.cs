@@ -23,7 +23,7 @@ public class CreateResearchTopicDto
     public string? BudgetFilePath { get; set; } = string.Empty;
     [Required(ErrorMessage = "ReportFilePath is required")]
     public string ReportFilePath { get; set; }
-    public int? ArticleId { get; set; } = 0;
+    public int? ArticleId { get; set; }
     [Required(ErrorMessage = "DisciplineId is required")]
     public int DisciplineId { get; set; }
     [Required(ErrorMessage = "CompetitionId is required")]
