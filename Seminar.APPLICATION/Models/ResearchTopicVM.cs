@@ -9,7 +9,7 @@ public class ResearchTopicVM
     public string Target { get; set; }
     public float Budget { get; set; }
     public int ProjectDuration { get; set; }
-    public string AchievedResult { get; set; }
+    public string AchievedResults { get; set; }
     public bool IsAcceptanceApproved { get; set; }
     public bool IsReviewerAcceptance { get; set; }
     public string BudgetFilePath { get; set; }
