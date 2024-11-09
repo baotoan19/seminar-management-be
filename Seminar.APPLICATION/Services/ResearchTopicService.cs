@@ -25,12 +25,14 @@ public class ResearchTopicService : IResearchTopicService
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IEmailService _emailService;
-    public ResearchTopicService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+    private readonly IAuthorService _authorService;
+    public ResearchTopicService(IUnitOfWork unitOfWork, IMapper mapper, IHttpContextAccessor httpContextAccessor, IEmailService emailService, IAuthorService authorService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _emailService = emailService;
+        _authorService = authorService;
     }
 
     // Research Topic
@@ -331,26 +333,53 @@ public class ResearchTopicService : IResearchTopicService
                     updateResearchTopic.ArticleId = updateResearchTopicDto.ArticleId == 0 ? null : updateResearchTopicDto.ArticleId;
                     if (updateResearchTopicDto.CoAuthors != null && updateResearchTopicDto.CoAuthors.Count > 0)
                     {
-                        // Lấy co-authors hiện tại
-                        List<Author_ResearchTopic> existingCoAuthors = await _unitOfWork.GetRepository<Author_ResearchTopic>()
-                        .Entities.Where(a => a.ResearchTopicId == researchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR)
-                        .ToListAsync();
+                        //Lấy tất cả co-authors hiện tại (bao gồm đã xoá)
+                        List<Author_ResearchTopic> existingCoAuthors = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.Where(a => a.ResearchTopicId == researchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR).ToListAsync();
+
+                        // Lấy danh sách email từ request
+                        var newCoAuthorEmails = updateResearchTopicDto.CoAuthors.Select(x => x.Email.ToLower()).ToList();
+
+                        // Xoá những co-author không có trong request
+                        var coAuthorsToDelete = existingCoAuthors.Where(x => x.DeletedAt == null &&
+                        !newCoAuthorEmails.Contains((x.Author?.Email ?? string.Empty).ToLower())).ToList();
+                        foreach (var coAuthor in coAuthorsToDelete)
+                        {
+                            coAuthor.DeletedAt = DateTime.Now;
+                        }
                         List<Author_ResearchTopic> author_ResearchTopics = new List<Author_ResearchTopic>();
-                        foreach (CoAuthorDto coAuthorDto in updateResearchTopicDto.CoAuthors)
+                        foreach (var coAuthorDto in updateResearchTopicDto.CoAuthors)
                         {
                             await ValidateCoAuthorEmailsAsync(updateResearchTopicDto.CoAuthors);
-                            // Kiểm tra xem co-author đã tồn tại trong research topic chưa
-                            var existingAuthorResearchTopic = existingCoAuthors
-                                .FirstOrDefault(x => x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower());
-                            if (existingAuthorResearchTopic != null)
+                            var activeCoAuthor = existingCoAuthors.FirstOrDefault(x => x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower() && x.DeletedAt == null);
+                            if (activeCoAuthor != null)
                             {
+                                continue;
+                            }
+                            var deletedCoAuthor = existingCoAuthors.FirstOrDefault(x => x.Author.Email?.ToLower() == coAuthorDto.Email.ToLower() && x.DeletedAt != null);
+                            if (deletedCoAuthor != null)
+                            {
+                                deletedCoAuthor.DeletedAt = null;
+                                Author? authorToUpdate = await _unitOfWork.GetRepository<Author>()
+                                .Entities.FirstOrDefaultAsync(a => a.Id == deletedCoAuthor.AuthorId);
+                                if (authorToUpdate != null)
+                                {
+                                    authorToUpdate.Name = coAuthorDto.Name;
+                                    authorToUpdate.NumberPhone = coAuthorDto.NumberPhone;
+                                    authorToUpdate.DateOfBirth = coAuthorDto.DateOfBirth;
+                                    authorToUpdate.Sex = coAuthorDto.Sex;
+                                    authorToUpdate.UpdatedAt = DateTime.Now;
+                                }
+
                                 continue;
                             }
                             Author? existingCoAuthor = await _unitOfWork.GetRepository<Author>()
                             .Entities.FirstOrDefaultAsync(a => a.Email == coAuthorDto.Email);
+
                             Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
-                            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+
                             int coAuthorId = existingCoAuthor?.Id ?? await CreateOrUpdateCoAuthorAsync(coAuthorDto, competition, researchTopic);
+
                             author_ResearchTopics.Add(new Author_ResearchTopic
                             {
                                 AuthorId = coAuthorId,
@@ -358,11 +387,12 @@ public class ResearchTopicService : IResearchTopicService
                                 RoleName = CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR
                             });
                         }
-                        await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
+                        if (author_ResearchTopics.Any())
+                        {
+                            await _unitOfWork.GetRepository<Author_ResearchTopic>().InsertRangeAsync(author_ResearchTopics);
+                        }
                         await _unitOfWork.SaveChangesAsync();
                     }
-                    await _unitOfWork.GetRepository<ResearchTopic>().UpdateAsync(updateResearchTopic);
-                    await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
                 }
                 catch
