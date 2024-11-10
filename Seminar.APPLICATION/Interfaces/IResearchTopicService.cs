@@ -8,7 +8,7 @@ namespace Seminar.APPLICATION.Interfaces;
 public interface IResearchTopicService
 {
     // Research Topic
-    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int index, int pageSize, string nameTopicSearch, int disciplineId);
+    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId);
     Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch);
     Task CreateResearchTopicAsync(CreateResearchTopicDto createResearchTopicDto);
     Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto);

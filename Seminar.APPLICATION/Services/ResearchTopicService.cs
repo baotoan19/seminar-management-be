@@ -36,7 +36,7 @@ public class ResearchTopicService : IResearchTopicService
     }
 
     // Research Topic
-    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int index, int pageSize, string nameTopicSearch, int disciplineId)
+    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
@@ -54,6 +54,20 @@ public class ResearchTopicService : IResearchTopicService
         IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
         .Where(r => r.DeletedAt == null && r.CompetitionId == competitionId)
         .OrderByDescending(r => r.CreatedAt);
+
+        switch (reviewCommitteeId)
+        {
+            case -1: // Chưa có review committee
+                query = query.Where(r => r.Review_CommitteeId == null);
+                break;
+            case 0: // Lấy tất cả
+                break; // Không thêm điều kiện where
+            case 1: // Đã có review committee
+                query = query.Where(r => r.Review_CommitteeId != null);
+                break;
+            default:
+                break;
+        }
 
         if (!string.IsNullOrEmpty(nameTopicSearch))
         {
@@ -153,7 +167,6 @@ public class ResearchTopicService : IResearchTopicService
                     RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.FirstOrDefaultAsync(r => r.AuthorId == mainAuthor.Id && r.CompetitionId == createResearchTopicDto.CompetitionId && r.IsAccepted == (int)RegistrationFormEnum.Approved) ??
                         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author has not successfully registered a topic for this competition!");
                     // Kiểm tra article có tồn tại không và article có phải của author không
-                    // ... existing code ...
                     if (createResearchTopicDto.ArticleId == 0)
                     {
                         createResearchTopicDto.ArticleId = null;
@@ -174,6 +187,7 @@ public class ResearchTopicService : IResearchTopicService
                     researchTopic.DateUpLoad = DateTime.Now;
                     researchTopic.IsAcceptanceApproved = false;
                     researchTopic.IsReviewAcceptance = false;
+                    researchTopic.Review_CommitteeId = null;
                     researchTopic.ArticleId = createResearchTopicDto.ArticleId == 0 ? null : createResearchTopicDto.ArticleId;
                     await _unitOfWork.GetRepository<ResearchTopic>().InsertAsync(researchTopic);
                     await _unitOfWork.SaveChangesAsync();
