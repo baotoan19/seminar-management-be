@@ -19,7 +19,6 @@ namespace Seminar.DOMAIN.Entitys
         public virtual Faculty Faculty { get; set; }
         public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
         public virtual ICollection<Competition> Competitions { get; set; } = new List<Competition>();
-        public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
         public virtual ICollection<Review_Acceptance> Review_Acceptances { get; set; } = new List<Review_Acceptance>();
     }
 }

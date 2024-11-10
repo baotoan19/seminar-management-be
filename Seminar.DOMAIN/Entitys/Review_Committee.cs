@@ -12,7 +12,10 @@ namespace Seminar.DOMAIN.Entitys
         public string ReviewCommitteeName { get; set; }
         [ForeignKey("Competitions")]
         public int? CompetitionId { get; set; }
+        public DateTime DateStart { get; set; }
+        public DateTime DateEnd { get; set; }
         public virtual Competition Competitions { get; set; }
         public virtual ICollection<Review_Board_Member> Review_Board_Members { get; set; } = new List<Review_Board_Member>();
+        public virtual ICollection<ResearchTopic> ResearchTopics { get; set; } = new List<ResearchTopic>();
     }
 }

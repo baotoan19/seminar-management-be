@@ -37,7 +37,6 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Competition> Competitions { get; set; }
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<RegistrationForm> RegistrationForms { get; set; }
-        public DbSet<Review_Assignment> Review_Assignments { get; set; }
         public DbSet<Review_Form> Review_Forms { get; set; }
         public DbSet<Review_Committee> Review_Committees { get; set; }
         public DbSet<Author> Authors { get; set; }

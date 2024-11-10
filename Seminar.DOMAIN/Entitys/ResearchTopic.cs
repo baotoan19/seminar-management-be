@@ -26,11 +26,13 @@ namespace Seminar.DOMAIN.Entitys
         public int DisciplineId { get; set; }
         [ForeignKey("Competitions")]
         public int CompetitionId { get; set; }
+        [ForeignKey("Review_Committees")]
+        public int? Review_CommitteeId { get; set; }
         public string? Supervisor { get; set; }
         public virtual Acceptance Acceptance { get; set; }
         public virtual ICollection<Author_ResearchTopic> Author_ResearchTopics { get; set; } = new List<Author_ResearchTopic>();
         public virtual ICollection<History_Update_ResearchTopic> History_Update_ResearchTopics { get; set; } = new List<History_Update_ResearchTopic>();
-        public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
+        public virtual Review_Committee Review_Committees { get; set; }
         public virtual Competition Competitions { get; set; }
         public virtual Discipline Disciplines { get; set; }
         public virtual Article Articles { get; set; }

@@ -21,7 +21,6 @@ namespace Seminar.DOMAIN.Entitys
         public int AccountId { get; set; }
         public virtual Faculty Faculty { get; set; }
         public virtual Account Account { get; set; }
-        public virtual ICollection<Review_Assignment> Review_Assignments { get; set; } = new List<Review_Assignment>();
         public virtual ICollection<Review_Form> Review_Forms { get; set; } = new List<Review_Form>();
         public virtual ICollection<Review_Board_Member> Review_Board_Members { get; set; } = new List<Review_Board_Member>();
     }
