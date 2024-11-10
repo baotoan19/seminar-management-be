@@ -22,9 +22,9 @@ public class ResearchTopicController : ControllerBase
 
     [HttpGet("competition/{competitionId}")]
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> GetAllResearchTopicByCompetitionId(int competitionId, int index = 1, int pageSize = 8, string nameTopicSearch = "", int disciplineId = 0)
+    public async Task<IActionResult> GetAllResearchTopicByCompetitionId(int competitionId, int reviewCommitteeId, int index = 1, int pageSize = 8, string nameTopicSearch = "", int disciplineId = 0)
     {
-        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByCompetitionIdAsync(competitionId, index, pageSize, nameTopicSearch, disciplineId);
+        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByCompetitionIdAsync(competitionId, reviewCommitteeId, index, pageSize, nameTopicSearch, disciplineId);
         return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
