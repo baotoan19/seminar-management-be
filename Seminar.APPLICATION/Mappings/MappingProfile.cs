@@ -8,7 +8,6 @@ using Seminar.APPLICATION.Models;
 using Seminar.APPLICATION.Dtos.AccountDtos;
 using Seminar.APPLICATION.Dtos.PostDto;
 using Seminar.APPLICATION.Dtos.ReviewFormDtos;
-using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Dtos.RegistrationFormDtos;
 using Seminar.APPLICATION.Dtos.ArticleDtos;
@@ -58,9 +57,6 @@ namespace Seminar.APPLICATION.Mappings
             //Review Form
             CreateMap<Review_Form, ReviewFormVM>();
             CreateMap<CUReviewFormDto, Review_Form>();
-            //Review Assignment
-            CreateMap<CreateReviewAssignmentDto, Review_Assignment>()
-            .ForMember(dest => dest.ReviewerId,opt => opt.Ignore());
             //Review Committee
             CreateMap<CreateReviewCommitteeDto, Review_Committee>()
             .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
