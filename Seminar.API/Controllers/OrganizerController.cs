@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
 using Seminar.APPLICATION.Models;
@@ -44,17 +43,6 @@ public class OrganizerController : ControllerBase
             data: result));
     }
 
-    //Review Assignment
-    [HttpPost("review-assignment")]
-    public async Task<IActionResult> CreateReviewAssignment([FromBody] CreateReviewAssignmentDto createReviewAssignmentDto)
-    {
-        await _organizerService.CreateReviewAssignmentAsync(createReviewAssignmentDto);
-        return Ok(new BaseResponse<List<CreateReviewAssignmentDto>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            message: "Review Assignment created successfully",
-            data: null));
-    }
 
 
 }

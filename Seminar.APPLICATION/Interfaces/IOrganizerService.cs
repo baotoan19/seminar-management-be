@@ -1,5 +1,4 @@
 using Seminar.APPLICATION.Dtos.OrganizersDtos;
-using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Models;
 using Seminar.DOMAIN.Entitys;
@@ -13,11 +12,6 @@ namespace Seminar.APPLICATION.Interfaces.IOrganizerService{
         Task<Organizer> UpdateOrganizerAsync(int id, UpdateOrganizerDto updateOrganizerDto);
         //Review Committee
         Task<PaginatedList<ReviewCommitteeVM>> GetReviewCommitteeByCompetitionIdAsync(int competitionId, int page, int pageSize, int idSearch, string nameSearch);
-        Task CreateReviewCommitteeAsync(CreateReviewCommitteeDto createReviewCommitteeDto);
-        //Review Assignment
-        Task CreateReviewAssignmentAsync(CreateReviewAssignmentDto createReviewAssignmentDto);
-        
-
-
+        Task CreateReviewCommitteeAsync(CreateReviewCommitteeDto createReviewCommitteeDto);     
     }
 }

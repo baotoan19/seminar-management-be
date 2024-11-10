@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.OrganizersDtos;
-using Seminar.APPLICATION.Dtos.ReviewAssignmentDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
@@ -249,80 +247,7 @@ public class OrganizerService : IOrganizerService
             return existingReviewer.Id;
         }
     }
-    //Review Assignment
-    public async Task CreateReviewAssignmentAsync(CreateReviewAssignmentDto createReviewAssignmentDto)
-    {
-        int userID = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userID) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
-        ResearchTopic? researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().Entities.FirstOrDefaultAsync(rt => rt.Id == createReviewAssignmentDto.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
-        Competition? competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == researchTopic.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
 
-        if (createReviewAssignmentDto.DateStart < competition.DateStart ||
-            createReviewAssignmentDto.DateEnd > competition.DateEnd ||
-            createReviewAssignmentDto.DateStart > createReviewAssignmentDto.DateEnd)
-        {
-            throw new ErrorException(
-                StatusCodes.Status400BadRequest,
-                ResponseCodeConstants.INVALID_DATA,
-                "Review assignment dates must be within competition date range and DateStart must be before DateEnd!");
-        }
-
-        // Lấy tất cả reviewer IDs từ ListReviewerDtos
-        var reviewerIds = createReviewAssignmentDto.ListReviewerDtos
-            .SelectMany(lr => lr.ReviewerIds)
-            .Distinct()
-            .ToList();
-
-        // Kiểm tra reviewers có tồn tại và có trong review board member không
-        var reviewBoardMembers = await _unitOfWork.GetRepository<Review_Board_Member>().Entities
-            .Where(rbm => reviewerIds.Contains(rbm.ReviewerId) && rbm.ReviewCommittee.CompetitionId == competition.Id)
-            .ToListAsync();
-
-        if (reviewBoardMembers.Count != reviewerIds.Count)
-        {
-            throw new ErrorException(
-                StatusCodes.Status400BadRequest, 
-                ResponseCodeConstants.NOT_FOUND,
-                "Some reviewers are not members of the review board for this competition!");
-        }
-
-        List<Reviewer> listReviewer = await _unitOfWork.GetRepository<Reviewer>().Entities
-            .Where(r => reviewerIds.Contains(r.Id))
-            .ToListAsync() ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
-
-        var strategy = _unitOfWork.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            using (await _unitOfWork.BeginTransactionAsync())
-            {
-                try
-                {
-                    var reviewAssignments = reviewerIds.Select(reviewerId =>
-                    {
-                        var reviewAssignment = _mapper.Map<Review_Assignment>(createReviewAssignmentDto);
-                        reviewAssignment.ResearchTopicId = researchTopic.Id;
-                        reviewAssignment.OrganizerId = organizer.Id;
-                        reviewAssignment.ReviewerId = reviewerId;
-                        reviewAssignment.IsReviewExpired = false;
-                        return reviewAssignment;
-                    }).ToList();
-
-                    await _unitOfWork.GetRepository<Review_Assignment>().InsertRangeAsync(reviewAssignments);
-                    await _unitOfWork.SaveChangesAsync();
-                    await _unitOfWork.CommitTransactionAsync();
-                }
-                catch
-                {
-                    await _unitOfWork.RollBackAsync();
-                    throw;
-                }
-            }
-        });
-    }
 }
 
 
