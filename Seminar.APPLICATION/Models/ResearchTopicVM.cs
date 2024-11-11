@@ -23,6 +23,7 @@ public class ResearchTopicVM
     public string DisciplineName{ get; set; }
     public int CompetitionId { get; set; }
     public int Review_CommitteeId { get; set; }
+    public string ReviewCommitteeName { get; set; }
     public string CompetitionName { get; set; }
     public string Supervisor { get; set; }
     public List<ResearchTopicAuthorVM> CoAuthors { get; set; }
