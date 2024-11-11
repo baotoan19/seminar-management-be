@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
 using Seminar.APPLICATION.Models;
@@ -42,6 +43,51 @@ public class OrganizerController : ControllerBase
             message: "Review Committee retrieved successfully",
             data: result));
     }
+
+    [HttpGet("review-committee/{id}")]
+    public async Task<IActionResult> GetReviewCommitteeByIdAsync(int id)
+    {
+        var result = await _organizerService.GetReviewCommitteeByIdAsync(id);
+        return Ok(new BaseResponse<ReviewCommitteeVM>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee retrieved successfully",
+            data: result));
+    }
+
+    [HttpPatch("review-committee/{id}")]
+    public async Task<IActionResult> UpdateReviewCommittee(int id, UpdateReviewCommitteeDto updateReviewCommitteeDto)
+    {
+        await _organizerService.UpdateReviewCommitteeAsync(id, updateReviewCommitteeDto);
+        return Ok(new BaseResponse<UpdateReviewCommitteeDto>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee updated successfully",
+            data: null));
+    }
+
+    [HttpPatch("review-committee/assign/{researchTopicId}")]
+    public async Task<IActionResult> AssignReviewCommitteeToResearchTopic(int researchTopicId, UpdateReviewCommitteeIdDto updateReviewCommitteeIdDto)
+    {
+        await _organizerService.AssignReviewCommitteeToResearchTopicAsync(researchTopicId, updateReviewCommitteeIdDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee assigned to research topic successfully",
+            data: null));
+    }
+
+    [HttpDelete("review-committee/{id}")]
+    public async Task<IActionResult> DeleteReviewCommittee(int id)
+    {
+        await _organizerService.DeleteReviewCommitteeAsync(id);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee deleted successfully",
+            data: null));
+    }
+
 
 
 
