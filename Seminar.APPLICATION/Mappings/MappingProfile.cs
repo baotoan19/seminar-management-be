@@ -60,7 +60,8 @@ namespace Seminar.APPLICATION.Mappings
             //Review Committee
             CreateMap<CreateReviewCommitteeDto, Review_Committee>()
             .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
-            CreateMap<UpdateReviewCommitteeDto, Review_Committee>();
+            CreateMap<UpdateReviewCommitteeDto, Review_Committee>()
+            .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>()
             .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Author.AccountId))
@@ -87,9 +88,9 @@ namespace Seminar.APPLICATION.Mappings
             .ForMember(dest => dest.ArticleName, opt => opt.MapFrom(src => src.Articles.Title))
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Disciplines.DisciplineName))
             .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName));
+            CreateMap<UpdateResearchTopicDto, ResearchTopic>();
             //History Research Topic
             CreateMap<CreateHistoryResearchTopicDto, History_Update_ResearchTopic>();
-            CreateMap<UpdateResearchTopicDto, ResearchTopic>();
             CreateMap<History_Update_ResearchTopic, HistoryUpdateResearchTopicVM>();
         }
     }

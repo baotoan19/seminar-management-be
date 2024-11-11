@@ -9,6 +9,8 @@ public class CreateReviewCommitteeDto
     public string ReviewCommitteeName { get; set; }
     [Required(ErrorMessage = "Competition is required")]
     public int CompetitionId { get; set; }
+    public DateTime DateStart { get; set; }
+    public DateTime DateEnd { get; set; }
     public ICollection<ReviewBoardMemberDto>? ReviewBoardMembers { get; set; }
 }
 
