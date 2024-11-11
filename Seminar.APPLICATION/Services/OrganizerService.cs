@@ -98,6 +98,8 @@ public class OrganizerService : IOrganizerService
                 ReviewCommitteeName = rc.ReviewCommitteeName,
                 CompetitionId = rc.CompetitionId ?? 0,
                 CompetitionName = rc.Competitions.CompetitionName,
+                DateStart = rc.DateStart,
+                DateEnd = rc.DateEnd,
                 ReviewBoardMembers = rc.Review_Board_Members
                     .Where(rbm => rbm.IsStatus == true && rbm.DeletedAt == null)
                     .Select(rbm => new ReviewBoardMemberVM
