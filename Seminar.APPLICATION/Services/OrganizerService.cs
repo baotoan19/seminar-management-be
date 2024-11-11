@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Seminar.APPLICATION.Dtos.OrganizersDtos;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
+using Seminar.APPLICATION.Dtos.ReviewFormDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Interfaces.IOrganizerService;
 using Seminar.APPLICATION.Models;
@@ -106,6 +107,7 @@ public class OrganizerService : IOrganizerService
                         IsStatus = rbm.IsStatus,
                         Name = rbm.Reviewer.Name ?? "Unknown",
                         NumberPhone = rbm.Reviewer.NumberPhone ?? "Unknown",
+                        Sex = rbm.Reviewer.Sex ?? "Unknown",
                         DateOfBirth = rbm.Reviewer.DateOfBirth,
                         AccountId = rbm.Reviewer.AccountId,
                         FacultyId = rbm.Reviewer.FacultyId ?? 0,
@@ -161,6 +163,7 @@ public class OrganizerService : IOrganizerService
                     IsStatus = rbm.IsStatus,
                     Name = rbm.Reviewer.Name ?? "Unknown",
                     NumberPhone = rbm.Reviewer.NumberPhone ?? "Unknown",
+                    Sex = rbm.Reviewer.Sex ?? "Unknown",
                     DateOfBirth = rbm.Reviewer.DateOfBirth,
                     AccountId = rbm.Reviewer.AccountId,
                     FacultyId = rbm.Reviewer.FacultyId ?? 0,
@@ -431,7 +434,6 @@ public class OrganizerService : IOrganizerService
         await _unitOfWork.GetRepository<Review_Committee>().UpdateAsync(reviewCommittee);
         await _unitOfWork.SaveChangesAsync();
     }
-
 }
 
 
