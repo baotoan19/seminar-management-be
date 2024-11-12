@@ -48,6 +48,19 @@ public class OrganizerController : ControllerBase
             data: result));
     }
 
+    [HttpGet("review-committee/research-topic/{researchTopicId}")]
+    [AllowAnonymous]
+    [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER},{CLAIMS_VALUES.ROLE_TYPE.AUTHOR}")]
+    public async Task<IActionResult> GetReviewCommitteeByResearchTopicIdAsync(int researchTopicId, int page = 1, int pageSize = 10, int idSearch = 0, string nameSearch = "")
+    {
+        var result = await _organizerService.GetReviewCommitteeByResearchTopicIdAsync(researchTopicId, page, pageSize, idSearch, nameSearch);
+        return Ok(new BaseResponse<PaginatedList<ReviewCommitteeVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Committee retrieved successfully",
+            data: result));
+    }
+
     [HttpGet("review-committee/{id}")]
     public async Task<IActionResult> GetReviewCommitteeByIdAsync(int id)
     {
@@ -91,5 +104,7 @@ public class OrganizerController : ControllerBase
             message: "Review Committee deleted successfully",
             data: null));
     }
+
+
 
 }
