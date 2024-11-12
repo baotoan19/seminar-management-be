@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace Seminar.APPLICATION.Models;
 
 public class ResearchTopicVM
@@ -22,9 +24,19 @@ public class ResearchTopicVM
     public int DisciplineId { get; set; }
     public string DisciplineName{ get; set; }
     public int CompetitionId { get; set; }
-    public int Review_CommitteeId { get; set; }
-    public string ReviewCommitteeName { get; set; }
     public string CompetitionName { get; set; }
+    private ReviewCommitteeVM? _reviewCommittees;
+    public ReviewCommitteeVM Review_Committees
+    {
+        get => _reviewCommittees ?? new ReviewCommitteeVM()
+        {
+            Id = 0,
+            ReviewBoardMembers = new List<ReviewBoardMemberVM>()
+        };
+        set => _reviewCommittees = value;
+    }
     public string Supervisor { get; set; }
     public List<ResearchTopicAuthorVM> CoAuthors { get; set; }
+    public ICollection<HistoryUpdateResearchTopicVM> History_Update_ResearchTopics { get; set; }
+    
 }

@@ -36,7 +36,7 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<UpdateOrganizerDto, Organizer>();
             //Reviewer
             CreateMap<CreateReviewerDto, Reviewer>();
-            CreateMap<Reviewer, ReviewerVM>();
+            CreateMap<Reviewer, ReviewerVM>().ReverseMap();
             CreateMap<UpdateReviewerDto, Reviewer>();
             CreateMap<ReviewBoardMemberDto, Reviewer>();
             //Post
@@ -44,7 +44,7 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<Post, PostVM>().ForMember(dest => dest.OrganizerName, opt => opt.MapFrom(src => src.Organizers.Name));
             CreateMap<UpdatePostDto, Post>();
             //Conclude
-            CreateMap<Conclude, ConcludeVM>();
+            CreateMap<Conclude, ConcludeVM>().ReverseMap();
             //Discipline
             CreateMap<Discipline, DisciplineVM>();
             //Faculty
@@ -63,6 +63,10 @@ namespace Seminar.APPLICATION.Mappings
             .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
             CreateMap<UpdateReviewCommitteeDto, Review_Committee>()
             .ForMember(dest => dest.Review_Board_Members, opt => opt.Ignore());
+            CreateMap<Review_Committee, ReviewCommitteeVM>()
+            .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName))
+            .ForMember(dest => dest.ReviewBoardMembers, opt => opt.MapFrom(src => src.Review_Board_Members))
+            .ReverseMap();
             //Registration Form
             CreateMap<RegistrationForm, RegistrationFormVM>()
             .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.Author.AccountId))
@@ -86,14 +90,22 @@ namespace Seminar.APPLICATION.Mappings
             //Research Topic
             CreateMap<CreateResearchTopicDto, ResearchTopic>();
             CreateMap<ResearchTopic, ResearchTopicVM>()
+            .ForMember(dest => dest.Review_Committees, opt => opt.MapFrom(src => src.Review_Committees))
+            .ForMember(dest => dest.History_Update_ResearchTopics, opt => opt.MapFrom(src => src.History_Update_ResearchTopics))
             .ForMember(dest => dest.ArticleName, opt => opt.MapFrom(src => src.Articles.Title))
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Disciplines.DisciplineName))
             .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competitions.CompetitionName))
-            .ForMember(dest => dest.ReviewCommitteeName, opt => opt.MapFrom(src => src.Review_Committees.ReviewCommitteeName));
+            .ReverseMap();
             CreateMap<UpdateResearchTopicDto, ResearchTopic>();
             //History Research Topic
             CreateMap<CreateHistoryResearchTopicDto, History_Update_ResearchTopic>();
-            CreateMap<History_Update_ResearchTopic, HistoryUpdateResearchTopicVM>();
+            CreateMap<History_Update_ResearchTopic, HistoryUpdateResearchTopicVM>().ReverseMap();
+            // Review Board Member
+            CreateMap<Review_Board_Member, ReviewBoardMemberVM>()
+            .IncludeMembers(src => src.Reviewer)
+            .ForMember(dest => dest.IsStatus, opt => opt.MapFrom(src => src.IsStatus))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
+            CreateMap<Reviewer, ReviewBoardMemberVM>();
         }
     }
 }
