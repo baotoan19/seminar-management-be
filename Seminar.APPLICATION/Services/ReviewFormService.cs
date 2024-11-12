@@ -26,24 +26,26 @@ public class ReviewFormService : IReviewFormService
         _httpContextAccessor = httpContextAccessor;
         _emailService = emailService;
     }
-    private int GetReviewerId()
+    private async Task<int> GetReviewerId()
     {
-        return int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.FirstOrDefaultAsync(x => x.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
+        return reviewer.Id;
     }
     public async Task CreateReviewFormAsync(CreateReviewFormDto createReviewFormDto)
     {
-        int ReviewerId = GetReviewerId();
+        int ReviewerId = await GetReviewerId();
         History_Update_ResearchTopic history_Update_ResearchTopic =
             await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(createReviewFormDto.History_Update_ResearchTopicId) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
                 "History Update Research Topic not found!");
         ResearchTopic researchTopic =
-            await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) 
+            await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId)
             ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
                 "Research Topic not found!");
         Review_Board_Member review_Board_Member =
             await _unitOfWork.GetRepository<Review_Board_Member>().Entities
-                .FirstOrDefaultAsync(x => x.ReviewerId == ReviewerId && x.ReviewCommitteeId == researchTopic.Review_CommitteeId) 
+                .FirstOrDefaultAsync(x => x.ReviewerId == ReviewerId && x.ReviewCommitteeId == researchTopic.Review_CommitteeId)
             ?? throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
                 "You are not a member of this review committee!");
         Review_Committee review_Committee =
@@ -63,7 +65,7 @@ public class ReviewFormService : IReviewFormService
         }
         Review_Form? review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities
             .FirstOrDefaultAsync(x => x.ReviewerId == ReviewerId &&
-                                x.History_Update_ResearchTopicId == history_Update_ResearchTopic.Id && 
+                                x.History_Update_ResearchTopicId == history_Update_ResearchTopic.Id &&
                                 x.DeletedAt == null);
         if (review_Form != null)
         {
@@ -79,7 +81,7 @@ public class ReviewFormService : IReviewFormService
     }
     public async Task UpdateReviewFormAsync(int id, UpdateReviewFormDto updateReviewFormDto)
     {
-        int ReviewerId = GetReviewerId();
+        int ReviewerId = await GetReviewerId();
         Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Form not found!");
         if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not the reviewer of this review form!");
         History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History Update Research Topic not found!");
@@ -102,7 +104,7 @@ public class ReviewFormService : IReviewFormService
     }
     public async Task DeleteReviewFormAsync(int id)
     {
-        int ReviewerId = GetReviewerId();
+        int ReviewerId = await GetReviewerId();
         Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Form not found!");
         if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not the reviewer of this review form!");
         History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History Update Research Topic not found!");
