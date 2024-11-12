@@ -14,6 +14,7 @@ namespace Seminar.APPLICATION.Interfaces.IOrganizerService{
         Task<Organizer> UpdateOrganizerAsync(int id, UpdateOrganizerDto updateOrganizerDto);
         //Review Committee
         Task<PaginatedList<ReviewCommitteeVM>> GetReviewCommitteeByCompetitionIdAsync(int competitionId, int page, int pageSize, int idSearch, string nameSearch);
+        Task<PaginatedList<ReviewCommitteeVM>> GetReviewCommitteeByResearchTopicIdAsync(int researchTopicId, int page, int pageSize, int idSearch, string nameSearch);
         Task<ReviewCommitteeVM> GetReviewCommitteeByIdAsync(int id);
         Task CreateReviewCommitteeAsync(CreateReviewCommitteeDto createReviewCommitteeDto);
         Task UpdateReviewCommitteeAsync(int id, UpdateReviewCommitteeDto updateReviewCommitteeDto);

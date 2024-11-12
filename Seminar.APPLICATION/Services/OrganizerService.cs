@@ -142,6 +142,65 @@ public class OrganizerService : IOrganizerService
             .ToListAsync();
         return new PaginatedList<ReviewCommitteeVM>(resultQuery, totalCount, page, pageSize);
     }
+    public async Task<PaginatedList<ReviewCommitteeVM>> GetReviewCommitteeByResearchTopicIdAsync(int researchTopicId, int page, int pageSize, int idSearch, string nameSearch)
+    {
+        ResearchTopic? researchTopic = await _unitOfWork.GetRepository<ResearchTopic>()
+        .Entities.FirstOrDefaultAsync(rt => rt.Id == researchTopicId)
+        ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+
+        var query = _unitOfWork.GetRepository<Review_Committee>().Entities
+            .Where(rc => rc.ResearchTopics.Any(rt => rt.Id == researchTopicId) && rc.DeletedAt == null)
+            .OrderByDescending(rc => rc.CreatedAt)
+            .Select(rc => new ReviewCommitteeVM
+            {
+                Id = rc.Id,
+                ReviewCommitteeName = rc.ReviewCommitteeName,
+                CompetitionId = rc.CompetitionId ?? 0,
+                CompetitionName = rc.Competitions.CompetitionName,
+                DateStart = rc.DateStart,
+                DateEnd = rc.DateEnd,
+                ReviewBoardMembers = rc.Review_Board_Members
+                    .Where(rbm => rbm.IsStatus == true && rbm.DeletedAt == null)
+                    .Select(rbm => new ReviewBoardMemberVM
+                    {
+                        Id = rbm.Reviewer.Id,
+                        Description = rbm.Description ?? "Unknown",
+                        IsStatus = rbm.IsStatus,
+                        Name = rbm.Reviewer.Name ?? "Unknown",
+                        NumberPhone = rbm.Reviewer.NumberPhone ?? "Unknown",
+                        Sex = rbm.Reviewer.Sex ?? "Unknown",
+                        DateOfBirth = rbm.Reviewer.DateOfBirth,
+                        AccountId = rbm.Reviewer.AccountId,
+                        FacultyId = rbm.Reviewer.FacultyId ?? 0,
+                        FacultyName = rbm.Reviewer.Faculty.FacultyName ?? "Unknown",
+                        Email = rbm.Reviewer.Email ?? "Unknown"
+                    }).ToList()
+            });
+
+        // Thêm điều kiện tìm kiếm
+        if (idSearch != 0)
+        {
+            query = query.Where(rc => rc.Id == idSearch);
+        }
+        if (!string.IsNullOrEmpty(nameSearch))
+        {
+            query = query.Where(rc => rc.ReviewCommitteeName.Contains(nameSearch));
+        }
+
+        query = query.OrderByDescending(rc => rc.Id);
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ReviewCommitteeVM>(new List<ReviewCommitteeVM>(), 0, page, pageSize);
+        }
+
+        var resultQuery = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        return new PaginatedList<ReviewCommitteeVM>(resultQuery, totalCount, page, pageSize);
+    }
     public async Task<ReviewCommitteeVM> GetReviewCommitteeByIdAsync(int id)
     {
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities
