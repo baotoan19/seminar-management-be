@@ -1,6 +1,7 @@
 using Seminar.APPLICATION.Dtos.OrganizersDtos;
 using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
+using Seminar.APPLICATION.Dtos.ReviewFormDtos;
 using Seminar.APPLICATION.Models;
 using Seminar.DOMAIN.Entitys;
 using Seminar.INFRASTRUCTURE.Common;
