@@ -44,6 +44,18 @@ public class ResearchTopicController : ControllerBase
             data: researchTopicVMs));
     }
 
+    [HttpGet("review")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.REVIEWER)]
+    public async Task<IActionResult> GetResearchTopicsForReview(int index = 1, int pageSize = 8, int idSearch = 0, string nameTopicSearch = "", int isStatus = 0)
+    {
+        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetResearchTopicsForReviewAsync(index, pageSize, idSearch, nameTopicSearch, isStatus);
+        return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Research topics retrieved successfully",
+            data: researchTopicVMs));
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetResearchTopicById(int id)
     {
@@ -56,6 +68,7 @@ public class ResearchTopicController : ControllerBase
     }
 
     [HttpGet("version-topic/{researchTopicId}")]
+    [Authorize]
     public async Task<IActionResult> GetAllHistoryResearchTopicByResearchTopicId(int researchTopicId)
     {
         List<HistoryUpdateResearchTopicVM> historyUpdateResearchTopicVMs = await _researchTopicService.GetAllHistoryResearchTopicByResearchTopicIdAsync(researchTopicId);

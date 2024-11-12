@@ -10,6 +10,7 @@ public interface IResearchTopicService
     // Research Topic
     Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId);
     Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch);
+    Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync( int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus);
     Task CreateResearchTopicAsync(CreateResearchTopicDto createResearchTopicDto);
     Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto);
     Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id);

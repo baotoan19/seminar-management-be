@@ -98,6 +98,68 @@ public class ResearchTopicService : IResearchTopicService
         );
         return responePaginatedList;
     }
+    public async Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync(int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>()
+            .Entities
+            .FirstOrDefaultAsync(x => x.AccountId == userId)
+            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
+
+        DateTime now = DateTime.Now;
+
+        IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
+            .Join(_unitOfWork.GetRepository<Review_Board_Member>().Entities,
+                rt => rt.Review_CommitteeId,
+                rbm => rbm.ReviewCommitteeId,
+                (rt, rbm) => new { ResearchTopic = rt, ReviewBoardMember = rbm })
+            .Where(x =>
+                x.ResearchTopic.DeletedAt == null &&
+                x.ReviewBoardMember.ReviewerId == reviewer.Id)
+            .Select(x => x.ResearchTopic)
+            .OrderByDescending(r => r.CreatedAt);
+
+        // Áp dụng điều kiện isStatus
+        if (isStatus == 1)
+        {
+            query = query.Where(r => r.Review_Committees.DateStart <= now && r.Review_Committees.DateEnd >= now);
+        }
+        else if (isStatus == -1)
+        {
+            query = query.Where(r => r.Review_Committees.DateEnd < now);
+        }
+
+        // Áp dụng bộ lọc tìm kiếm theo Id và tên
+        if (idSearch > 0)
+        {
+            query = query.Where(r => r.Id == idSearch);
+        }
+
+        if (!string.IsNullOrEmpty(nameTopicSearch))
+        {
+            query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
+        }
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
+        }
+
+        var resultQuery = await query
+            .Skip((index - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        List<ResearchTopicVM> responseItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
+
+        return new PaginatedList<ResearchTopicVM>(
+            responseItems,
+            totalCount,
+            index,
+            pageSize
+        );
+    }
     public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
