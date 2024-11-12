@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.ReviewFormDtos;
 using Seminar.APPLICATION.Interfaces;
+using Seminar.APPLICATION.Models;
 using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.DOMAIN.Entitys;
 using Seminar.DOMAIN.Interfaces;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.APPLICATION.Services;
 
@@ -25,6 +27,34 @@ public class ReviewFormService : IReviewFormService
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
         _emailService = emailService;
+    }
+    public async Task<PaginatedList<ReviewFormVM>> GetAllReviewFormByHistoryUpdateResearchTopicIdAsync(int historyUpdateResearchTopicId, int index, int pageSize)
+    {
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(historyUpdateResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History Update Research Topic not found!");
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+        IQueryable<Review_Form> query = _unitOfWork.GetRepository<Review_Form>().Entities
+        .Where(x => x.History_Update_ResearchTopicId == historyUpdateResearchTopicId && x.DeletedAt == null)
+        .OrderByDescending(x => x.Date_Upload);
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ReviewFormVM>(new List<ReviewFormVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        List<ReviewFormVM> responeItems = _mapper.Map<List<ReviewFormVM>>(resultQuery);
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<ReviewFormVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
+
     }
     private async Task<int> GetReviewerId()
     {

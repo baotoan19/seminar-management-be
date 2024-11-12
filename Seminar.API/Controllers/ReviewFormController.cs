@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Seminar.APPLICATION.Dtos.ReviewFormDtos;
 using Seminar.APPLICATION.Interfaces;
+using Seminar.APPLICATION.Models;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
+using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.API.Controllers;
 
@@ -17,7 +19,20 @@ public class ReviewFormController : ControllerBase
     {
         _reviewFormService = reviewFormService;
     }
-    
+
+    [HttpGet("review-form")]
+    [AllowAnonymous]
+    [Authorize]
+    public async Task<IActionResult> GetAllReviewFormByHistoryUpdateResearchTopicId(int historyUpdateResearchTopicId, int index = 1, int pageSize = 10)
+    {
+        var result = await _reviewFormService.GetAllReviewFormByHistoryUpdateResearchTopicIdAsync(historyUpdateResearchTopicId, index, pageSize);
+        return Ok(new BaseResponse<PaginatedList<ReviewFormVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Review Form retrieved successfully",
+            data: result));
+    }
+
     [HttpPost("review-form")]
     public async Task<IActionResult> CreateReviewForm(CreateReviewFormDto createReviewFormDto)
     {
@@ -50,5 +65,6 @@ public class ReviewFormController : ControllerBase
             message: "Review Form deleted successfully",
             data: null));
     }
+
 
 }
