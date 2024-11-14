@@ -1,28 +1,19 @@
 using dotenv.net;
-using Microsoft.EntityFrameworkCore;
 using Seminar.API.Extensions;
-using Seminar.API.Filters;
 using Seminar.API.Middleware;
 using Seminar.APPLICATION.Extensions;
-using Seminar.APPLICATION.Mappings;
-using Seminar.INFRASTRUCTURE.Database;
 
 //Load env
 DotEnv.Load();
 var builder = WebApplication.CreateBuilder(args);
-// Add Controllers
-builder.Services.AddControllers();
+
 // Add Services
 builder.Services.AddApplication(builder.Configuration);
-// Add cors, swagger, authentication, and authorization, database
+
+// Add cors, swagger, authentication, and authorization, database, controllers
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Configuration.AddEnvironmentVariables();
-
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ValidationFilter>();
-});
 
 var app = builder.Build();
 
