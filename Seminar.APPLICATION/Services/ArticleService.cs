@@ -15,6 +15,7 @@ using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.CORE.Utils;
 using Seminar.DOMAIN.Entitys;
+using Seminar.DOMAIN.Enum;
 using Seminar.DOMAIN.Interfaces;
 using Seminar.INFRASTRUCTURE.Common;
 
@@ -37,7 +38,7 @@ public class ArticleService : IArticleService
         _logger = logger;
     }
 
-    public async Task<PaginatedList<ArticleVM>> GetAllArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
+    public async Task<PaginatedList<ArticleVM>> GetAllArticlesPagedAsync(int index, int pageSize, string idSearch, string nameSearch, int acceptedForPublicationStatus)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -45,7 +46,6 @@ public class ArticleService : IArticleService
         }
 
         IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
-            .Include(a => a.Discipline)
                 .Where(a => a.DeletedAt == null)
                     .OrderByDescending(a => a.CreatedAt);
         //Tìm kiếm theo id
@@ -69,18 +69,36 @@ public class ArticleService : IArticleService
             }
         }
 
+        switch (acceptedForPublicationStatus)
+        {
+            case (int)AcceptedForPublicationStatusEnum.Pending:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Pending);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.Approved:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.Rejected:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Rejected);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.All:
+                break;
+            default:
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid accepted for publication status");
+        }
+
         int totalCount = await query.CountAsync();
         if (totalCount == 0)
         {
             return new PaginatedList<ArticleVM>(new List<ArticleVM>(), 0, index, pageSize);
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
-        List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
-        foreach (ArticleVM articleVM in responeItems)
+        foreach (var article in resultQuery)
         {
-            List<ArticleAuthorVM> coAuthors = await GetAuthorByArticleIdAsync(articleVM.Id);
-            articleVM.CoAuthors = coAuthors;
+            article.Author_Articles = article.Author_Articles
+                .Where(aa => aa.DeletedAt == null)
+                .ToList();
         }
+        List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<ArticleVM>(
             responeItems,
@@ -90,7 +108,16 @@ public class ArticleService : IArticleService
         );
         return responePaginatedList;
     }
-    public async Task<PaginatedList<ArticleVM>> GetApprovedArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
+    public async Task<ArticleVM> GetArticleByIdAsync(int id)
+    {
+        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+        ArticleVM articleVM = _mapper.Map<ArticleVM>(article);
+        articleVM.Author_Articles = articleVM.Author_Articles
+            .Where(aa => aa.DeletedAt == null)
+            .ToList();
+        return articleVM;
+    }
+    public async Task<PaginatedList<ArticleVM>> GetApprovedArticlesPagedAsync(int index, int pageSize, string idSearch, string nameSearch)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -98,8 +125,7 @@ public class ArticleService : IArticleService
         }
 
         IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
-            .Include(a => a.Discipline)
-                .Where(a => a.DeletedAt == null && a.IsAcceptedForPublication == true)
+                .Where(a => a.DeletedAt == null && a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved)
                     .OrderByDescending(a => a.CreatedAt);
         //Tìm kiếm theo id
         if (!string.IsNullOrEmpty(idSearch))
@@ -128,12 +154,13 @@ public class ArticleService : IArticleService
             return new PaginatedList<ArticleVM>(new List<ArticleVM>(), 0, index, pageSize);
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
-        List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
-        foreach (ArticleVM articleVM in responeItems)
+        foreach (var article in resultQuery)
         {
-            List<ArticleAuthorVM> coAuthors = await GetAuthorByArticleIdAsync(articleVM.Id);
-            articleVM.CoAuthors = coAuthors;
+            article.Author_Articles = article.Author_Articles
+                .Where(aa => aa.DeletedAt == null)
+                .ToList();
         }
+        List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<ArticleVM>(
             responeItems,
@@ -143,14 +170,99 @@ public class ArticleService : IArticleService
         );
         return responePaginatedList;
     }
-    public async Task<ArticleVM> GetArticleByIdAsync(int id)
+    public async Task<PaginatedList<ArticleVM>> GetAllArticlesByAuthorIdPagedAsync(int index, int pageSize, string idSearch, string nameSearch, int acceptedForPublicationStatus, string roleName)
     {
-        Article article = await _unitOfWork.GetRepository<Article>().Entities.Include(a => a.Discipline)
-        .FirstOrDefaultAsync(a => a.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Artical not found!");
-        ArticleVM articleVM = _mapper.Map<ArticleVM>(article);
-        List<ArticleAuthorVM> coAuthors = await GetAuthorByArticleIdAsync(articleVM.Id);
-        articleVM.CoAuthors = coAuthors;
-        return articleVM;
+        int userID = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userID) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+
+        IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
+                .Where(a => a.DeletedAt == null && a.Author_Articles.Any(aa => aa.AuthorId == author.Id))
+                    .OrderByDescending(a => a.CreatedAt);
+        //Tìm kiếm theo id
+        if (!string.IsNullOrEmpty(idSearch))
+        {
+            query = query.Where(p => p.Id.ToString().Contains(idSearch));
+            bool isInt = int.TryParse(idSearch, out int idInt);
+            if (!isInt)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+            }
+        }
+        //Tìm kiếm theo tên
+        if (!string.IsNullOrEmpty(nameSearch))
+        {
+            query = query.Where(p => EF.Functions.Like(p.Title, $"%{nameSearch}%"));
+            var result = await query.ToListAsync();
+            if (result.Count == 0)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+            }
+        }
+
+        //Lọc theo trạng thái
+        switch (acceptedForPublicationStatus)
+        {
+            case (int)AcceptedForPublicationStatusEnum.Pending:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Pending);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.Approved:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.Rejected:
+                query = query.Where(a => a.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Rejected);
+                break;
+            case (int)AcceptedForPublicationStatusEnum.All:
+                break;
+            default:
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid accepted for publication status");
+        }
+
+        //Lọc theo role
+        if (string.IsNullOrEmpty(roleName))
+        {
+            query = query.Where(a => a.Author_Articles.Any(aa => aa.AuthorId == author.Id));
+        }
+        else
+        {
+            switch (roleName)
+            {
+                case CLAIMS_VALUES.ROLE_TYPE.AUTHOR:
+                    query = query.Where(a => a.Author_Articles.Any(aa => aa.AuthorId == author.Id && aa.RoleName == roleName));
+                    break;
+                case CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR:
+                    query = query.Where(a => a.Author_Articles.Any(aa => aa.AuthorId == author.Id && aa.RoleName == roleName));
+                    break;
+                default:
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid role name");
+            }
+        }
+
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ArticleVM>(new List<ArticleVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        foreach (var article in resultQuery)
+        {
+            article.Author_Articles = article.Author_Articles
+                .Where(aa => aa.DeletedAt == null)
+                .ToList();
+        }
+        List<ArticleVM> responeItems = _mapper.Map<List<ArticleVM>>(resultQuery);
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<ArticleVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
     }
     public async Task CreateArticleAsync(CreateArticleDto createArticalsDto)
     {
@@ -168,7 +280,7 @@ public class ArticleService : IArticleService
                     article.Discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
                     string keyword = string.Join(",", createArticalsDto.Keywords);
                     article.KeyWord = keyword;
-                    article.IsAcceptedForPublication = false;
+                    article.AcceptedForPublicationStatus = (int)AcceptedForPublicationStatusEnum.Pending;
                     await _unitOfWork.GetRepository<Article>().InsertAsync(article);
                     await _unitOfWork.SaveChangesAsync();
                     //Insert main author
@@ -298,7 +410,7 @@ public class ArticleService : IArticleService
             .FirstOrDefaultAsync(a => a.ArticleId == id && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found or not an author!");
         // Kiểm tra bài báo có được phép cập nhật không
-        if (article.IsAcceptedForPublication)
+        if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
                 "You cannot update published articles");
@@ -402,7 +514,7 @@ public class ArticleService : IArticleService
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         string roleName = Authentication.GetUserRoleFromHttpContext(_httpContextAccessor.HttpContext);
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-        if (article.IsAcceptedForPublication == true && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)
+        if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
                 "Only administrators can delete published articles");
@@ -421,121 +533,27 @@ public class ArticleService : IArticleService
         await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
         await _unitOfWork.SaveChangesAsync();
     }
-    public async Task<List<AuthorArticleVM>> GetAuthorArticleByRoleAsync(string roleName)
+    public async Task ApproveArticleAsync(int id, ApproveArticleDto dto)
     {
-        if (roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.AUTHOR && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR)
+        // Validate enum value
+        if (!Enum.IsDefined(typeof(AcceptedForPublicationStatusEnum), dto.AcceptedForPublicationStatus))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid role name");
+            throw new BadRequestException(
+                ResponseCodeConstants.INVALID_STATUS,
+                "Invalid publication status (0: Pending, 1: Approved, 2: Rejected)"
+            );
         }
-        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Author author = await _unitOfWork.GetRepository<Author>().Entities
-            .FirstOrDefaultAsync(a => a.AccountId == userId)
-            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-        List<Author_Article> authorArticles = await _unitOfWork.GetRepository<Author_Article>().Entities
-            .Include(aa => aa.Author)
-            .ThenInclude(a => a.Faculty)
-            .Where(aa => aa.AuthorId == author.Id && aa.RoleName == roleName)
-            .Include(aa => aa.Article)
-            .ThenInclude(a => a.Discipline)
-            .Where(aa => aa.Article != null && aa.Article.IsAcceptedForPublication == true && aa.Article.DeletedAt == null)
-            .ToListAsync();
 
-        List<AuthorArticleVM> authorArticleVMs = authorArticles
-            .Select(aa => new AuthorArticleVM
-            {
-                // Authors
-                AuthorId = aa.Author.Id,
-                AuthorName = aa.Author.Name ?? "Unknown",
-                Email = aa.Author.Email ?? "No email",
-                NumberPhone = aa.Author.NumberPhone ?? "No phone",
-                FacultyId = aa.Author.FacultyId,
-                FacultyName = aa.Author.Faculty?.FacultyName ?? "Unknown Faculty",
-                InternalCode = aa.Author.InternalCode ?? "No code",
-                // Articles
-                ArticleId = aa.Article.Id,
-                Title = aa.Article.Title ?? "Untitled",
-                Description = aa.Article.Description ?? "No description",
-                KeyWord = aa.Article.KeyWord ?? "No keywords",
-                FilePath = aa.Article.FilePath ?? "No file",
-                DateUpload = aa.Article.CreatedAt,
-                DisciplineId = aa.Article.DisciplineId ?? 0,
-                DisciplineName = aa.Article.Discipline.DisciplineName ?? "Unknown Discipline",
-                RoleName = aa.RoleName ?? "Unknown Role"
-            }).ToList();
+        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id)
+            ?? throw new ErrorException(
+                StatusCodes.Status404NotFound,
+                ResponseCodeConstants.NOT_FOUND,
+                "Article not found"
+            );
 
-        return authorArticleVMs;
-    }
-    public async Task<List<AuthorArticleVM>> GetAuthorArticleByAuthorIdAsync(bool isAcceptedForPublication)
-    {
-        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Author author = await _unitOfWork.GetRepository<Author>().Entities
-            .FirstOrDefaultAsync(a => a.AccountId == userId)
-            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-        List<Author_Article> authorArticles = await _unitOfWork.GetRepository<Author_Article>().Entities
-            .Include(aa => aa.Author)
-            .ThenInclude(a => a.Faculty)
-            .Where(aa => aa.AuthorId == author.Id)
-            .Include(aa => aa.Article)
-            .ThenInclude(a => a.Discipline)
-            .Where(aa => aa.Article != null && aa.Article.IsAcceptedForPublication == isAcceptedForPublication && aa.Article.DeletedAt == null && aa.DeletedAt == null)
-            .ToListAsync();
-        List<AuthorArticleVM> authorArticleVMs = authorArticles
-            .Select(aa => new AuthorArticleVM
-            {
-                // Authors
-                AuthorId = aa.Author.Id,
-                AuthorName = aa.Author.Name ?? "Unknown",
-                Email = aa.Author.Email ?? "No email",
-                NumberPhone = aa.Author.NumberPhone ?? "No phone",
-                DateOfBirth = aa.Author.DateOfBirth,
-                Sex = aa.Author.Sex,
-                FacultyId = aa.Author.FacultyId,
-                FacultyName = aa.Author.Faculty?.FacultyName ?? "Unknown Faculty",
-                InternalCode = aa.Author.InternalCode ?? "No code",
-                // Articles
-                ArticleId = aa.Article.Id,
-                Title = aa.Article.Title ?? "Untitled",
-                Description = aa.Article.Description ?? "No description",
-                KeyWord = aa.Article.KeyWord ?? "No keywords",
-                FilePath = aa.Article.FilePath ?? "No file",
-                DateUpload = aa.Article.CreatedAt,
-                DisciplineId = aa.Article.DisciplineId ?? 0,
-                DisciplineName = aa.Article.Discipline.DisciplineName ?? "Unknown Discipline",
-                RoleName = aa.RoleName ?? "Unknown Role"
-            }).ToList();
-        return authorArticleVMs;
-    }
-    public async Task<List<ArticleAuthorVM>> GetAuthorByArticleIdAsync(int articleId)
-    {
-        List<Author_Article> authorArticles = await _unitOfWork.GetRepository<Author_Article>().Entities
-            .Include(aa => aa.Author)
-            .ThenInclude(a => a.Faculty)
-            .Where(aa => aa.ArticleId == articleId && aa.DeletedAt == null)
-            .ToListAsync() ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-        List<ArticleAuthorVM> authorArticleVMs = authorArticles
-            .Select(aa => new ArticleAuthorVM
-            {
-                Id = aa.Author.Id,
-                AccountId = aa.Author.AccountId ?? 0,
-                Name = aa.Author.Name ?? "Unknown",
-                Email = aa.Author.Email ?? "No email",
-                NumberPhone = aa.Author.NumberPhone ?? "No phone",
-                DateOfBirth = aa.Author.DateOfBirth ?? DateTime.MinValue,
-                Sex = aa.Author.Sex ?? "Unknown",
-                FacultyId = aa.Author.FacultyId,
-                FacultyName = aa.Author.Faculty?.FacultyName ?? "Unknown Faculty",
-                InternalCode = aa.Author.InternalCode ?? "No code",
-                RoleName = aa.RoleName ?? "Unknown Role"
-            }).ToList();
-        return authorArticleVMs;
-    }
-    public async Task ApproveArticleAsync(int id, ApproveArticleDto approveArticleDto)
-    {
-        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
-        article.IsAcceptedForPublication = approveArticleDto.IsAcceptedForPublication;
-        article.UpdatedAt = DateTime.Now;
-        await _unitOfWork.GetRepository<Article>().UpdateAsync(article);
+        article.AcceptedForPublicationStatus = dto.AcceptedForPublicationStatus;
         await _unitOfWork.SaveChangesAsync();
     }
+
 }
+
