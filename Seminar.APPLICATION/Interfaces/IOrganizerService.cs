@@ -20,5 +20,6 @@ namespace Seminar.APPLICATION.Interfaces.IOrganizerService{
         Task UpdateReviewCommitteeAsync(int id, UpdateReviewCommitteeDto updateReviewCommitteeDto);
         Task AssignReviewCommitteeToResearchTopicAsync(int topicId, UpdateReviewCommitteeIdDto updateReviewCommitteeIdDto);
         Task DeleteReviewCommitteeAsync(int id);
+        Task UpdateDateEndReviewCommitteeAsync(int id, UpdateDateEndReviewCommitteeDto updateDateEndReviewCommitteeDto);
     }
 }

@@ -495,6 +495,21 @@ public class OrganizerService : IOrganizerService
         await _unitOfWork.GetRepository<Review_Committee>().UpdateAsync(reviewCommittee);
         await _unitOfWork.SaveChangesAsync();
     }
+    public async Task UpdateDateEndReviewCommitteeAsync(int id, UpdateDateEndReviewCommitteeDto updateDateEndReviewCommitteeDto)
+    {
+        Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities.FirstOrDefaultAsync(rc => rc.Id == id) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+        reviewCommittee.DateEnd = reviewCommittee.DateEnd.AddMonths(updateDateEndReviewCommitteeDto.Month);
+        Competition? competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == reviewCommittee.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        if(reviewCommittee.DateEnd > competition.DateEnd || reviewCommittee.DateEnd < competition.DateStart)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end cannot be after the competition end date or before the competition start date!");
+        }
+        reviewCommittee.UpdatedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<Review_Committee>().UpdateAsync(reviewCommittee);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
 
 

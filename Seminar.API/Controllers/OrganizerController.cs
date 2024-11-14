@@ -94,6 +94,17 @@ public class OrganizerController : ControllerBase
             data: null));
     }
 
+    [HttpPatch("review-committee/date-end/{id}")]
+    public async Task<IActionResult> UpdateDateEndReviewCommittee(int id, UpdateDateEndReviewCommitteeDto updateDateEndReviewCommitteeDto)
+    {
+        await _organizerService.UpdateDateEndReviewCommitteeAsync(id, updateDateEndReviewCommitteeDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Date end review committee updated successfully",
+            data: null));
+    }
+
     [HttpDelete("review-committee/{id}")]
     public async Task<IActionResult> DeleteReviewCommittee(int id)
     {
@@ -104,7 +115,4 @@ public class OrganizerController : ControllerBase
             message: "Review Committee deleted successfully",
             data: null));
     }
-
-
-
 }
