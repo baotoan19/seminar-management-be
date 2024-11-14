@@ -100,10 +100,10 @@ namespace Seminar.APPLICATION.Services
                             ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
 
                         // Kiểm tra xem article đã được chấp nhận để xuất bản chưa
-                        if (!article.IsAcceptedForPublication)
-                        {
-                            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Article is not accepted for publication!");
-                        }
+                        // if (!article.IsAcceptedForPublication)
+                        // {
+                        //     throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Article is not accepted for publication!");
+                        // }
 
                         // Kiểm tra quyền tác giả của user trên article
                         Author_Article? existingAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
@@ -364,11 +364,11 @@ namespace Seminar.APPLICATION.Services
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
             "Member not found or is not a co-author!");
             // Kiểm tra xem research topic có được chấp nhận hay không
-            if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
-            {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-                    "Cannot delete member from an approved research topic!");
-            }
+            // if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
+            // {
+            //     throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
+            //         "Cannot delete member from an approved research topic!");
+            // }
             memberToDelete.DeletedAt = DateTime.Now;
             await _unitOfWork.SaveChangesAsync();
         }
