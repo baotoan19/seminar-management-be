@@ -1,10 +1,12 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Seminar.API.Filters;
 using Seminar.CORE.Base;
 using Seminar.INFRASTRUCTURE.Database;
 using Seminar.INFRASTRUCTURE.Seed;
@@ -160,15 +162,17 @@ namespace Seminar.API.Extensions
             services.AddControllers(options =>
             {
                 options.EnableEndpointRouting = false;
+                options.Filters.Add<ValidationFilter>();
             })
             .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             })
             .AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
+                options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                options.JsonSerializerOptions.WriteIndented = true;
             });
 
             services.Configure<ApiBehaviorOptions>(options =>
