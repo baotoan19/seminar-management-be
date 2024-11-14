@@ -87,4 +87,26 @@ public class CompetitionController : ControllerBase
             message: "Delete competition successfully!"
             ));
     }
+
+    [HttpPatch("date-end")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> UpdateDateEndCompetitionAsync(int id, UpdateDateEndCompetitionDto updateDateEndCompetitionDto)
+    {
+        await _competitionService.UpdateDateEndCompetitionAsync(id, updateDateEndCompetitionDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Update date end competition successfully!"));
+    }
+
+    [HttpPatch("date-submit")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> UpdateDateSubmitCompetitionAsync(int id, UpdateDateSubmitCompetitionDto updateDateSubmitCompetitionDto)
+    {
+        await _competitionService.UpdateDateSubmitCompetitionAsync(id, updateDateSubmitCompetitionDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Update date submit competition successfully!"));
+    }
 }

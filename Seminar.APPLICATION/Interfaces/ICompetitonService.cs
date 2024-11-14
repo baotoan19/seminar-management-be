@@ -12,4 +12,6 @@ public interface ICompetitionService
     Task CreateCompetitionAsync(CreateCompetitionDto createCompetitionDto);
     Task UpdateCompetitionAsync(int id, UpdateCompetitionDto updateCompetitionDto);
     Task DeleteCompetitionAsync(int id);
+    Task UpdateDateEndCompetitionAsync(int id, UpdateDateEndCompetitionDto updateDateEndCompetitionDto);
+    Task UpdateDateSubmitCompetitionAsync(int id, UpdateDateSubmitCompetitionDto updateDateSubmitCompetitionDto);
 }

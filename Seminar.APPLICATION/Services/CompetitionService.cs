@@ -67,7 +67,6 @@ public class CompetitionService : ICompetitionService
         );
         return responePaginatedList;
     }
-
     public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionAsync(int index, int pageSize, string nameSearch, string organizerName)
     {
         if (index <= 0 || pageSize <= 0)
@@ -116,13 +115,11 @@ public class CompetitionService : ICompetitionService
         );
         return responePaginatedList;
     }
-
     public async Task<CompetitionVM> GetCompetitionByIdAsync(int id)
     {
         Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.Include(c => c.Organizer).FirstOrDefaultAsync(c => c.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
         return _mapper.Map<CompetitionVM>(competition);
     }
-
     public async Task CreateCompetitionAsync(CreateCompetitionDto createCompetitionDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -136,7 +133,6 @@ public class CompetitionService : ICompetitionService
         await _unitOfWork.GetRepository<Competition>().InsertAsync(competition);
         await _unitOfWork.SaveChangesAsync();
     }
-
     public async Task UpdateCompetitionAsync(int id, UpdateCompetitionDto updateCompetitionDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -154,7 +150,6 @@ public class CompetitionService : ICompetitionService
         competition.UpdatedAt = DateTime.Now;
         await _unitOfWork.SaveChangesAsync();
     }
-
     public async Task DeleteCompetitionAsync(int id)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -167,5 +162,24 @@ public class CompetitionService : ICompetitionService
         competition.DeletedAt = DateTime.Now;
         await _unitOfWork.SaveChangesAsync();
     }
-
+    public async Task UpdateDateEndCompetitionAsync(int id, UpdateDateEndCompetitionDto updateDateEndCompetitionDto)
+    {
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        competition.DateEnd = competition.DateEnd?.AddMonths(updateDateEndCompetitionDto.Month);
+        competition.UpdatedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<Competition>().UpdateAsync(competition);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task UpdateDateSubmitCompetitionAsync(int id, UpdateDateSubmitCompetitionDto updateDateSubmitCompetitionDto)
+    {
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        competition.DateEndSubmit = competition.DateEndSubmit?.AddMonths(updateDateSubmitCompetitionDto.Month);
+        if(competition.DateEndSubmit > competition.DateEnd)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end!");
+        }
+        competition.UpdatedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<Competition>().UpdateAsync(competition);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
