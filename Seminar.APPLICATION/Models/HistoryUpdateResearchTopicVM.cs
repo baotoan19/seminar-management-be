@@ -9,5 +9,6 @@ public class HistoryUpdateResearchTopicVM
     public DateTime DateUpdate {get; set;}
     public string Summary {get; set;}
     public ICollection<ReviewFormVM> Review_Forms { get; set; }
+    public DateTime? DeletedAt { get; set; }
 
 }

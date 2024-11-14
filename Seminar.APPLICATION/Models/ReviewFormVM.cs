@@ -8,4 +8,5 @@ public class ReviewFormVM
     public ReviewerVM Reviewer { get; set; }
     public ConcludeVM Conclude { get; set; }
     public DateTime Date_Upload { get; set; }
+    public DateTime? DeletedAt { get; set; }
 }

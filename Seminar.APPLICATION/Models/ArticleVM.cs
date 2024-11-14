@@ -13,7 +13,6 @@ public class ArticleVM
     public DateTime DateUpload { get; set; }
     public int DisciplineId { get; set; }
     public string DisciplineName { get; set; }
-    public bool IsAcceptedForPublication { get; set; }
-    public List<ArticleAuthorVM> CoAuthors { get; set; }
-
+    public int AcceptedForPublicationStatus { get; set; }
+    public ICollection<AuthorArticleVM> Author_Articles { get; set; }
 }

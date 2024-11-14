@@ -25,18 +25,9 @@ public class ResearchTopicVM
     public string DisciplineName{ get; set; }
     public int CompetitionId { get; set; }
     public string CompetitionName { get; set; }
-    private ReviewCommitteeVM? _reviewCommittees;
-    public ReviewCommitteeVM Review_Committees
-    {
-        get => _reviewCommittees ?? new ReviewCommitteeVM()
-        {
-            Id = 0,
-            ReviewBoardMembers = new List<ReviewBoardMemberVM>()
-        };
-        set => _reviewCommittees = value;
-    }
+    public ReviewCommitteeVM Review_Committees { get; set; }
     public string Supervisor { get; set; }
-    public List<ResearchTopicAuthorVM> CoAuthors { get; set; }
+    public ICollection<AuthorResearchTopicVM> Author_ResearchTopics { get; set; }
     public ICollection<HistoryUpdateResearchTopicVM> History_Update_ResearchTopics { get; set; }
-    
+    public AcceptanceVM Acceptance { get; set; }
 }
