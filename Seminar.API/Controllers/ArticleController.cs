@@ -22,16 +22,26 @@ public class ArticleController : ControllerBase
 
     [HttpGet("paging-admin")]
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
-    public async Task<IActionResult> GetAllArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
+    public async Task<IActionResult> GetAllArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "", int acceptedForPublicationStatus = 3)
     {
-        PaginatedList<ArticleVM> articles = await _articleService.GetAllArticlesPagedAsync(index, pageSize, idSearch, nameSearch);
+        PaginatedList<ArticleVM> articles = await _articleService.GetAllArticlesPagedAsync(index, pageSize, idSearch, nameSearch,acceptedForPublicationStatus);
         return Ok(new BaseResponse<PaginatedList<ArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
             data: articles));
     }
 
-    [HttpGet("paging-user")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetArticleByIdAsync(int id)
+    {
+        ArticleVM article = await _articleService.GetArticleByIdAsync(id);
+        return Ok(new BaseResponse<ArticleVM>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            data: article));
+    }
+
+    [HttpGet("paging-system")]
     public async Task<IActionResult> GetApprovedArticlesPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "")
     {
         PaginatedList<ArticleVM> articles = await _articleService.GetApprovedArticlesPagedAsync(index, pageSize, idSearch, nameSearch);
@@ -41,14 +51,15 @@ public class ArticleController : ControllerBase
             data: articles));
     }
 
-    [HttpGet()]
-    public async Task<IActionResult> GetArticleByIdAsync(int id)
+    [HttpGet("paging-author")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
+    public async Task<IActionResult> GetAllArticlesByAuthorIdPagedAsync(int index = 1, int pageSize = 8, string idSearch = "", string nameSearch = "", int acceptedForPublicationStatus = 3, string roleName = "")
     {
-        ArticleVM article = await _articleService.GetArticleByIdAsync(id);
-        return Ok(new BaseResponse<ArticleVM>(
+        PaginatedList<ArticleVM> articles = await _articleService.GetAllArticlesByAuthorIdPagedAsync(index, pageSize, idSearch, nameSearch,  acceptedForPublicationStatus, roleName);
+        return Ok(new BaseResponse<PaginatedList<ArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            data: article));
+            data: articles));
     }
 
     [HttpPost]
@@ -85,41 +96,8 @@ public class ArticleController : ControllerBase
             message: "Article deleted successfully!"));
     }
 
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
-    [HttpGet("role")]
-    public async Task<IActionResult> GetAuthorArticleByRoleAsync(string roleName)
-    {
-        List<AuthorArticleVM> authorArticleVMs = await _articleService.GetAuthorArticleByRoleAsync(roleName);
-        return Ok(new BaseResponse<List<AuthorArticleVM>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: authorArticleVMs));
-    }
-
-
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
-    [HttpGet("author")]
-    public async Task<IActionResult> GetAuthorArticleByAuthorIdAsync(bool isAcceptedForPublication)
-    {
-        List<AuthorArticleVM> authorArticleVMs = await _articleService.GetAuthorArticleByAuthorIdAsync(isAcceptedForPublication);
-        return Ok(new BaseResponse<List<AuthorArticleVM>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: authorArticleVMs));
-    }
-
-    [HttpGet("article-id-authors")]
-    public async Task<IActionResult> GetAuthorByArticleIdAsync(int articleId)
-    {
-        List<ArticleAuthorVM> authorArticleVMs = await _articleService.GetAuthorByArticleIdAsync(articleId);
-        return Ok(new BaseResponse<List<ArticleAuthorVM>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            data: authorArticleVMs));
-    }
-
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
-    [HttpPatch("approve")]
+    [HttpPatch("approve-article")]
     public async Task<IActionResult> ApproveArticleAsync(int id, ApproveArticleDto approveArticleDto)
     {
         await _articleService.ApproveArticleAsync(id, approveArticleDto);
