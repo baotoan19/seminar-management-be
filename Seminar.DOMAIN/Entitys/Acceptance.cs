@@ -10,9 +10,8 @@ namespace Seminar.DOMAIN.Entitys
         [ForeignKey("ResearchTopics")]
         public int ResearchTopicId { get; set; }
         public DateTime? DateAcceptance { get; set; }
-        public string? FinalFilePath { get; set; }
-        public bool IsFacultyAccepted { get; set; }
-        public bool IsAcceptedForPublication { get; set; }
+        public int FacultyAcceptedStatus { get; set; }
+        public int AcceptedForPublicationStatus { get; set; }
         public virtual ResearchTopic ResearchTopic { get; set; }
         public virtual ICollection<Review_Acceptance> Review_Acceptances { get; set; } = new List<Review_Acceptance>();
     }

@@ -14,7 +14,7 @@ namespace Seminar.DOMAIN.Entitys
         public string? KeyWord { get; set; } 
         public string? FilePath { get; set; }
         public DateTime? DateUpload { get; set; }
-        public bool  IsAcceptedForPublication { get; set; }
+        public int AcceptedForPublicationStatus { get; set; }
         [ForeignKey("Disciplines")]
         public int? DisciplineId { get; set; }
         public virtual Discipline Discipline { get; set; }
