@@ -25,6 +25,7 @@ namespace Seminar.CORE.Constants
         public const string INVALID_USER_ID = "Invalid user id!";
         public const string INVALID_ROLE = "Invalid role!";
         public const string INVALID_DATA = "Invalid data!";
+        public const string INVALID_STATUS = "Invalid status!";
     }
 
     public static class FirebaseConstants
@@ -38,5 +39,4 @@ namespace Seminar.CORE.Constants
         public const string BudgetFileFolder = "BudgetFile";
         public static readonly List<string> AllFolders = new List<string> { ArticleFolder, FinalFileFolder, ProductFileFolder, ReportFileFolder, RegistrationFormsFolder, PostFolder, BudgetFileFolder };
     }
-
 }
