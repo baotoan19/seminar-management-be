@@ -51,6 +51,7 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(ICompetitionService), typeof(CompetitionService));
             services.AddScoped(typeof(IResearchTopicService), typeof(ResearchTopicService));
             services.AddScoped(typeof(IReviewFormService), typeof(ReviewFormService));
+            services.AddScoped(typeof(IAcceptanceService), typeof(AcceptanceService));
         }
 
         //Đăng ký mapper
