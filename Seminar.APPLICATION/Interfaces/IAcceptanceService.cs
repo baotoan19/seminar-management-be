@@ -1,0 +1,17 @@
+using Seminar.APPLICATION.Dtos.AcceptanceDtos;
+using Seminar.APPLICATION.Dtos.ReviewAcceptanceDtos;
+using Seminar.APPLICATION.Models;
+using Seminar.DOMAIN.Entitys;
+using Seminar.INFRASTRUCTURE.Common;
+
+namespace Seminar.APPLICATION.Interfaces;
+
+public interface IAcceptanceService
+{
+    Task<PaginatedList<AcceptanceVM>> GetAllAcceptances(int index, int pageSize, int idSearch, string nameSearch, int facultyAcceptedStatus, int acceptedForPublicationStatus, int competitionId);
+    Task<AcceptanceVM> GetAcceptanceById(int id);
+    Task CreateAcceptance(CreateAcceptanceDto dto);
+    Task DeleteAcceptance(int id);
+    Task CreateReviewAcceptance(CreateReviewAcceptanceDto dto);
+    Task UpdateAcceptanceForPublication(int acceptanceId, UpdateAcceptanceForPublicationDto dto);
+}
