@@ -36,7 +36,7 @@ public class ResearchTopicService : IResearchTopicService
     }
 
     // Research Topic
-    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId)
+    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId, int acceptedForPublicationStatus, int ReviewAcceptanceStatus)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
@@ -77,18 +77,61 @@ public class ResearchTopicService : IResearchTopicService
         {
             query = query.Where(r => r.DisciplineId == disciplineId);
         }
+
+        switch (acceptedForPublicationStatus)
+        {
+            case 0:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Pending);
+                break;
+            case 1:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved);
+                break;
+            case 2:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Rejected);
+                break;
+            case 3:
+                break;
+        }
+
+        switch (ReviewAcceptanceStatus)
+        {
+            case 0:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Pending);
+                break;
+            case 1:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved);
+                break;
+            case 2:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Rejected);
+                break;
+            case 3:
+                break;
+        }
+
         int totalCount = await query.CountAsync();
         if (totalCount == 0)
         {
             return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
-        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
-        foreach (ResearchTopicVM researchTopicVM in responeItems)
+        //Author Research Topic
+        foreach (var researchTopic in resultQuery)
         {
-            List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(researchTopicVM.Id);
-            researchTopicVM.CoAuthors = coAuthors;
+            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                .Where(ar => ar.DeletedAt == null)
+                .ToList();
         }
+        // History Update Research Topic
+        foreach (var researchTopic in resultQuery)
+        {
+            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+            {
+                history.Review_Forms = history.Review_Forms
+                    .Where(rf => rf.DeletedAt == null)
+                    .ToList();
+            }
+        }
+        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<ResearchTopicVM>(
             responeItems,
@@ -98,7 +141,110 @@ public class ResearchTopicService : IResearchTopicService
         );
         return responePaginatedList;
     }
-    public async Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync(int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus)
+    public async Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id)
+    {
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research Topic not found!");
+        //Author Research Topic
+        researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+            .Where(ar => ar.DeletedAt == null)
+            .ToList();
+        // History Update Research Topic
+        foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+        {
+            history.Review_Forms = history.Review_Forms
+                .Where(rf => rf.DeletedAt == null)
+                .ToList();
+        }
+        return _mapper.Map<ResearchTopicVM>(researchTopic);
+    }
+    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch, int acceptedForPublicationStatus, int ReviewAcceptanceStatus, int competitionId)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+        IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
+        .Where(r => r.DeletedAt == null && r.Author_ResearchTopics.Any(ar => ar.AuthorId == author.Id))
+        .OrderByDescending(r => r.CreatedAt);
+
+        if (!string.IsNullOrEmpty(nameTopicSearch))
+        {
+            query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
+        }
+
+        switch (acceptedForPublicationStatus)
+        {
+            case 0:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Pending);
+                break;
+            case 1:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved);
+                break;
+            case 2:
+                query = query.Where(r => r.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Rejected);
+                break;
+            case 3:
+                break;
+        }
+
+        switch (ReviewAcceptanceStatus)
+        {
+            case 0:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Pending);
+                break;
+            case 1:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved);
+                break;
+            case 2:
+                query = query.Where(r => r.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Rejected);
+                break;
+            case 3:
+                break;
+        }
+
+        if (competitionId > 0)
+        {
+            query = query.Where(r => r.CompetitionId == competitionId);
+        }
+
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
+        }
+        var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
+        //Author Research Topic
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                .Where(ar => ar.DeletedAt == null)
+                .ToList();
+        }
+        // History Update Research Topic
+        foreach (var researchTopic in resultQuery)
+        {
+            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+            {
+                history.Review_Forms = history.Review_Forms
+                    .Where(rf => rf.DeletedAt == null)
+                    .ToList();
+            }
+        }
+        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
+        var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+        var responePaginatedList = new PaginatedList<ResearchTopicVM>(
+            responeItems,
+            totalCount,
+            index,
+            pageSize
+        );
+        return responePaginatedList;
+    }
+    public async Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync(int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus, int competitionId)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>()
@@ -140,60 +286,35 @@ public class ResearchTopicService : IResearchTopicService
             query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
         }
 
-        int totalCount = await query.CountAsync();
-        if (totalCount == 0)
+        if (competitionId > 0)
         {
-            return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
+            query = query.Where(r => r.CompetitionId == competitionId);
         }
 
-        var resultQuery = await query
-            .Skip((index - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        List<ResearchTopicVM> responseItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
-
-        return new PaginatedList<ResearchTopicVM>(
-            responseItems,
-            totalCount,
-            index,
-            pageSize
-        );
-    }
-    public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch)
-    {
-        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-        if (roleName != CLAIMS_VALUES.ROLE_TYPE.AUTHOR && roleName != CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR && roleName != "")
-        {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid role name!");
-        }
-        IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
-            .Include(r => r.Author_ResearchTopics)
-            .Where(r => r.DeletedAt == null && r.Author_ResearchTopics.Any(a => a.AuthorId == author.Id))
-            .OrderByDescending(r => r.CreatedAt);
-
-        if (!string.IsNullOrEmpty(nameTopicSearch))
-        {
-            query = query.Where(r => r.NameTopic.Contains(nameTopicSearch));
-        }
-        if (!string.IsNullOrEmpty(roleName))
-        {
-            query = query.Where(r => r.Author_ResearchTopics.Any(a => a.RoleName == roleName));
-        }
         int totalCount = await query.CountAsync();
         if (totalCount == 0)
         {
             return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
-        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
-        foreach (ResearchTopicVM researchTopicVM in responeItems)
+        //Author Research Topic
+        foreach (var researchTopic in resultQuery)
         {
-            List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(researchTopicVM.Id);
-            researchTopicVM.CoAuthors = coAuthors;
+            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                .Where(ar => ar.DeletedAt == null)
+                .ToList();
         }
+        // History Update Research Topic
+        foreach (var researchTopic in resultQuery)
+        {
+            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+            {
+                history.Review_Forms = history.Review_Forms
+                    .Where(rf => rf.DeletedAt == null)
+                    .ToList();
+            }
+        }
+        List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
         var responePaginatedList = new PaginatedList<ResearchTopicVM>(
             responeItems,
@@ -247,8 +368,8 @@ public class ResearchTopicService : IResearchTopicService
                     // Thêm đề tài
                     ResearchTopic researchTopic = _mapper.Map<ResearchTopic>(createResearchTopicDto);
                     researchTopic.DateUpLoad = DateTime.Now;
-                    researchTopic.IsAcceptanceApproved = false;
-                    researchTopic.IsReviewAcceptance = false;
+                    researchTopic.AcceptanceApprovedStatus = (int)AcceptanceApprovedStatusEnum.Pending;
+                    researchTopic.ReviewAcceptanceStatus = (int)ReviewAcceptanceStatusEnum.Pending;
                     researchTopic.Review_CommitteeId = null;
                     researchTopic.ArticleId = createResearchTopicDto.ArticleId == 0 ? null : createResearchTopicDto.ArticleId;
                     await _unitOfWork.GetRepository<ResearchTopic>().InsertAsync(researchTopic);
@@ -391,7 +512,7 @@ public class ResearchTopicService : IResearchTopicService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.ResearchTopicId == researchTopicId && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
-        if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
+        if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
         }
@@ -479,50 +600,6 @@ public class ResearchTopicService : IResearchTopicService
             }
         });
     }
-    public async Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id)
-    {
-        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
-        ResearchTopicVM researchTopicVM = _mapper.Map<ResearchTopicVM>(researchTopic);
-        List<ResearchTopicAuthorVM> coAuthors = await GetAuthorByResearchTopicIdAsync(id);
-        researchTopicVM.CoAuthors = coAuthors;
-        return researchTopicVM;
-    }
-    public async Task<List<ResearchTopicAuthorVM>> GetAuthorByResearchTopicIdAsync(int id)
-    {
-        List<Author_ResearchTopic> author_ResearchTopics = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.Where(a => a.ResearchTopicId == id && a.DeletedAt == null).ToListAsync();
-        List<ResearchTopicAuthorVM> researchTopicAuthorVMs = author_ResearchTopics.Select(a => new ResearchTopicAuthorVM
-        {
-            Id = a.Author.Id,
-            AccountId = a.Author.AccountId ?? 0,
-            Name = a.Author.Name ?? "Unknown",
-            Email = a.Author.Email ?? "No email",
-            NumberPhone = a.Author.NumberPhone ?? "No phone",
-            DateOfBirth = a.Author.DateOfBirth ?? DateTime.MinValue,
-            Sex = a.Author.Sex ?? "Unknown",
-            FacultyId = a.Author.FacultyId,
-            FacultyName = a.Author.Faculty?.FacultyName ?? "Unknown Faculty",
-            InternalCode = a.Author.InternalCode ?? "No code",
-            RoleName = a.RoleName ?? "Unknown Role"
-        }).ToList();
-        return researchTopicAuthorVMs;
-    }
-    public async Task UpdateIsAcceptanceApprovedAsync(UpdateIsAcceptanceApprovedDto updateIsAcceptanceApprovedDto)
-    {
-        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
-        Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == updateIsAcceptanceApprovedDto.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
-        if (competition.OrganizerId != organizer.Id)
-        {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this competition!");
-        }
-        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(updateIsAcceptanceApprovedDto.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
-        researchTopic.IsAcceptanceApproved = updateIsAcceptanceApprovedDto.IsAcceptanceApproved;
-        await _unitOfWork.SaveChangesAsync();
-    }
     public async Task UpdateIsReviewAcceptanceAsync(UpdateIsReviewAcceptanceDto updateIsReviewAcceptanceDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -534,10 +611,42 @@ public class ResearchTopicService : IResearchTopicService
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this research topic!");
         }
-        researchTopic.IsReviewAcceptance = updateIsReviewAcceptanceDto.IsReviewAcceptance;
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().Entities
+        .Where(h => h.ResearchTopicId == researchTopic.Id)
+        .OrderByDescending(h => h.CreatedAt)
+        .FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History update research topic not found!");
+        researchTopic.ProductFilePath = history_Update_ResearchTopic.NewProductFilePath;
+        researchTopic.ReportFilePath = history_Update_ResearchTopic.NewReportFilePath;
+        researchTopic.ReviewAcceptanceStatus = updateIsReviewAcceptanceDto.ReviewAcceptanceStatus;
+        researchTopic.DateStart = DateTime.Now;
+        researchTopic.DateEnd = DateTime.Now.AddMonths(researchTopic.ProjectDuration ?? 0);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    public async Task UpdateDateEndResearchTopicAsync(int researchTopicId, UpdateDateEndResearchTopicDto updateDateEndResearchTopicDto)
+    {
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        researchTopic.DateEnd = DateTime.Now.AddMonths(updateDateEndResearchTopicDto.Month);
+        await _unitOfWork.GetRepository<ResearchTopic>().UpdateAsync(researchTopic);
         await _unitOfWork.SaveChangesAsync();
     }
     // History Research Topic
+    public async Task<List<HistoryUpdateResearchTopicVM>> GetAllHistoryResearchTopicByResearchTopicIdAsync(int researchTopicId)
+    {
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        List<History_Update_ResearchTopic> history_Update_ResearchTopics = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().Entities.Where(h => h.ResearchTopicId == researchTopicId && h.DeletedAt == null).ToListAsync();
+        foreach (var history in history_Update_ResearchTopics)
+        {
+            history.Review_Forms = history.Review_Forms
+                .Where(rf => rf.DeletedAt == null)
+                .ToList();
+        }
+        List<HistoryUpdateResearchTopicVM> historyUpdateResearchTopicVMs = _mapper
+        .Map<List<HistoryUpdateResearchTopicVM>>(history_Update_ResearchTopics);
+
+        return historyUpdateResearchTopicVMs;
+    }
     public async Task CreateNewVersionResearchTopicAsync(CreateHistoryResearchTopicDto createHistoryResearchTopicDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
@@ -545,6 +654,10 @@ public class ResearchTopicService : IResearchTopicService
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(createHistoryResearchTopicDto.ResearchTopicId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+        }
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
         DateTime now = DateTime.Now;
@@ -552,10 +665,7 @@ public class ResearchTopicService : IResearchTopicService
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
         }
-        if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
-        {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
-        }
+
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == createHistoryResearchTopicDto.ResearchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
         History_Update_ResearchTopic history_Update_ResearchTopic = _mapper.Map<History_Update_ResearchTopic>(createHistoryResearchTopicDto);
@@ -563,14 +673,62 @@ public class ResearchTopicService : IResearchTopicService
         await _unitOfWork.GetRepository<History_Update_ResearchTopic>().InsertAsync(history_Update_ResearchTopic);
         await _unitOfWork.SaveChangesAsync();
     }
-    public async Task<List<HistoryUpdateResearchTopicVM>> GetAllHistoryResearchTopicByResearchTopicIdAsync(int researchTopicId)
+    public async Task UpdateHistoryResearchTopicAsync(int historyResearchTopicId, UpdateHistoryResearchTopicDto updateHistoryResearchTopicDto)
     {
-        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(historyResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History update research topic not found!");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
-        List<History_Update_ResearchTopic> history_Update_ResearchTopics = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().Entities.Where(h => h.ResearchTopicId == researchTopicId).ToListAsync();
-        List<HistoryUpdateResearchTopicVM> historyUpdateResearchTopicVMs = _mapper
-        .Map<List<HistoryUpdateResearchTopicVM>>(history_Update_ResearchTopics);
-        return historyUpdateResearchTopicVMs;
+        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities.FirstOrDefaultAsync(rf => rf.History_Update_ResearchTopicId == historyResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cannot update history research topic with an existing review form.");
+        if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+        }
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        DateTime now = DateTime.Now;
+        if (competition.DateEnd < now)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+        }
+        Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == researchTopic.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        _mapper.Map(updateHistoryResearchTopicDto, history_Update_ResearchTopic);
+        history_Update_ResearchTopic.DateUpdate = DateTime.Now;
+        history_Update_ResearchTopic.UpdatedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<History_Update_ResearchTopic>().UpdateAsync(history_Update_ResearchTopic);
+        await _unitOfWork.SaveChangesAsync();
     }
-
+    public async Task DeleteHistoryResearchTopicAsync(int historyResearchTopicId)
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(historyResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History update research topic not found!");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+        }
+        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities.FirstOrDefaultAsync(rf => rf.History_Update_ResearchTopicId == historyResearchTopicId) ??
+        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cannot delete history research topic with an existing review form.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        DateTime now = DateTime.Now;
+        if (competition.DateEnd < now)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+        }
+        Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == researchTopic.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        history_Update_ResearchTopic.DeletedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<History_Update_ResearchTopic>().UpdateAsync(history_Update_ResearchTopic);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

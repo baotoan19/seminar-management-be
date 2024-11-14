@@ -22,33 +22,9 @@ public class ResearchTopicController : ControllerBase
 
     [HttpGet("competition/{competitionId}")]
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> GetAllResearchTopicByCompetitionId(int competitionId, int reviewCommitteeId, int index = 1, int pageSize = 8, string nameTopicSearch = "", int disciplineId = 0)
+    public async Task<IActionResult> GetAllResearchTopicByCompetitionId(int competitionId, int reviewCommitteeId, int index = 1, int pageSize = 8, string nameTopicSearch = "", int disciplineId = 0, int acceptedForPublicationStatus = 3, int ReviewAcceptanceStatus = 3)
     {
-        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByCompetitionIdAsync(competitionId, reviewCommitteeId, index, pageSize, nameTopicSearch, disciplineId);
-        return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            message: "Research topics retrieved successfully",
-            data: researchTopicVMs));
-    }
-
-    [HttpGet("author")]
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
-    public async Task<IActionResult> GetAllResearchTopicByAuthorId(string roleName = "", int index = 1, int pageSize = 8, string nameTopicSearch = "")
-    {
-        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByAuthorIdAsync(roleName, index, pageSize, nameTopicSearch);
-        return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            message: "Research topics retrieved successfully",
-            data: researchTopicVMs));
-    }
-
-    [HttpGet("review")]
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.REVIEWER)]
-    public async Task<IActionResult> GetResearchTopicsForReview(int index = 1, int pageSize = 8, int idSearch = 0, string nameTopicSearch = "", int isStatus = 0)
-    {
-        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetResearchTopicsForReviewAsync(index, pageSize, idSearch, nameTopicSearch, isStatus);
+        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByCompetitionIdAsync(competitionId, reviewCommitteeId, index, pageSize, nameTopicSearch, disciplineId, acceptedForPublicationStatus, ReviewAcceptanceStatus);
         return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
@@ -65,6 +41,30 @@ public class ResearchTopicController : ControllerBase
             code: ResponseCodeConstants.SUCCESS,
             message: "Research topic retrieved successfully",
             data: researchTopicVM));
+    }
+
+    [HttpGet("author")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
+    public async Task<IActionResult> GetAllResearchTopicByAuthorId(string roleName = "", int index = 1, int pageSize = 8, string nameTopicSearch = "", int acceptedForPublicationStatus = 3, int ReviewAcceptanceStatus = 3, int competitionId = 0)
+    {
+        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetAllResearchTopicByAuthorIdAsync(roleName, index, pageSize, nameTopicSearch, acceptedForPublicationStatus, ReviewAcceptanceStatus, competitionId);
+        return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Research topics retrieved successfully",
+            data: researchTopicVMs));
+    }
+
+    [HttpGet("review")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.REVIEWER)]
+    public async Task<IActionResult> GetResearchTopicsForReview(int index = 1, int pageSize = 8, int idSearch = 0, string nameTopicSearch = "", int isStatus = 0, int competitionId = 0)
+    {
+        PaginatedList<ResearchTopicVM> researchTopicVMs = await _researchTopicService.GetResearchTopicsForReviewAsync(index, pageSize, idSearch, nameTopicSearch, isStatus, competitionId);
+        return Ok(new BaseResponse<PaginatedList<ResearchTopicVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Research topics retrieved successfully",
+            data: researchTopicVMs));
     }
 
     [HttpGet("version-topic/{researchTopicId}")]
@@ -112,19 +112,6 @@ public class ResearchTopicController : ControllerBase
             message: "Research topic updated successfully"));
     }
 
-
-
-    [HttpPatch("is-acceptance-approved")]
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> UpdateIsAcceptanceApproved(UpdateIsAcceptanceApprovedDto updateIsAcceptanceApprovedDto)
-    {
-        await _researchTopicService.UpdateIsAcceptanceApprovedAsync(updateIsAcceptanceApprovedDto);
-        return Ok(new BaseResponse<string>(
-            statusCode: StatusCodes.Status200OK,
-            code: ResponseCodeConstants.SUCCESS,
-            message: "Research topic is acceptance approved updated successfully"));
-    }
-
     [HttpPatch("is-review-acceptance")]
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
     public async Task<IActionResult> UpdateIsReviewAcceptance(UpdateIsReviewAcceptanceDto updateIsReviewAcceptanceDto)
@@ -134,5 +121,38 @@ public class ResearchTopicController : ControllerBase
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
             message: "Research topic is review acceptance updated successfully"));
+    }
+
+    [HttpPatch("date-end/{researchTopicId}")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
+    public async Task<IActionResult> UpdateDateEndResearchTopic(int researchTopicId, UpdateDateEndResearchTopicDto updateDateEndResearchTopicDto)
+    {
+        await _researchTopicService.UpdateDateEndResearchTopicAsync(researchTopicId, updateDateEndResearchTopicDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Research topic date end updated successfully"));
+    }
+
+    [HttpPatch("history-research-topic/{historyResearchTopicId}")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
+    public async Task<IActionResult> UpdateHistoryResearchTopic(int historyResearchTopicId, UpdateHistoryResearchTopicDto updateHistoryResearchTopicDto)
+    {
+        await _researchTopicService.UpdateHistoryResearchTopicAsync(historyResearchTopicId, updateHistoryResearchTopicDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "History research topic updated successfully"));
+    }
+
+    [HttpDelete("history-research-topic/{historyResearchTopicId}")]
+    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
+    public async Task<IActionResult> DeleteHistoryResearchTopic(int historyResearchTopicId)
+    {
+        await _researchTopicService.DeleteHistoryResearchTopicAsync(historyResearchTopicId);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "History research topic deleted successfully"));
     }
 }

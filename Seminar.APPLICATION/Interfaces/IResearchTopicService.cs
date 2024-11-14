@@ -8,17 +8,17 @@ namespace Seminar.APPLICATION.Interfaces;
 public interface IResearchTopicService
 {
     // Research Topic
-    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId);
-    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch);
-    Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync( int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus);
+    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByCompetitionIdAsync(int competitionId, int reviewCommitteeId, int index, int pageSize, string nameTopicSearch, int disciplineId, int acceptedForPublicationStatus, int ReviewAcceptanceStatus);
+    Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id);
+    Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch, int acceptedForPublicationStatus, int ReviewAcceptanceStatus, int competitionId);
+    Task<PaginatedList<ResearchTopicVM>> GetResearchTopicsForReviewAsync(int index, int pageSize, int idSearch, string nameTopicSearch, int isStatus, int competitionId);
     Task CreateResearchTopicAsync(CreateResearchTopicDto createResearchTopicDto);
     Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto);
-    Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id);
-    Task<List<ResearchTopicAuthorVM>> GetAuthorByResearchTopicIdAsync(int id);
-    Task UpdateIsAcceptanceApprovedAsync(UpdateIsAcceptanceApprovedDto updateIsAcceptanceApprovedDto);
     Task UpdateIsReviewAcceptanceAsync(UpdateIsReviewAcceptanceDto updateIsReviewAcceptanceDto);
+    Task UpdateDateEndResearchTopicAsync(int researchTopicId, UpdateDateEndResearchTopicDto updateDateEndResearchTopicDto);
     // History Research Topic
-    Task CreateNewVersionResearchTopicAsync(CreateHistoryResearchTopicDto createHistoryResearchTopicDto);
     Task<List<HistoryUpdateResearchTopicVM>> GetAllHistoryResearchTopicByResearchTopicIdAsync(int researchTopicId);
-    
+    Task CreateNewVersionResearchTopicAsync(CreateHistoryResearchTopicDto createHistoryResearchTopicDto);
+    Task UpdateHistoryResearchTopicAsync(int historyResearchTopicId, UpdateHistoryResearchTopicDto updateHistoryResearchTopicDto);
+    Task DeleteHistoryResearchTopicAsync(int historyResearchTopicId);
 }
