@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Seminar.INFRASTRUCTURE.Database;
 
@@ -11,9 +12,11 @@ using Seminar.INFRASTRUCTURE.Database;
 namespace Seminar.INFRASTRUCTURE.Migrations
 {
     [DbContext(typeof(SeminarContext))]
-    partial class SeminarContextModelSnapshot : ModelSnapshot
+    [Migration("20241113171931_UpdateMigrationV2")]
+    partial class UpdateMigrationV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,9 +33,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AcceptedForPublicationStatus")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -42,8 +42,14 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FacultyAcceptedStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("FinalFilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAcceptedForPublication")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFacultyAccepted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -114,9 +120,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AcceptedForPublicationStatus")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -134,6 +137,9 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.Property<string>("FilePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAcceptedForPublication")
+                        .HasColumnType("bit");
 
                     b.Property<string>("KeyWord")
                         .HasMaxLength(255)
@@ -654,9 +660,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AcceptanceApprovedStatus")
-                        .HasColumnType("int");
-
                     b.Property<string>("AchievedResults")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -695,6 +698,12 @@ namespace Seminar.INFRASTRUCTURE.Migrations
                     b.Property<int>("DisciplineId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsAcceptanceApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReviewAcceptance")
+                        .HasColumnType("bit");
+
                     b.Property<string>("NameTopic")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -707,9 +716,6 @@ namespace Seminar.INFRASTRUCTURE.Migrations
 
                     b.Property<string>("ReportFilePath")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReviewAcceptanceStatus")
-                        .HasColumnType("int");
 
                     b.Property<int?>("Review_CommitteeId")
                         .HasColumnType("int");
