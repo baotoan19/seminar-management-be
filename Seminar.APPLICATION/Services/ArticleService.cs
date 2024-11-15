@@ -410,10 +410,10 @@ public class ArticleService : IArticleService
             .FirstOrDefaultAsync(a => a.ArticleId == id && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found or not an author!");
         // Kiểm tra bài báo có được phép cập nhật không
-        if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved)
+        if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved || article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Rejected)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-                "You cannot update published articles");
+                "You cannot update published or rejected articles");
         }
         // Thực hiện cập nhật bài báo
         var strategy = _unitOfWork.CreateExecutionStrategy();
