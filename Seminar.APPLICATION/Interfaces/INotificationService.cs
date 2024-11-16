@@ -8,6 +8,7 @@ public interface INotificationService
     Task<NotificationVM> GetNotificationByIdAsync(int id);
     Task CreateNotificationAsync(CreateNotificationDto createNotificationDto);
     Task UpdateNotificationAsync(int id, UpdateNotificationDto updateNotificationDto);
+    Task UpdateMarkAllNotificationAsReadAsync();
     Task<List<NotificationVM>> GetAllNotificationByReceiverAsync();
     Task DeleteNotificationAsync(int id);
 }

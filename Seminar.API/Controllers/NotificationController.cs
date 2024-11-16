@@ -62,6 +62,16 @@ public class NotificationController : ControllerBase
             message: "Notification updated successfully!"));
     }
 
+    [HttpPatch("mark-all-as-read")]
+    public async Task<IActionResult> UpdateMarkAllNotificationAsReadAsync()
+    {
+        await _notificationService.UpdateMarkAllNotificationAsReadAsync();
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Notification marked as read successfully!"));
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteNotificationAsync(int id)
     {

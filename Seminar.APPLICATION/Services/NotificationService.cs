@@ -105,4 +105,18 @@ public class NotificationService : INotificationService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task UpdateMarkAllNotificationAsReadAsync()
+    {
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        List<Notification> notifications = await _unitOfWork.GetRepository<Notification>().Entities
+        .Where(n => n.RecevierId == userId && n.DeletedAt == null)
+        .ToListAsync();
+        foreach (Notification notification in notifications)
+        {
+            notification.Status = true;
+            notification.UpdatedAt = DateTime.Now;
+        }
+        await _unitOfWork.SaveChangesAsync();
+    }
+
 }
