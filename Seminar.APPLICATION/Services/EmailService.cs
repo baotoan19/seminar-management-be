@@ -83,6 +83,12 @@ public class EmailService : IEmailService
         await SendEmailAsync(coAuthorDto.Email, "Xác nhận đăng ký tài khoản thành viên", emailBody);
     }
 
+    public async Task SendOtpEmail(string email, string otpCode)
+    {
+        var emailBody = await CreateEmailBodySendOtpAsync(otpCode);
+        await SendEmailAsync(email, "Mã OTP", emailBody);
+    }
+
     private async Task<string> CreateEmailBodySendAccountReviewerAsync(ReviewBoardMemberDto request, string reviewCommitteeName)
     {
         string UserId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
@@ -147,7 +153,6 @@ public class EmailService : IEmailService
         sb.AppendLine("  </body>");
         return sb.ToString();
     }
-
 
     private async Task<string> CreateEmailBodySendAccountCoAuthorAsync(CoAuthorDto coAuthorDto)
     {
@@ -307,6 +312,64 @@ public class EmailService : IEmailService
             </div>
         </body>
         ");
+        return sb.ToString();
+    }
+
+    private async Task<string> CreateEmailBodySendOtpAsync(string otpCode)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(@"<!DOCTYPE html>
+        <html lang=""en"">
+        <head>
+            <meta charset=""UTF-8"">
+            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+            <title>Xác nhận OTP</title>
+        </head>
+        <body style=""margin: 0; padding: 0; background-color: #f3f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"">
+            <div style=""width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-radius: 10px; box-sizing: border-box;"">
+                <!-- Header -->
+                <div style=""text-align: center; padding: 20px 0; background-color: #ff9800; color: #ffffff; border-radius: 8px 8px 0 0; position: relative;"">
+                    <img src=""https://img.icons8.com/ios-filled/50/ffffff/email-open.png"" alt=""Email Icon"" style=""width: 40px; height: 40px; position: absolute; top: 10px; left: 20px;"">
+                    <h1 style=""margin: 0; font-size: 24px;"">Xác nhận Email</h1>
+                </div>
+
+                <!-- Content -->
+                <div style=""padding: 20px; text-align: center;"">
+                    <p style=""font-size: 16px; color: #333; line-height: 1.6;"">
+                        Kính chào bạn,<br>
+                        Chúng tôi đã nhận được yêu cầu xác thực email của bạn. Vui lòng nhập mã OTP bên dưới để hoàn tất việc xác minh:
+                    </p>
+                    
+                    <!-- OTP Box -->
+                    <div style=""background-color: #fff7e6; padding: 20px; margin: 20px 0; border-radius: 8px; border: 2px dashed #ff9800;"">
+                        <h2 style=""margin: 0; color: #ff9800; font-size: 32px; letter-spacing: 4px;"">
+                            " + otpCode + @"
+                        </h2>
+                    </div>
+
+                    <p style=""font-size: 14px; color: #666; margin-top: 20px;"">
+                        Mã OTP này sẽ hết hạn sau 2 phút.<br>
+                        Vui lòng không chia sẻ mã với bất kỳ ai để bảo vệ tài khoản của bạn.
+                    </p>
+
+                    <!-- Warning -->
+                    <div style=""margin-top: 30px; padding: 15px; background-color: #fff3cd; border-radius: 8px; border: 1px solid #ffeeba; text-align: left;"">
+                        <p style=""margin: 0; color: #856404; font-size: 14px;"">
+                            <strong>Lưu ý:</strong> Nếu bạn không yêu cầu xác thực này, hãy bỏ qua email hoặc liên hệ với bộ phận hỗ trợ của chúng tôi.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style=""margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999;"">
+                    <p style=""font-size: 13px; margin: 0;"">
+                        © 2024 Hệ thống quản lý hội thảo. Bảo lưu mọi quyền.<br>
+                        Đây là email tự động, vui lòng không trả lời.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>");
         return sb.ToString();
     }
 }
