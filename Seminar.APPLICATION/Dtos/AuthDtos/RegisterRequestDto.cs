@@ -17,6 +17,8 @@ namespace Seminar.APPLICATION.Dtos.AuthDtos
         public string NumberPhone { get; set; }
         [Required(ErrorMessage = "Role name is required")]
         public string RoleName { get; set; }
+        [Required(ErrorMessage = "OTP code is required")]
+        public string OtpCode { get; set; }
     }
 
 }
