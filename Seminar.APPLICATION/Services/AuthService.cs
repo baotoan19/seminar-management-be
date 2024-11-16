@@ -15,8 +15,9 @@ using Seminar.APPLICATION.Interfaces.IOrganizerService;
 using Microsoft.Extensions.Logging;
 using Seminar.CORE.Base;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
-using Seminar.APPLICATION.Dtos.ReviewerDtos;
 using Seminar.APPLICATION.Dtos.OrganizersDtos;
+using Seminar.APPLICATION.Dtos.OtpDtos;
+using Seminar.DOMAIN.Enum;
 namespace Seminar.APPLICATION.Services
 {
     public class AuthService : IAuthService
@@ -27,9 +28,10 @@ namespace Seminar.APPLICATION.Services
         private readonly ITokenService _tokenService;
         private readonly IAuthorService _authorService;
         private readonly IOrganizerService _organizerService;
+        private readonly IOtpService _otpService;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, ITokenService tokenService, IAuthorService authorService, IOrganizerService organizerService, ILogger<AuthService> logger)
+        public AuthService(IUnitOfWork unitOfWork, IMapper mapper, IConfiguration configuration, ITokenService tokenService, IAuthorService authorService, IOrganizerService organizerService, IOtpService otpService, ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -37,22 +39,54 @@ namespace Seminar.APPLICATION.Services
             _tokenService = tokenService;
             _authorService = authorService;
             _organizerService = organizerService;
+            _otpService = otpService;
             _logger = logger;
+        }
+
+        public async Task SendRegistrationOtpAsync(string email)
+        {
+            // Kiểm tra email đã tồn tại chưa
+            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities
+                .FirstOrDefaultAsync(x => x.Email == email && x.DeletedAt == null && x.IsSuspended == false);
+            if (existAccount != null)
+            {
+                throw new ErrorException(StatusCodes.Status406NotAcceptable,
+                    ResponseCodeConstants.EXISTED, "This email is already registered.");
+            }
+
+            // Gửi OTP
+            await _otpService.GenerateOtp(new OtpRequestDto()
+            {
+                Email = email,
+                OtpType = OtpTypeEnum.Registration,
+            });
         }
 
         public async Task RegisterAsync(RegisterRequestDto registerRequestDto)
         {
-            Account? existAccount = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == registerRequestDto.Email && x.DeletedAt == null && x.IsSuspended == false);
-            if (existAccount != null)
+            // Verify OTP trước
+            bool isOtpVerified = await _otpService.VerifyOtp(new OtpVerificationDto()
             {
-                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.EXISTED, "This email is already registered.");
+                Email = registerRequestDto.Email,
+                OtpCode = registerRequestDto.OtpCode,
+            });
+            if (!isOtpVerified)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest,
+                    ResponseCodeConstants.BADREQUEST, "OTP code is incorrect");
             }
+            
+            // Kiểm tra role
+            Role role = await _unitOfWork.GetRepository<Role>().Entities
+                .FirstOrDefaultAsync(x => x.RoleName == registerRequestDto.RoleName &&x.DeletedAt == null)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound,
+                    ResponseCodeConstants.NOT_FOUND,
+                    "The specified role was not found. Please provide a valid role.");
 
-            Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(x => x.RoleName == registerRequestDto.RoleName && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified role was not found. Please provide a valid role.");
-
+            // Tạo tài khoản
             Account account = _mapper.Map<Account>(registerRequestDto);
-
-            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
+            FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(
+                Options.Create(new PasswordHasherOptions()));
             account.Password = passwordHasher.HashPassword(account, account.Password);
             account.RoleId = role.Id;
             account.IsSuspended = false;
@@ -84,16 +118,6 @@ namespace Seminar.APPLICATION.Services
                         };
                         await _authorService.CreateAuthorAsync(createAuthorDto);
                         break;
-                    // case CLAIMS_VALUES.ROLE_TYPE.REVIEWER:
-                    //     CreateReviewerDto createReviewerDto = new CreateReviewerDto()
-                    //     {
-                    //         AccountId = accountId,
-                    //         Name = registerRequestDto.Name,
-                    //         NumberPhone = registerRequestDto.NumberPhone
-                    //     };
-                    //     await _reviewerService.CreateReviewerAsync(createReviewerDto);
-                    //     await _emailService.SendReviewerAccountInfoEmail(registerRequestDto);
-                    //     break;
                     case CLAIMS_VALUES.ROLE_TYPE.ORGANIZER:
                         CreateOrganizerDto createOrganizerDto = new CreateOrganizerDto()
                         {
@@ -169,7 +193,7 @@ namespace Seminar.APPLICATION.Services
             }
 
             account.Password = passwordHasher.HashPassword(account, changePasswordDto.NewPassword);
-            await _unitOfWork.GetRepository<Account>().UpdateAsync(account); 
+            await _unitOfWork.GetRepository<Account>().UpdateAsync(account);
             await _unitOfWork.SaveChangesAsync();
         }
     }

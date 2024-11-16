@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Seminar.APPLICATION.Dtos.AuthDtos;
+using Seminar.APPLICATION.Dtos.OtpDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.CORE.Base;
 using Seminar.CORE.Constants;
@@ -11,9 +12,11 @@ namespace Seminar.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IOtpService _otpService;
+        public AuthController(IAuthService authService, IOtpService otpService)
         {
             _authService = authService;
+            _otpService = otpService;
         }
 
         [HttpPost("register")]
@@ -55,6 +58,26 @@ namespace Seminar.API.Controllers
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 message: "Change password success"));
+        }
+
+        [HttpPost("send-registration-otp")]
+        public async Task<IActionResult> SendRegistrationOtp(string email)
+        {
+            await _authService.SendRegistrationOtpAsync(email);
+            return Ok(new BaseResponse<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                message: "Send registration otp success"));
+        }
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp(OtpRequestDto otpRequestDto)
+        {
+            await _otpService.ResendOtp(otpRequestDto);
+            return Ok(new BaseResponse<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                message: "Resend otp success"));
         }
     }
 }
