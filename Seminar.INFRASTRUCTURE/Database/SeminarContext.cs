@@ -52,6 +52,7 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Acceptance> Acceptances { get; set; }
         public DbSet<NotificationType> NotificationTypes { get; set; }
         public DbSet<Review_Acceptance> Review_Acceptances { get; set; }
+        public DbSet<OtpVerification> OtpVerifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
