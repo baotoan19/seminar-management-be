@@ -118,7 +118,7 @@ public class OtpService : IOtpService
             if (lastOtp != null)
             {
                 // Kiểm tra thời gian giữa 2 lần gửi OTP (2 phút)
-                if (lastOtp.OtpStatus == OtpStatusEnum.Pending && DateTime.Now < lastOtp.ExpiredTime.AddMinutes(2))
+                if (lastOtp.OtpStatus == OtpStatusEnum.Pending && DateTime.Now < lastOtp.CreatedAt.AddMinutes(2))
                 {
                     throw new ErrorException(StatusCodes.Status400BadRequest,
                         ResponseCodeConstants.BADREQUEST,
