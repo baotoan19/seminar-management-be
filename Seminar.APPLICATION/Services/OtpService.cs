@@ -50,7 +50,9 @@ public class OtpService : IOtpService
             // Tìm OTP trong database dựa vào email (không check OTP code ngay)
             var otpVerification = await _unitOfWork.GetRepository<OtpVerification>()
                 .Entities
-                .FirstOrDefaultAsync(x => x.Email == otpVerificationDto.Email)
+                .Where(x => x.Email == otpVerificationDto.Email)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefaultAsync()
                 ?? throw new ErrorException(StatusCodes.Status404NotFound,
                     ResponseCodeConstants.NOT_FOUND, "No OTP request found for this email!");
 
