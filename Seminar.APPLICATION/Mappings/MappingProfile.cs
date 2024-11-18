@@ -36,7 +36,9 @@ namespace Seminar.APPLICATION.Mappings
             CreateMap<UpdateAuthorDto, Author>();
             //Organizers
             CreateMap<CreateOrganizerDto, Organizer>();
-            CreateMap<Organizer, OrganizerVM>().ReverseMap();
+            CreateMap<Organizer, OrganizerVM>()
+            .ForMember(dest => dest.FacultyName, opt => opt.MapFrom(src => src.Faculty.FacultyName))
+            .ReverseMap();
             CreateMap<UpdateOrganizerDto, Organizer>();
             //Reviewer
             CreateMap<CreateReviewerDto, Reviewer>();
