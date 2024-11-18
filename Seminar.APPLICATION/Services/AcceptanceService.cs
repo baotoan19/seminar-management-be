@@ -128,6 +128,14 @@ public class AcceptanceService : IAcceptanceService
     {
         int authorId = await GetAuthorId();
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(dto.ResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        var existingAcceptance = await _unitOfWork.GetRepository<Acceptance>().Entities
+        .FirstOrDefaultAsync(x => x.ResearchTopicId == dto.ResearchTopicId && x.DeletedAt == null);
+        if (existingAcceptance != null)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest,
+                ResponseCodeConstants.INVALID_DATA,
+                "An acceptance already exists for this research topic!");
+        }
         if (researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Pending || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Rejected)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic is not reviewed!");
@@ -149,7 +157,6 @@ public class AcceptanceService : IAcceptanceService
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Acceptance time of the research topic has ended!");
         }
-
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(x => x.ResearchTopicId == dto.ResearchTopicId && x.AuthorId == authorId && x.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author is not the creator of the research topic!");
         Acceptance acceptance = _mapper.Map<Acceptance>(dto);
         acceptance.DateAcceptance = DateTime.Now;
@@ -171,7 +178,7 @@ public class AcceptanceService : IAcceptanceService
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Acceptance is already accepted for publication!");
         }
-        acceptance.DeletedAt = DateTime.Now;
+        await _unitOfWork.GetRepository<Acceptance>().DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
     }
     public async Task CreateReviewAcceptance(CreateReviewAcceptanceDto dto)
