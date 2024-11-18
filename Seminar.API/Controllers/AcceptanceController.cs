@@ -20,9 +20,9 @@ public class AcceptanceController : ControllerBase
         _acceptanceService = acceptanceService;
     }
     [HttpGet("all-acceptances")]
-    public async Task<IActionResult> GetAllAcceptances(int index = 1, int pageSize = 10, int idSearch = 0, string nameSearch = "", int facultyAcceptedStatus = 3, int acceptedForPublicationStatus = 3, int competitionId = 0)
+    public async Task<IActionResult> GetAllAcceptances(int index = 1, int pageSize = 10, int idSearch = 0, string nameSearch = "", int facultyAcceptedStatus = 3, int acceptedForPublicationStatus = 3, int competitionId = 0, int facultyId = 0)
     {
-        var result = await _acceptanceService.GetAllAcceptances(index, pageSize, idSearch, nameSearch, facultyAcceptedStatus, acceptedForPublicationStatus, competitionId);
+        var result = await _acceptanceService.GetAllAcceptances(index, pageSize, idSearch, nameSearch, facultyAcceptedStatus, acceptedForPublicationStatus, competitionId, facultyId);
         return Ok(new BaseResponse<PaginatedList<AcceptanceVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
