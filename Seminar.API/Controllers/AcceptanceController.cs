@@ -30,7 +30,6 @@ public class AcceptanceController : ControllerBase
             data: result));
     }
     [HttpGet("{id}")]
-    [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN + "," + CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
     public async Task<IActionResult> GetAcceptanceById(int id)
     {
         var result = await _acceptanceService.GetAcceptanceById(id);
