@@ -132,17 +132,17 @@ public class AcceptanceService : IAcceptanceService
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic is not reviewed!");
         }
-        if (researchTopic.ProductFilePath == null)
+        if (string.IsNullOrWhiteSpace(researchTopic.ProductFilePath))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic is not have product file!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic does not have product file!");
         }
-        if (researchTopic.ReportFilePath == null)
+        if (string.IsNullOrWhiteSpace(researchTopic.ReportFilePath))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic is not have report file!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic does not have report file!");
         }
-        if (researchTopic.BudgetFilePath == null)
+        if (string.IsNullOrWhiteSpace(researchTopic.BudgetFilePath))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic is not have budget file!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Research topic does not have budget file!");
         }
         DateTime now = DateTime.Now;
         if (now > researchTopic.DateEnd)
@@ -152,6 +152,7 @@ public class AcceptanceService : IAcceptanceService
 
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(x => x.ResearchTopicId == dto.ResearchTopicId && x.AuthorId == authorId && x.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author is not the creator of the research topic!");
         Acceptance acceptance = _mapper.Map<Acceptance>(dto);
+        acceptance.DateAcceptance = DateTime.Now;
         acceptance.FacultyAcceptedStatus = (int)FacultyAcceptedStatusEnum.Pending;
         acceptance.AcceptedForPublicationStatus = (int)AcceptedForPublicationStatusEnum.Pending;
         await _unitOfWork.GetRepository<Acceptance>().InsertAsync(acceptance);
