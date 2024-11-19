@@ -53,6 +53,7 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(IReviewFormService), typeof(ReviewFormService));
             services.AddScoped(typeof(IAcceptanceService), typeof(AcceptanceService));
             services.AddScoped(typeof(IOtpService), typeof(OtpService));
+            services.AddScoped(typeof(IStatisticService), typeof(StatisticService));
         }
 
         //Đăng ký mapper
