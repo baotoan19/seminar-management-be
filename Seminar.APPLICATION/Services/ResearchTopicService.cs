@@ -40,16 +40,16 @@ public class ResearchTopicService : IResearchTopicService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(competitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         if (competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this competition!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép truy cập cuộc thi này.");
         }
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ. Vui lòng cung cấp chỉ số và kích thước trang hợp lệ.");
         }
         IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
         .Where(r => r.DeletedAt == null && r.CompetitionId == competitionId)
@@ -124,12 +124,34 @@ public class ResearchTopicService : IResearchTopicService
         // History Update Research Topic
         foreach (var researchTopic in resultQuery)
         {
+            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                .Where(h => h.DeletedAt == null)
+                .ToList();
+        }
+        foreach (var researchTopic in resultQuery)
+        {
             foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
             {
+
                 history.Review_Forms = history.Review_Forms
                     .Where(rf => rf.DeletedAt == null)
                     .ToList();
             }
+        }
+        // Review Committee
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
+                .ToList();
+        }
+
+        //Acceptance
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                .Where(ra => ra.DeletedAt == null)
+                .ToList();
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -144,28 +166,40 @@ public class ResearchTopicService : IResearchTopicService
     public async Task<ResearchTopicVM> GetResearchTopicByIdAsync(int id)
     {
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research Topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         //Author Research Topic
         researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
             .Where(ar => ar.DeletedAt == null)
             .ToList();
         // History Update Research Topic
-        foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
-        {
-            history.Review_Forms = history.Review_Forms
-                .Where(rf => rf.DeletedAt == null)
-                .ToList();
-        }
+        researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+            .Where(h => h.DeletedAt == null)
+            .Select(h =>
+            {
+                h.Review_Forms = h.Review_Forms
+                    .Where(rf => rf.DeletedAt == null)
+                    .ToList();
+                return h;
+            })
+            .ToList();
+        // Review Committee
+        researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+            .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
+            .ToList();
+        // Acceptance
+        researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+            .Where(ra => ra.DeletedAt == null)
+            .ToList();
         return _mapper.Map<ResearchTopicVM>(researchTopic);
     }
     public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch, int acceptedForPublicationStatus, int ReviewAcceptanceStatus, int competitionId)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ. Vui lòng cung cấp chỉ số và kích thước trang hợp lệ.");
         }
         IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
         .Where(r => r.DeletedAt == null && r.Author_ResearchTopics.Any(ar => ar.AuthorId == author.Id))
@@ -227,12 +261,33 @@ public class ResearchTopicService : IResearchTopicService
         // History Update Research Topic
         foreach (var researchTopic in resultQuery)
         {
+            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                .Where(h => h.DeletedAt == null)
+                .ToList();
+        }
+        foreach (var researchTopic in resultQuery)
+        {
             foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
             {
                 history.Review_Forms = history.Review_Forms
                     .Where(rf => rf.DeletedAt == null)
                     .ToList();
             }
+        }
+
+        // Review Committee
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
+                .ToList();
+        }
+        // Acceptance
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                .Where(ra => ra.DeletedAt == null)
+                .ToList();
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -250,7 +305,7 @@ public class ResearchTopicService : IResearchTopicService
         Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>()
             .Entities
             .FirstOrDefaultAsync(x => x.AccountId == userId)
-            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
+            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Người đánh giá không tồn tại. Vui lòng cung cấp người đánh giá hợp lệ.");
 
         DateTime now = DateTime.Now;
 
@@ -307,12 +362,32 @@ public class ResearchTopicService : IResearchTopicService
         // History Update Research Topic
         foreach (var researchTopic in resultQuery)
         {
+            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                .Where(h => h.DeletedAt == null)
+                .ToList();
+        }
+        foreach (var researchTopic in resultQuery)
+        {
             foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
             {
                 history.Review_Forms = history.Review_Forms
                     .Where(rf => rf.DeletedAt == null)
                     .ToList();
             }
+        }
+        // Review Committee
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
+                .ToList();
+        }
+        // Acceptance
+        foreach (var researchTopic in resultQuery)
+        {
+            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                .Where(ra => ra.DeletedAt == null)
+                .ToList();
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -336,19 +411,19 @@ public class ResearchTopicService : IResearchTopicService
                     // Lấy main author
                     int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
                     Author mainAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
 
                     // Kiểm tra competition còn thời gian nộp đề tài không
                     Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == createResearchTopicDto.CompetitionId) ??
-                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
                     if (competition.DateEndSubmit < DateTime.Now || competition.DateStart > DateTime.Now)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired or not started yet!");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cuộc thi đã hết hạn hoặc chưa bắt đầu.");
                     }
 
                     // Kiểm tra author có đăng ký đề tài thành công không
                     RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().Entities.FirstOrDefaultAsync(r => r.AuthorId == mainAuthor.Id && r.CompetitionId == createResearchTopicDto.CompetitionId && r.IsAccepted == (int)RegistrationFormEnum.Approved) ??
-                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author has not successfully registered a topic for this competition!");
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không đăng ký đề tài thành công cho cuộc thi này.");
                     // Kiểm tra article có tồn tại không và article có phải của author không
                     if (createResearchTopicDto.ArticleId == 0)
                     {
@@ -357,12 +432,12 @@ public class ResearchTopicService : IResearchTopicService
                     else
                     {
                         Article? article = await _unitOfWork.GetRepository<Article>().Entities.FirstOrDefaultAsync(a => a.Id == createResearchTopicDto.ArticleId)
-                            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại. Vui lòng cung cấp bài báo hợp lệ.");
                         Author_Article? author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities.FirstOrDefaultAsync(a => a.ArticleId == createResearchTopicDto.ArticleId && a.AuthorId == mainAuthor.Id) ??
-                            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found!");
+                            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo của tác giả không tồn tại.");
                         if (author_Article.AuthorId != mainAuthor.Id)
                         {
-                            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Article is not owned by the author!");
+                            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Bài báo không thuộc về tác giả.");
                         }
                     }
                     // Thêm đề tài
@@ -625,7 +700,7 @@ public class ResearchTopicService : IResearchTopicService
     public async Task UpdateDateEndResearchTopicAsync(int researchTopicId, UpdateDateEndResearchTopicDto updateDateEndResearchTopicDto)
     {
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         researchTopic.DateEnd = DateTime.Now.AddMonths(updateDateEndResearchTopicDto.Month);
         await _unitOfWork.GetRepository<ResearchTopic>().UpdateAsync(researchTopic);
         await _unitOfWork.SaveChangesAsync();
@@ -634,7 +709,7 @@ public class ResearchTopicService : IResearchTopicService
     public async Task<List<HistoryUpdateResearchTopicVM>> GetAllHistoryResearchTopicByResearchTopicIdAsync(int researchTopicId)
     {
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         List<History_Update_ResearchTopic> history_Update_ResearchTopics = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().Entities.Where(h => h.ResearchTopicId == researchTopicId && h.DeletedAt == null).ToListAsync();
         foreach (var history in history_Update_ResearchTopics)
         {
@@ -651,23 +726,23 @@ public class ResearchTopicService : IResearchTopicService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(createHistoryResearchTopicDto.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Đề tài nghiên cứu đã được chấp nhận bởi hội đồng và không thể chỉnh sửa.");
         }
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         DateTime now = DateTime.Now;
         if (competition.DateEnd < now)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cuộc thi đã hết hạn.");
         }
 
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == createHistoryResearchTopicDto.ResearchTopicId && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không phải là người đăng ký đề tài của cuộc thi này.");
         History_Update_ResearchTopic history_Update_ResearchTopic = _mapper.Map<History_Update_ResearchTopic>(createHistoryResearchTopicDto);
         history_Update_ResearchTopic.DateUpdate = DateTime.Now;
         await _unitOfWork.GetRepository<History_Update_ResearchTopic>().InsertAsync(history_Update_ResearchTopic);
@@ -677,26 +752,26 @@ public class ResearchTopicService : IResearchTopicService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(historyResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History update research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lịch sử cập nhật đề tài nghiên cứu không tồn tại. Vui lòng cung cấp lịch sử cập nhật đề tài nghiên cứu hợp lệ.");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities.FirstOrDefaultAsync(rf => rf.History_Update_ResearchTopicId == historyResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cannot update history research topic with an existing review form.");
+        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Không thể cập nhật lịch sử đề tài nghiên cứu với một bản đánh giá tồn tại.");
         if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Đề tài nghiên cứu đã được chấp nhận bởi hội đồng và không thể chỉnh sửa.");
         }
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         DateTime now = DateTime.Now;
         if (competition.DateEnd < now)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cuộc thi đã hết hạn.");
         }
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == researchTopic.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không phải là người đăng ký đề tài của cuộc thi này.");
         _mapper.Map(updateHistoryResearchTopicDto, history_Update_ResearchTopic);
         history_Update_ResearchTopic.DateUpdate = DateTime.Now;
         history_Update_ResearchTopic.UpdatedAt = DateTime.Now;
@@ -707,26 +782,26 @@ public class ResearchTopicService : IResearchTopicService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(historyResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History update research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lịch sử cập nhật đề tài nghiên cứu không tồn tại. Vui lòng cung cấp lịch sử cập nhật đề tài nghiên cứu hợp lệ.");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         if (researchTopic.AcceptanceApprovedStatus == (int)AcceptanceApprovedStatusEnum.Approved || researchTopic.ReviewAcceptanceStatus == (int)ReviewAcceptanceStatusEnum.Approved)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "The research topic has been accepted or confirmed and cannot be edited");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Đề tài nghiên cứu đã được chấp nhận bởi hội đồng và không thể chỉnh sửa.");
         }
         Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities.FirstOrDefaultAsync(rf => rf.History_Update_ResearchTopicId == historyResearchTopicId) ??
-        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cannot delete history research topic with an existing review form.");
+        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Không thể xóa lịch sử đề tài nghiên cứu với một bản đánh giá tồn tại.");
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(researchTopic.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         DateTime now = DateTime.Now;
         if (competition.DateEnd < now)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Competition has expired!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Cuộc thi đã hết hạn.");
         }
         Author_ResearchTopic author_ResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities.FirstOrDefaultAsync(a => a.AuthorId == author.Id && a.ResearchTopicId == researchTopic.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author research topic not found or not an author!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không phải là người đăng ký đề tài của cuộc thi này.");
         history_Update_ResearchTopic.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<History_Update_ResearchTopic>().UpdateAsync(history_Update_ResearchTopic);
         await _unitOfWork.SaveChangesAsync();
