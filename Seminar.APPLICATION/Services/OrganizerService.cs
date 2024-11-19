@@ -41,7 +41,7 @@ public class OrganizerService : IOrganizerService
         Organizer? existsOrganizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == createOrganizerDto.AccountId);
         if (existsOrganizer != null)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Organizer is existed!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Ban tổ chức đã tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
         }
 
         Organizer organizer = _mapper.Map<Organizer>(createOrganizerDto);
@@ -52,7 +52,7 @@ public class OrganizerService : IOrganizerService
     public async Task<OrganizerVM> GetOrganizerInforAsync(int id)
     {
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.Include(o => o.Account).Include(o => o.Faculty).FirstOrDefaultAsync(o => o.AccountId == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
         // OrganizerVM organizerVM = _mapper.Map<OrganizerVM>(organizer);
         // organizerVM.FacultyName = organizer.Faculty?.FacultyName ?? null;
         // organizerVM.Email = organizer.Account.Email;
@@ -72,7 +72,7 @@ public class OrganizerService : IOrganizerService
     public async Task<Organizer> UpdateOrganizerAsync(int id, UpdateOrganizerDto updateOrganizerDto)
     {
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.Include(o => o.Account).Include(o => o.Faculty).FirstOrDefaultAsync(o => o.AccountId == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
         _mapper.Map(updateOrganizerDto, organizer);
         organizer.Account.Email = updateOrganizerDto.Email;
         organizer.Account.UpdatedAt = DateTime.Now;
@@ -87,7 +87,15 @@ public class OrganizerService : IOrganizerService
     {
         Competition? competition = await _unitOfWork.GetRepository<Competition>()
             .Entities.FirstOrDefaultAsync(c => c.Id == competitionId)
-            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
+        if (page <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Trang phải lớn hơn 0.");
+        }
+        if (pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Kích thước trang phải lớn hơn 0.");
+        }
 
         var query = _unitOfWork.GetRepository<Review_Committee>().Entities
             .Where(rc => rc.CompetitionId == competitionId && rc.DeletedAt == null)
@@ -205,7 +213,7 @@ public class OrganizerService : IOrganizerService
     {
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities
             .FirstOrDefaultAsync(rc => rc.Id == id) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
 
         var reviewCommitteeVM = new ReviewCommitteeVM
         {
@@ -247,18 +255,18 @@ public class OrganizerService : IOrganizerService
                     // Thêm Review Committee
                     Competition? competition = await _unitOfWork.GetRepository<Competition>().Entities
                     .FirstOrDefaultAsync(c => c.Id == createReviewCommitteeDto.CompetitionId) ??
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
                     if (createReviewCommitteeDto.DateStart < competition.DateStart)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date start cannot be before the competition start date!");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày bắt đầu không thể nhỏ hơn ngày bắt đầu cuộc thi!");
                     }
                     if (createReviewCommitteeDto.DateEnd > competition.DateEnd)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end cannot be after the competition end date!");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày kết thúc không thể lớn hơn ngày kết thúc cuộc thi!");
                     }
                     if (createReviewCommitteeDto.DateStart > createReviewCommitteeDto.DateEnd)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date start cannot be after date end!");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
                     }
                     Review_Committee reviewCommittee = _mapper.Map<Review_Committee>(createReviewCommitteeDto);
                     await _unitOfWork.GetRepository<Review_Committee>().InsertAsync(reviewCommittee);
@@ -302,7 +310,7 @@ public class OrganizerService : IOrganizerService
             // Kiểm tra email trùng lặp trong danh sách
             if (!processedEmails.Add(reviewBoardMember.Email))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Review board member email is duplicated!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email người phản biện đã tồn tại. Vui lòng cung cấp email người phản biện hợp lệ.");
             }
 
             // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
@@ -310,7 +318,7 @@ public class OrganizerService : IOrganizerService
                 .FirstOrDefaultAsync(a => a.Email == reviewBoardMember.Email);
             if (account != null && (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email đã liên kết với hệ thống. Vui lòng cung cấp email người phản biện hợp lệ.");
             }
         }
     }
@@ -325,7 +333,7 @@ public class OrganizerService : IOrganizerService
             // Tạo tài khoản mới nếu không tồn tại
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             Role reviewerRole = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại. Vui lòng cung cấp vai trò hợp lệ.");
             Account newAccount = new Account
             {
                 Email = reviewBoardMember.Email,
@@ -351,7 +359,7 @@ public class OrganizerService : IOrganizerService
 
             if (existingReviewBoardMember != null)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Review board member is existed!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Người phản biện đã tồn tại. Vui lòng cung cấp người phản biện hợp lệ.");
             }
 
             return existingReviewer.Id;
@@ -361,23 +369,23 @@ public class OrganizerService : IOrganizerService
     {
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities
             .FirstOrDefaultAsync(rc => rc.Id == id) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
 
         // Validate dates
         if (updateReviewCommitteeDto.DateStart < reviewCommittee.Competitions.DateStart)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-                "Date start cannot be before the competition start date!");
+                "Ngày bắt đầu không thể nhỏ hơn ngày bắt đầu cuộc thi!");
         }
         if (updateReviewCommitteeDto.DateEnd > reviewCommittee.Competitions.DateEnd)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-                "Date end cannot be after the competition end date!");
+                "Ngày kết thúc không thể lớn hơn ngày kết thúc cuộc thi!");
         }
         if (updateReviewCommitteeDto.DateStart > updateReviewCommitteeDto.DateEnd)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-                "Date start cannot be after date end!");
+                "Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
         }
 
         var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -478,10 +486,10 @@ public class OrganizerService : IOrganizerService
     public async Task AssignReviewCommitteeToResearchTopicAsync(int researchTopicId, UpdateReviewCommitteeIdDto updateReviewCommitteeIdDto)
     {
         ResearchTopic? researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>()
             .GetByIdAsync(updateReviewCommitteeIdDto.Review_CommitteeId) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
         researchTopic.Review_CommitteeId = updateReviewCommitteeIdDto.Review_CommitteeId;
         researchTopic.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<ResearchTopic>().UpdateAsync(researchTopic);
@@ -490,7 +498,7 @@ public class OrganizerService : IOrganizerService
     public async Task DeleteReviewCommitteeAsync(int id)
     {
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities.FirstOrDefaultAsync(rc => rc.Id == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
         reviewCommittee.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Review_Committee>().UpdateAsync(reviewCommittee);
         await _unitOfWork.SaveChangesAsync();
@@ -498,13 +506,13 @@ public class OrganizerService : IOrganizerService
     public async Task UpdateDateEndReviewCommitteeAsync(int id, UpdateDateEndReviewCommitteeDto updateDateEndReviewCommitteeDto)
     {
         Review_Committee? reviewCommittee = await _unitOfWork.GetRepository<Review_Committee>().Entities.FirstOrDefaultAsync(rc => rc.Id == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review committee not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
         reviewCommittee.DateEnd = reviewCommittee.DateEnd.AddMonths(updateDateEndReviewCommitteeDto.Month);
         Competition? competition = await _unitOfWork.GetRepository<Competition>().Entities.FirstOrDefaultAsync(c => c.Id == reviewCommittee.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         if(reviewCommittee.DateEnd > competition.DateEnd || reviewCommittee.DateEnd < competition.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end cannot be after the competition end date or before the competition start date!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày kết thúc không thể lớn hơn ngày kết thúc cuộc thi hoặc nhỏ hơn ngày bắt đầu cuộc thi!");
         }
         reviewCommittee.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Review_Committee>().UpdateAsync(reviewCommittee);

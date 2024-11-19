@@ -51,7 +51,7 @@ namespace Seminar.APPLICATION.Services
             if (existAccount != null)
             {
                 throw new ErrorException(StatusCodes.Status406NotAcceptable,
-                    ResponseCodeConstants.EXISTED, "This email is already registered.");
+                    ResponseCodeConstants.EXISTED, "Email đã được đăng ký.");
             }
 
             // Gửi OTP
@@ -61,7 +61,6 @@ namespace Seminar.APPLICATION.Services
                 OtpType = OtpTypeEnum.Registration,
             });
         }
-
         public async Task RegisterAsync(RegisterRequestDto registerRequestDto)
         {
             // Verify OTP trước
@@ -73,7 +72,7 @@ namespace Seminar.APPLICATION.Services
             if (!isOtpVerified)
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest,
-                    ResponseCodeConstants.BADREQUEST, "OTP code is incorrect");
+                    ResponseCodeConstants.BADREQUEST, "Mã OTP không chính xác");
             }
             
             // Kiểm tra role
@@ -81,7 +80,7 @@ namespace Seminar.APPLICATION.Services
                 .FirstOrDefaultAsync(x => x.RoleName == registerRequestDto.RoleName &&x.DeletedAt == null)
                 ?? throw new ErrorException(StatusCodes.Status404NotFound,
                     ResponseCodeConstants.NOT_FOUND,
-                    "The specified role was not found. Please provide a valid role.");
+                    "Vai trò không tồn tại. Vui lòng cung cấp vai trò hợp lệ.");
 
             // Tạo tài khoản
             Account account = _mapper.Map<Account>(registerRequestDto);
@@ -104,7 +103,7 @@ namespace Seminar.APPLICATION.Services
                 string roleName = registerRequestDto.RoleName;
                 if (roleName == string.Empty)
                 {
-                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Role name is required");
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Vai trò là bắt buộc");
                 }
                 switch (roleName)
                 {
@@ -128,35 +127,34 @@ namespace Seminar.APPLICATION.Services
                         await _organizerService.CreateOrganizerAsync(createOrganizerDto);
                         break;
                     default:
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Role name is invalid");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Tên vai trò không hợp lệ");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error when assign role specific service");
-                throw new ErrorException(StatusCodes.Status500InternalServerError, ResponseCodeConstants.INTERNAL_SERVER_ERROR, "An internal server error occurred. Please try again later.");
+                throw new ErrorException(StatusCodes.Status500InternalServerError, ResponseCodeConstants.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi máy chủ nội bộ. Vui lòng thử lại sau.");
             }
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto loginRequestDto)
         {
-            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
+            Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == loginRequestDto.Email) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email không tồn tại");
             //check status
             if (account.DeletedAt != null)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account does not exist");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại");
             }
             if (account.IsSuspended == true)
             {
-                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "This account is not active");
+                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "Tài khoản không hoạt động");
             }
 
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             string hashedInputPassWord = passwordHasher.HashPassword(null, loginRequestDto.Password);
             if (hashedInputPassWord != account.Password)
             {
-                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "Email or password is incorrect");
+                throw new ErrorException(StatusCodes.Status406NotAcceptable, ResponseCodeConstants.BADREQUEST, "Email hoặc mật khẩu không chính xác");
             }
-            Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(x => x.Id == account.RoleId && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found for the account");
+            Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(x => x.Id == account.RoleId && x.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại cho tài khoản");
             string roleName = role.RoleName;
             TokenResponseDto tokenResponseDto = _tokenService.GenerateToken(account, roleName);
             LoginResponseDto loginResponseDto = new LoginResponseDto()
@@ -169,27 +167,27 @@ namespace Seminar.APPLICATION.Services
         {
             if (string.IsNullOrEmpty(refeshTokenRequest.RefreshToken))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Refresh token is required");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Refresh token là bắt buộc");
             }
             return await _tokenService.RefreshAccessToken(refeshTokenRequest);
         }
         public async Task ChangePasswordAsync(ChangePasswordDto changePasswordDto)
         {
             Account account = await _unitOfWork.GetRepository<Account>().Entities.FirstOrDefaultAsync(x => x.Email == changePasswordDto.Email && x.DeletedAt == null && x.IsSuspended == false) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email not found");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Email không tồn tại");
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             string hashedInputPassWord = passwordHasher.HashPassword(null, changePasswordDto.Password);
             if (hashedInputPassWord != account.Password)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Email or password is incorrect");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Email hoặc mật khẩu không chính xác");
             }
             if (account.Password == passwordHasher.HashPassword(null, changePasswordDto.NewPassword))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "New password and old password are the same");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Mật khẩu mới và mật khẩu cũ giống nhau");
             }
             if (changePasswordDto.NewPassword != changePasswordDto.ConfirmPassword)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Confirm password and new password do not match");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Mật khẩu xác nhận và mật khẩu mới không khớp");
             }
 
             account.Password = passwordHasher.HashPassword(account, changePasswordDto.NewPassword);

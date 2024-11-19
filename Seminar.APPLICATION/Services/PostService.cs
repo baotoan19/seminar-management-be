@@ -32,7 +32,7 @@ public class PostService : IPostService
     {
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ.");
         }
 
         IQueryable<Post> query = _unitOfWork.GetRepository<Post>().Entities
@@ -47,7 +47,7 @@ public class PostService : IPostService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
             }
         }
 
@@ -58,7 +58,7 @@ public class PostService : IPostService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
             }
         }
 
@@ -83,10 +83,10 @@ public class PostService : IPostService
     public async Task<PaginatedList<PostVM>> GetPagedByOrganizerIdAsync(int index, int pageSize, string idSearch, string nameSearch)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ.");
         }
 
         IQueryable<Post> query = _unitOfWork.GetRepository<Post>().Entities
@@ -101,7 +101,7 @@ public class PostService : IPostService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
             }
         }
 
@@ -112,7 +112,7 @@ public class PostService : IPostService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
             }
         }
 
@@ -138,10 +138,10 @@ public class PostService : IPostService
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int userIdInt))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid user ID");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "ID người dùng không hợp lệ. Vui lòng cung cấp ID người dùng hợp lệ.");
         }
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userIdInt) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         Post post = _mapper.Map<Post>(postDto);
         post.OrganizerId = organizer.Id;
         post.IsStatus = true;
@@ -153,12 +153,12 @@ public class PostService : IPostService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.FirstOrDefaultAsync(p => p.Id == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
         if (post.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this post!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép cập nhật bài viết này.");
         }
         _mapper.Map(postDto, post);
         post.UpdatedAt = DateTime.Now;
@@ -170,12 +170,12 @@ public class PostService : IPostService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.FirstOrDefaultAsync(p => p.Id == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
         if (post.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to delete this post!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xóa bài viết này.");
         }
         post.IsStatus = false;
         post.DeletedAt = DateTime.Now;
@@ -186,7 +186,7 @@ public class PostService : IPostService
     public async Task<PostVM> GetPostByIdAsync(int id)
     {
         Post? post = await _unitOfWork.GetRepository<Post>().Entities.Include(p => p.Organizers).FirstOrDefaultAsync(p => p.Id == id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Post not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài viết không tồn tại. Vui lòng cung cấp bài viết hợp lệ.");
         PostVM postVM = _mapper.Map<PostVM>(post);
         postVM.OrganizerName = post.Organizers.Name;
         return postVM;

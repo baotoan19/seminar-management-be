@@ -59,7 +59,7 @@ public class ReviewFormService : IReviewFormService
     private async Task<int> GetReviewerId()
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.FirstOrDefaultAsync(x => x.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Reviewer not found!");
+        Reviewer reviewer = await _unitOfWork.GetRepository<Reviewer>().Entities.FirstOrDefaultAsync(x => x.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Người đánh giá không tồn tại. Vui lòng cung cấp người đánh giá hợp lệ.");
         return reviewer.Id;
     }
     public async Task CreateReviewFormAsync(CreateReviewFormDto createReviewFormDto)
@@ -68,30 +68,30 @@ public class ReviewFormService : IReviewFormService
         History_Update_ResearchTopic history_Update_ResearchTopic =
             await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(createReviewFormDto.History_Update_ResearchTopicId) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
-                "History Update Research Topic not found!");
+                "Lịch sử cập nhật đề tài nghiên cứu không tồn tại. Vui lòng cung cấp lịch sử cập nhật đề tài nghiên cứu hợp lệ.");
         ResearchTopic researchTopic =
             await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId)
             ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
-                "Research Topic not found!");
+                "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         Review_Board_Member review_Board_Member =
             await _unitOfWork.GetRepository<Review_Board_Member>().Entities
                 .FirstOrDefaultAsync(x => x.ReviewerId == ReviewerId && x.ReviewCommitteeId == researchTopic.Review_CommitteeId)
             ?? throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-                "You are not a member of this review committee!");
+                "Bạn không phải là thành viên của hội đồng này!");
         Review_Committee review_Committee =
             await _unitOfWork.GetRepository<Review_Committee>().GetByIdAsync(researchTopic.Review_CommitteeId ?? 0)
             ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
-            "Review Committee not found!");
+            "Hội đồng phản biện không tồn tại!");
         DateTime now = DateTime.Now;
         if (now < review_Committee.DateStart)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-            "Review Committee has not started yet!");
+            "Hội đồng phản biện chưa bắt đầu!");
         }
         if (now > review_Committee.DateEnd)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-                "Review Committee has ended!");
+                "Hội đồng phản biện đã kết thúc!");
         }
         Review_Form? review_Form = await _unitOfWork.GetRepository<Review_Form>().Entities
             .FirstOrDefaultAsync(x => x.ReviewerId == ReviewerId &&
@@ -100,7 +100,7 @@ public class ReviewFormService : IReviewFormService
         if (review_Form != null)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA,
-            "You have already reviewed this version of the research topic!");
+            "Bạn đã đánh giá bản này của đề tài nghiên cứu!");
         }
         // Create new review form
         review_Form = _mapper.Map<Review_Form>(createReviewFormDto);
@@ -112,19 +112,19 @@ public class ReviewFormService : IReviewFormService
     public async Task UpdateReviewFormAsync(int id, UpdateReviewFormDto updateReviewFormDto)
     {
         int ReviewerId = await GetReviewerId();
-        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Form not found!");
-        if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not the reviewer of this review form!");
-        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History Update Research Topic not found!");
-        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research Topic not found!");
-        Review_Committee review_Committee = await _unitOfWork.GetRepository<Review_Committee>().GetByIdAsync(researchTopic.Review_CommitteeId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Committee not found!");
+        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bản đánh giá không tồn tại. Vui lòng cung cấp bản đánh giá hợp lệ.");
+        if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không phải là người đánh giá của bản này!");
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lịch sử cập nhật đề tài nghiên cứu không tồn tại. Vui lòng cung cấp lịch sử cập nhật đề tài nghiên cứu hợp lệ.");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
+        Review_Committee review_Committee = await _unitOfWork.GetRepository<Review_Committee>().GetByIdAsync(researchTopic.Review_CommitteeId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Hội đồng phản biện không tồn tại. Vui lòng cung cấp hội đồng phản biện hợp lệ.");
         DateTime now = DateTime.Now;
         if (now < review_Committee.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Review Committee has not started yet!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Hội đồng phản biện chưa bắt đầu!");
         }
         if (now > review_Committee.DateEnd)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Review Committee has ended!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Hội đồng phản biện đã kết thúc!");
         }
         review_Form = _mapper.Map<Review_Form>(updateReviewFormDto);
         review_Form.UpdatedAt = DateTime.Now;
@@ -135,19 +135,19 @@ public class ReviewFormService : IReviewFormService
     public async Task DeleteReviewFormAsync(int id)
     {
         int ReviewerId = await GetReviewerId();
-        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Form not found!");
-        if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not the reviewer of this review form!");
-        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "History Update Research Topic not found!");
-        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research Topic not found!");
+        Review_Form review_Form = await _unitOfWork.GetRepository<Review_Form>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bản đánh giá không tồn tại. Vui lòng cung cấp bản đánh giá hợp lệ.");
+        if (review_Form.ReviewerId != ReviewerId) throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không phải là người đánh giá của bản này!");
+        History_Update_ResearchTopic history_Update_ResearchTopic = await _unitOfWork.GetRepository<History_Update_ResearchTopic>().GetByIdAsync(review_Form.History_Update_ResearchTopicId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lịch sử cập nhật đề tài nghiên cứu không tồn tại. Vui lòng cung cấp lịch sử cập nhật đề tài nghiên cứu hợp lệ.");
+        ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(history_Update_ResearchTopic.ResearchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
         Review_Committee review_Committee = await _unitOfWork.GetRepository<Review_Committee>().GetByIdAsync(researchTopic.Review_CommitteeId ?? 0) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Review Committee not found!");
         DateTime now = DateTime.Now;
         if (now < review_Committee.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Review Committee has not started yet!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Hội đồng phản biện chưa bắt đầu!");
         }
         if (now > review_Committee.DateEnd)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Review Committee has ended!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Hội đồng phản biện đã kết thúc!");
         }
         review_Form.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Review_Form>().UpdateAsync(review_Form);

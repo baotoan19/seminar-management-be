@@ -28,11 +28,11 @@ public class CompetitionService : ICompetitionService
     public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionByOrganizerIdAsync(int index, int pageSize, string nameSearch)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified organizer was not found. Please provide a valid organizer.");
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp tổ chức hợp lệ.");
 
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ");
         }
 
         IQueryable<Competition> query = _unitOfWork.GetRepository<Competition>().Entities
@@ -46,7 +46,7 @@ public class CompetitionService : ICompetitionService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại!");
             }
         }
 
@@ -71,7 +71,7 @@ public class CompetitionService : ICompetitionService
     {
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ");
         }
 
         IQueryable<Competition> query = _unitOfWork.GetRepository<Competition>().Entities
@@ -85,7 +85,7 @@ public class CompetitionService : ICompetitionService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại!");
             }
         }
 
@@ -95,7 +95,7 @@ public class CompetitionService : ICompetitionService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại!");
             }
         }
 
@@ -117,16 +117,16 @@ public class CompetitionService : ICompetitionService
     }
     public async Task<CompetitionVM> GetCompetitionByIdAsync(int id)
     {
-        Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.Include(c => c.Organizer).FirstOrDefaultAsync(c => c.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().Entities.Include(c => c.Organizer).FirstOrDefaultAsync(c => c.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         return _mapper.Map<CompetitionVM>(competition);
     }
     public async Task CreateCompetitionAsync(CreateCompetitionDto createCompetitionDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified organizer was not found. Please provide a valid organizer.");
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
         if(createCompetitionDto.DateEndSubmit > createCompetitionDto.DateEnd || createCompetitionDto.DateEndSubmit < createCompetitionDto.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end and greater than date start!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày nộp bài phải nhỏ hơn ngày kết thúc và lớn hơn ngày bắt đầu!");
         }
         Competition competition = _mapper.Map<Competition>(createCompetitionDto);
         competition.OrganizerId = organizer.Id;
@@ -136,15 +136,15 @@ public class CompetitionService : ICompetitionService
     public async Task UpdateCompetitionAsync(int id, UpdateCompetitionDto updateCompetitionDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified organizer was not found. Please provide a valid organizer.");
-        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         if (competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this competition!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép cập nhật cuộc thi này!");
         }
         if(updateCompetitionDto.DateEndSubmit > updateCompetitionDto.DateEnd || updateCompetitionDto.DateEndSubmit < updateCompetitionDto.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end and greater than date start!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày nộp bài phải nhỏ hơn ngày kết thúc và lớn hơn ngày bắt đầu!");
         }
         _mapper.Map(updateCompetitionDto, competition);
         competition.UpdatedAt = DateTime.Now;
@@ -153,18 +153,18 @@ public class CompetitionService : ICompetitionService
     public async Task DeleteCompetitionAsync(int id)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified organizer was not found. Please provide a valid organizer.");
-        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         if (competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to delete this competition!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xóa cuộc thi này!");
         }
         competition.DeletedAt = DateTime.Now;
         await _unitOfWork.SaveChangesAsync();
     }
     public async Task UpdateDateEndCompetitionAsync(int id, UpdateDateEndCompetitionDto updateDateEndCompetitionDto)
     {
-        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         competition.DateEnd = competition.DateEnd?.AddMonths(updateDateEndCompetitionDto.Month);
         competition.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Competition>().UpdateAsync(competition);
@@ -172,11 +172,11 @@ public class CompetitionService : ICompetitionService
     }
     public async Task UpdateDateSubmitCompetitionAsync(int id, UpdateDateSubmitCompetitionDto updateDateSubmitCompetitionDto)
     {
-        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "The specified competition was not found. Please provide a valid competition.");
+        Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         competition.DateEndSubmit = competition.DateEndSubmit?.AddMonths(updateDateSubmitCompetitionDto.Month);
         if(competition.DateEndSubmit > competition.DateEnd)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Date end submit must be less than date end!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Ngày nộp bài phải nhỏ hơn ngày kết thúc!");
         }
         competition.UpdatedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Competition>().UpdateAsync(competition);

@@ -31,7 +31,7 @@ namespace Seminar.APPLICATION.Services
         {
             if (index <= 0 || pageSize <= 0)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ!");
             }
 
             IQueryable<Account> query = _unitOfWork.GetRepository<Account>().Entities
@@ -46,7 +46,7 @@ namespace Seminar.APPLICATION.Services
                 bool isInt = int.TryParse(idSearch, out int idInt);
                 if (!isInt)
                 {
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại!");
                 }
             }
 
@@ -57,7 +57,7 @@ namespace Seminar.APPLICATION.Services
                 var result = await query.ToListAsync();
                 if (result.Count == 0)
                 {
-                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+                    throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại!");
                 }
             }
 
@@ -81,20 +81,18 @@ namespace Seminar.APPLICATION.Services
         {
             return await _unitOfWork.GetRepository<Account>().Entities
                 .FirstOrDefaultAsync(x => x.Id == id)
-                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại!");
         }
-
         public async Task<AccountVM> GetAccountByIdAsync(int id)
         {
             Account account = await GetAccountById(id);
             var role = await _unitOfWork.GetRepository<Role>().GetByIdAsync(account.RoleId ?? 0)
-                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found");
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role không tồn tại!");
 
             var accountVM = _mapper.Map<AccountVM>(account);
             accountVM.RoleName = role.RoleName;
             return accountVM;
         }
-
         public async Task UpdateAccountAsync(int id, UpdateAccountDto updateAccountDto)
         {
             Account account = await GetAccountById(id);
@@ -136,7 +134,7 @@ namespace Seminar.APPLICATION.Services
         public async Task<string> GetEmailByAccountId(int accountId)
         {
             Account account = await _unitOfWork.GetRepository<Account>().Entities
-                .FirstOrDefaultAsync(a => a.Id == accountId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found!");
+                .FirstOrDefaultAsync(a => a.Id == accountId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại!");
             return account.Email ?? string.Empty;
         }
     }

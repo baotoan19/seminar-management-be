@@ -30,7 +30,7 @@ public class ConcludeService : IConcludeService
 
     public async Task<ConcludeVM> GetByIdAsync(int id)
     {
-        Conclude conclude = await _unitOfWork.GetRepository<Conclude>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Conclude not found!");
+        Conclude conclude = await _unitOfWork.GetRepository<Conclude>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Kết quả không tồn tại. Vui lòng cung cấp kết quả hợp lệ.");
         return _mapper.Map<ConcludeVM>(conclude);
     }
 }

@@ -18,12 +18,12 @@ namespace Seminar.APPLICATION.Services
             var firebaseConfig = configuration.GetSection("Firebase");
             // Lấy tên bucket từ cấu hình
             _bucketName = firebaseConfig["StorageBucket"]
-                ?? throw new ArgumentNullException("StorageBucket", "Bucket name is missing in configuration.");
+                ?? throw new ArgumentNullException("StorageBucket", "Tên bucket là bắt buộc trong cấu hình.");
             // Lấy đường dẫn file JSON Credential
             var credentialPath = firebaseConfig["CredentialPath"]
-                ?? throw new ArgumentNullException("CredentialPath", "Credential path is missing in configuration.");
+                ?? throw new ArgumentNullException("CredentialPath", "Đường dẫn file JSON Credential là bắt buộc trong cấu hình.");
             if (!File.Exists(credentialPath))
-                throw new FileNotFoundException($"Credential file not found: {credentialPath}");
+                throw new FileNotFoundException($"File Credential không tồn tại: {credentialPath}");
             var credential = GoogleCredential.FromFile(credentialPath);
             _storageClient = StorageClient.Create(credential);
         }
@@ -31,7 +31,7 @@ namespace Seminar.APPLICATION.Services
         {
             if (!FirebaseConstants.AllFolders.Contains(createFirebaseDto.FolderName))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid folder name.");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Tên thư mục không hợp lệ.");
             }
             if (createFirebaseDto.File == null || createFirebaseDto.File.Length == 0)
                 throw new ArgumentException("No file uploaded.");
@@ -62,7 +62,6 @@ namespace Seminar.APPLICATION.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete file: {ex.Message}");
                 throw; // Re-throw để caller có thể xử lý
             }
         }

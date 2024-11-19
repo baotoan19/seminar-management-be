@@ -28,7 +28,7 @@ public class FacultyService : IFacultyService
 
     public async Task<FacultyVM> GetFacultyByIdAsync(int id)
     {
-        Faculty faculty = await _unitOfWork.GetRepository<Faculty>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Faculty not found!");
+        Faculty faculty = await _unitOfWork.GetRepository<Faculty>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Khoa không tồn tại. Vui lòng cung cấp khoa hợp lệ.");
         return _mapper.Map<FacultyVM>(faculty);
     }
     

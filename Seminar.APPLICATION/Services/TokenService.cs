@@ -96,20 +96,20 @@ namespace Seminar.APPLICATION.Services
             var principal = GetPrincipalFromExpiredToken(refeshTokenRequest.RefreshToken);
             if (principal == null)
             {
-                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Invalid refresh token");
+                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Token không hợp lệ.");
             }
             var accountIdClaim = principal.FindFirst("id")?.Value;
             if (string.IsNullOrEmpty(accountIdClaim) || !int.TryParse(accountIdClaim, out int accountId))
             {
-                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Invalid refresh token: missing or malformed account ID.");
+                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Token không hợp lệ: mất hoặc không hợp lệ ID tài khoản.");
             }
             Account account = await _unitOfWork.GetRepository<Account>().Entities
                 .FirstOrDefaultAsync(x => x.Id == accountId && x.DeletedAt == null) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại.");
     
             var role = await _unitOfWork.GetRepository<Role>().Entities
                 .FirstOrDefaultAsync(x => x.Id == account.RoleId && x.DeletedAt == null) ??
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found for the account");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại cho tài khoản.");
 
             var newTokens = GenerateToken(account, role.RoleName);
             return newTokens;
@@ -135,7 +135,7 @@ namespace Seminar.APPLICATION.Services
                 if (securityToken is not JwtSecurityToken jwtSecurityToken ||
                     !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256Signature, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Invalid token");
+                    throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.INVALID_TOKEN, "Token không hợp lệ.");
                 }
 
                 return principal;

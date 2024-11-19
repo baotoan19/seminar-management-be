@@ -33,20 +33,20 @@ public class RegistrationFormService : IRegistrationFormService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(competitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         if (competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to access this competition!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép truy cập cuộc thi này.");
         }
         if  (competitionId <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid competition id");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "ID cuộc thi không hợp lệ. Vui lòng cung cấp ID cuộc thi hợp lệ.");
         }
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ. Vui lòng cung cấp chỉ số và kích thước trang hợp lệ.");
         }
         IQueryable<RegistrationForm> query = _unitOfWork.GetRepository<RegistrationForm>().Entities
             .Where(x => x.DeletedAt == null && x.CompetitionId == competitionId)
@@ -58,7 +58,7 @@ public class RegistrationFormService : IRegistrationFormService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đăng ký không tồn tại. Vui lòng cung cấp đăng ký hợp lệ.");
             }
         }
 
@@ -76,7 +76,7 @@ public class RegistrationFormService : IRegistrationFormService
         }
         else
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid isAccepted value");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Giá trị isAccepted không hợp lệ. Vui lòng cung cấp giá trị hợp lệ.");
         }
 
         int totalCount = await query.CountAsync();
@@ -101,7 +101,7 @@ public class RegistrationFormService : IRegistrationFormService
     {
         int accountId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == accountId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         List<RegistrationForm> registrationForms = await _unitOfWork.GetRepository<RegistrationForm>().Entities.Where(x => x.AuthorId == author.Id && x.DeletedAt == null).ToListAsync();
         List<RegistrationFormVM> responeItems = _mapper.Map<List<RegistrationFormVM>>(registrationForms);
         return responeItems;
@@ -110,7 +110,7 @@ public class RegistrationFormService : IRegistrationFormService
     public async Task<RegistrationFormVM> GetRegistrationFormByIdAsync(int id)
     {
         RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().GetByIdAsync(id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Phiếu đăng ký không tồn tại. Vui lòng cung cấp phiếu đăng ký hợp lệ.");
         RegistrationFormVM registrationFormVM = _mapper.Map<RegistrationFormVM>(registrationForm);
         return registrationFormVM;
     }
@@ -119,13 +119,13 @@ public class RegistrationFormService : IRegistrationFormService
     {
         int accountId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == accountId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         Competition competition = await _unitOfWork.GetRepository<Competition>().GetByIdAsync(dto.CompetitionId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Competition not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại. Vui lòng cung cấp cuộc thi hợp lệ.");
         DateTime now = DateTime.Now;
         if (now > competition.DateEndSubmit || now < competition.DateStart)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Registration period for this competition is not active!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Thời gian đăng ký cho cuộc thi này không hoạt động.");
         }
         RegistrationForm registrationForm = _mapper.Map<RegistrationForm>(dto);
         registrationForm.AuthorId = author.Id;
@@ -138,16 +138,16 @@ public class RegistrationFormService : IRegistrationFormService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().GetByIdAsync(id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Phiếu đăng ký không tồn tại. Vui lòng cung cấp phiếu đăng ký hợp lệ.");
         if (registrationForm.Competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to update this registration form!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép cập nhật phiếu đăng ký này.");
         }
         if (dto.IsAccepted != (int)RegistrationFormEnum.Approved && dto.IsAccepted != (int)RegistrationFormEnum.Rejected)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid is accepted value!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Giá trị isAccepted không hợp lệ. Vui lòng cung cấp giá trị hợp lệ.");
         }
         _mapper.Map(dto, registrationForm);
         registrationForm.UpdatedAt = DateTime.Now;
@@ -159,12 +159,12 @@ public class RegistrationFormService : IRegistrationFormService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nhóm người dùng không tồn tại. Vui lòng cung cấp nhóm người dùng hợp lệ.");
         RegistrationForm registrationForm = await _unitOfWork.GetRepository<RegistrationForm>().GetByIdAsync(id) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Registration Form not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Phiếu đăng ký không tồn tại. Vui lòng cung cấp phiếu đăng ký hợp lệ.");
         if (registrationForm.Competition.OrganizerId != organizer.Id)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not allowed to delete this registration form!");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xóa phiếu đăng ký này.");
         }
         registrationForm.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<RegistrationForm>().UpdateAsync(registrationForm);

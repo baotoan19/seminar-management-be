@@ -32,10 +32,10 @@ public class NotificationService : INotificationService
         Notification notification = await _unitOfWork.GetRepository<Notification>().Entities
             .Include(n => n.NotificationTypes)
             .FirstOrDefaultAsync(n => n.Id == id) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Notification not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Thông báo không tồn tại. Vui lòng cung cấp thông báo hợp lệ.");
         if (notification.RecevierId.ToString() != userId)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to view this notification.");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xem thông báo này.");
         }
         NotificationVM notificationVM = _mapper.Map<NotificationVM>(notification);
         notificationVM.NotificationTypeName = notification.NotificationTypes?.Name ?? "";
@@ -50,7 +50,7 @@ public class NotificationService : INotificationService
     {
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         NotificationType notificationTypes = await _unitOfWork.GetRepository<NotificationType>().Entities.FirstOrDefaultAsync(nt => nt.Id == createNotificationDto.NotificationTypeId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Notification type not found!");
+        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Loại thông báo không tồn tại. Vui lòng cung cấp loại thông báo hợp lệ.");
         Notification notification = _mapper.Map<Notification>(createNotificationDto);
         notification.SenderId = int.Parse(userId);
         await _unitOfWork.GetRepository<Notification>().InsertAsync(notification);
@@ -72,7 +72,7 @@ public class NotificationService : INotificationService
         int receiverId = int.Parse(userId);
         if (receiverId.ToString() != userId)
         {
-            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to view these notifications.");
+            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xem các thông báo này.");
         }
 
         List<Notification> notifications = await _unitOfWork.GetRepository<Notification>().Entities
@@ -95,11 +95,10 @@ public class NotificationService : INotificationService
         }
         return notificationVMs;
     }
-
-
+    
     public async Task DeleteNotificationAsync(int id)
     {
-        Notification notification = await _unitOfWork.GetRepository<Notification>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Notification not found!");
+        Notification notification = await _unitOfWork.GetRepository<Notification>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Thông báo không tồn tại. Vui lòng cung cấp thông báo hợp lệ.");
         notification.DeletedAt = DateTime.Now;
         await _unitOfWork.GetRepository<Notification>().UpdateAsync(notification);
         await _unitOfWork.SaveChangesAsync();

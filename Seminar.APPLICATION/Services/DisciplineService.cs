@@ -27,7 +27,7 @@ public class DisciplineService : IDisciplineService
 
     public async Task<DisciplineVM> GetDisciplineByIdAsync(int id)
     {
-        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại. Vui lòng cung cấp lĩnh vực hợp lệ.");
         return _mapper.Map<DisciplineVM>(discipline);
     }
 }

@@ -13,6 +13,7 @@ using Seminar.CORE.Constants;
 using Seminar.CORE.ExceptionCustom;
 using Seminar.CORE.Utils;
 using Seminar.DOMAIN.Entitys;
+using Seminar.DOMAIN.Enum;
 using Seminar.DOMAIN.Interfaces;
 
 namespace Seminar.APPLICATION.Services
@@ -41,7 +42,7 @@ namespace Seminar.APPLICATION.Services
             Author? existsAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == createAuthorDto.AccountId);
             if (existsAuthor != null)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Author is existed!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Tác giả đã tồn tại!");
             }
 
             Author author = _mapper.Map<Author>(createAuthorDto);
@@ -52,7 +53,7 @@ namespace Seminar.APPLICATION.Services
         public async Task<AuthorVM> GetAuthorInforAsync(int id)
         {
             Author? author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == id) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
             AuthorVM authorVM = new AuthorVM
             {
                 Id = author.Id,
@@ -71,11 +72,11 @@ namespace Seminar.APPLICATION.Services
         public async Task UpdateAuthorAsync(int accountId, UpdateAuthorDto updateAuthorDto)
         {
             Author? author = await _unitOfWork.GetRepository<Author>().Entities.Include(a => a.Account).Include(a => a.Faculty).FirstOrDefaultAsync(a => a.AccountId == accountId) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
             _mapper.Map(updateAuthorDto, author);
             if (await _accountService.IsEmailUniqueAsync(updateAuthorDto.Email, accountId))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Email is existed!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Email đã tồn tại!");
             }
             author.Account.Email = updateAuthorDto.Email;
             author.Account.UpdatedAt = DateTime.Now;
@@ -100,17 +101,17 @@ namespace Seminar.APPLICATION.Services
                             ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
 
                         // Kiểm tra xem article đã được chấp nhận để xuất bản chưa
-                        // if (!article.IsAcceptedForPublication)
-                        // {
-                        //     throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Article is not accepted for publication!");
-                        // }
+                        if (article.AcceptedForPublicationStatus == (int)AcceptanceApprovedStatusEnum.Approved)
+                        {
+                            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Bài báo đã được xuất bản, không thể thêm đồng tác giả!");
+                        }
 
                         // Kiểm tra quyền tác giả của user trên article
                         Author_Article? existingAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
                             .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == author.Id && aa.RoleName == "author");
                         if (existingAuthorArticle == null)
                         {
-                            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to create co-author for this article!");
+                            throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không có quyền tạo đồng tác giả cho bài báo này!");
                         }
 
                         FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
@@ -126,7 +127,7 @@ namespace Seminar.APPLICATION.Services
                             if (existingCoAuthor == null)
                             {
                                 Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == "author")
-                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại!");
 
                                 Account account = new Account
                                 {
@@ -160,7 +161,7 @@ namespace Seminar.APPLICATION.Services
                                     .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == coAuthorId);
                                 if (existingCoAuthorArticle != null)
                                 {
-                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Co-author with email {coAuthorDto.Email} is existed!");
+                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Đồng tác giả với email {coAuthorDto.Email} đã tồn tại!");
                                 }
                             }
 
@@ -185,7 +186,6 @@ namespace Seminar.APPLICATION.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error creating co-author");
                         await _unitOfWork.RollBackAsync();
                         throw;
                     }
@@ -200,17 +200,16 @@ namespace Seminar.APPLICATION.Services
                 // Kiểm tra email trùng lặp trong danh sách
                 if (!processedEmails.Add(coAuthor.Email))
                 {
-                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email đồng tác giả trùng lặp!");
                 }
                 // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
                 Account? account = await _unitOfWork.GetRepository<Account>().Entities
                     .FirstOrDefaultAsync(a => a.Email == coAuthor.Email);
                 if (account != null)
                 {
-                    _logger.LogError($"Account found for email: {coAuthor.Email}, Role: {account.Role.RoleName}");
                     if (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)
                     {
-                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                        throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email đã được liên kết với hệ thống!");
                     }
                 }
             }
@@ -219,15 +218,15 @@ namespace Seminar.APPLICATION.Services
         {
             int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
             Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId)
-                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
             ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId)
-                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Chủ đề nghiên cứu không tồn tại!");
 
             Author_ResearchTopic? existingAuthorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>().Entities
                 .FirstOrDefaultAsync(a => a.ResearchTopicId == researchTopicId && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR);
             if (existingAuthorResearchTopic == null)
             {
-                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to create a member for this research topic!");
+                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không có quyền tạo thành viên cho chủ đề nghiên cứu này!");
             }
 
             var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -251,7 +250,7 @@ namespace Seminar.APPLICATION.Services
                             if (existingCoAuthor == null)
                             {
                                 Role role = await _unitOfWork.GetRepository<Role>().Entities.FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR)
-                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+                                    ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại!");
 
                                 Account account = new Account
                                 {
@@ -285,7 +284,7 @@ namespace Seminar.APPLICATION.Services
                                     .FirstOrDefaultAsync(aa => aa.ResearchTopicId == researchTopicId && aa.AuthorId == coAuthorId);
                                 if (existingCoAuthorResearchTopic != null)
                                 {
-                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Co-author with email {coAuthorDto.Email} is existed!");
+                                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, $"Đồng tác giả với email {coAuthorDto.Email} đã tồn tại!");
                                 }
                             }
 
@@ -321,20 +320,20 @@ namespace Seminar.APPLICATION.Services
             // Kiểm tra xem người đăng nhập có phải là tác giả không
             Author author = await _unitOfWork.GetRepository<Author>().Entities
                 .FirstOrDefaultAsync(a => a.AccountId == userId)
-                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
             // Kiểm tra xem người đăng nhập có phải là tác giả chính của bài viết không
             Author_Article? mainAuthor = await _unitOfWork.GetRepository<Author_Article>().Entities
                 .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.Author.AccountId == userId && aa.RoleName == "author");
             if (mainAuthor == null)
             {
-                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You are not authorized to delete co-author for this article!");
+                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không có quyền xóa đồng tác giả cho bài báo này!");
             }
             // Tìm Author_Article của tác giả phụ cần xóa
             Author_Article? coAuthorArticle = await _unitOfWork.GetRepository<Author_Article>().Entities
                 .FirstOrDefaultAsync(aa => aa.ArticleId == articleId && aa.AuthorId == coAuthorId);
             if (coAuthorArticle == null)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Co-author not found for this article!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đồng tác giả không tồn tại cho bài báo này!");
             }
             // Xóa Author_Article của tác giả phụ
             coAuthorArticle.DeletedAt = DateTime.Now;
@@ -343,8 +342,8 @@ namespace Seminar.APPLICATION.Services
         public async Task DeleteMemberAsync(int researchTopicId, int memberId)
         {
             int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-            Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
-            ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Research topic not found!");
+            Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
+            ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Chủ đề nghiên cứu không tồn tại!");
             // Kiểm tra xem người đăng nhập có phải là tác giả chính của research topic hay không
             Author_ResearchTopic authorResearchTopic = await _unitOfWork.GetRepository<Author_ResearchTopic>()
             .Entities.FirstOrDefaultAsync(art =>
@@ -353,7 +352,7 @@ namespace Seminar.APPLICATION.Services
                 art.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR &&
                 art.DeletedAt == null) ??
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-            "You are not the main author of this research topic!");
+            "Bạn không phải là tác giả chính của chủ đề nghiên cứu này!");
             // Tìm Author_ResearchTopic của thành viên cần xóa
             Author_ResearchTopic memberToDelete = await _unitOfWork.GetRepository<Author_ResearchTopic>()
             .Entities.FirstOrDefaultAsync(art =>
@@ -362,7 +361,7 @@ namespace Seminar.APPLICATION.Services
                 art.RoleName == CLAIMS_VALUES.ROLE_TYPE.CO_AUTHOR &&
                 art.DeletedAt == null) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
-            "Member not found or is not a co-author!");
+            "Thành viên không tồn tại hoặc không phải là đồng tác giả!");
             // Kiểm tra xem research topic có được chấp nhận hay không
             // if (researchTopic.IsAcceptanceApproved == true || researchTopic.IsReviewAcceptance == true)
             // {

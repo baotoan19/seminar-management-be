@@ -42,7 +42,7 @@ public class ArticleService : IArticleService
     {
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ!");
         }
 
         IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
@@ -55,7 +55,7 @@ public class ArticleService : IArticleService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
         //Tìm kiếm theo tên
@@ -65,7 +65,7 @@ public class ArticleService : IArticleService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
 
@@ -83,7 +83,7 @@ public class ArticleService : IArticleService
             case (int)AcceptedForPublicationStatusEnum.All:
                 break;
             default:
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid accepted for publication status");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Trạng thái duyệt để xuất bản không hợp lệ!");
         }
 
         int totalCount = await query.CountAsync();
@@ -110,7 +110,7 @@ public class ArticleService : IArticleService
     }
     public async Task<ArticleVM> GetArticleByIdAsync(int id)
     {
-        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
         ArticleVM articleVM = _mapper.Map<ArticleVM>(article);
         articleVM.Author_Articles = articleVM.Author_Articles
             .Where(aa => aa.DeletedAt == null)
@@ -121,7 +121,7 @@ public class ArticleService : IArticleService
     {
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ!");
         }
 
         IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
@@ -134,7 +134,7 @@ public class ArticleService : IArticleService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
         //Tìm kiếm theo tên
@@ -144,7 +144,7 @@ public class ArticleService : IArticleService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
 
@@ -173,10 +173,10 @@ public class ArticleService : IArticleService
     public async Task<PaginatedList<ArticleVM>> GetAllArticlesByAuthorIdPagedAsync(int index, int pageSize, string idSearch, string nameSearch, int acceptedForPublicationStatus, string roleName)
     {
         int userID = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userID) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userID) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
         if (index <= 0 || pageSize <= 0)
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ!");
         }
 
         IQueryable<Article> query = _unitOfWork.GetRepository<Article>().Entities
@@ -189,7 +189,7 @@ public class ArticleService : IArticleService
             bool isInt = int.TryParse(idSearch, out int idInt);
             if (!isInt)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
         //Tìm kiếm theo tên
@@ -199,7 +199,7 @@ public class ArticleService : IArticleService
             var result = await query.ToListAsync();
             if (result.Count == 0)
             {
-                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+                throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
             }
         }
 
@@ -218,7 +218,7 @@ public class ArticleService : IArticleService
             case (int)AcceptedForPublicationStatusEnum.All:
                 break;
             default:
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid accepted for publication status");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Trạng thái duyệt để xuất bản không hợp lệ!");
         }
 
         //Lọc theo role
@@ -237,7 +237,7 @@ public class ArticleService : IArticleService
                     query = query.Where(a => a.Author_Articles.Any(aa => aa.AuthorId == author.Id && aa.RoleName == roleName));
                     break;
                 default:
-                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid role name");
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Tên vai trò không hợp lệ!");
             }
         }
 
@@ -277,14 +277,14 @@ public class ArticleService : IArticleService
                 {
                     int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
                     Article article = _mapper.Map<Article>(createArticalsDto);
-                    article.Discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+                    article.Discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại!");
                     string keyword = string.Join(",", createArticalsDto.Keywords);
                     article.KeyWord = keyword;
                     article.AcceptedForPublicationStatus = (int)AcceptedForPublicationStatusEnum.Pending;
                     await _unitOfWork.GetRepository<Article>().InsertAsync(article);
                     await _unitOfWork.SaveChangesAsync();
                     //Insert main author
-                    Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+                    Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
                     List<Author_Article> author_Articles = new List<Author_Article>
                     {
                         new Author_Article
@@ -331,17 +331,16 @@ public class ArticleService : IArticleService
             // Kiểm tra email trùng lặp trong danh sách
             if (!processedEmails.Add(coAuthor.Email))
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Co-author email is duplicated!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email của đồng tác giả bị trùng lặp!");
             }
             // Kiểm tra email có tồn tại trong hệ thống không và vai trò của tài khoản
             Account? account = await _unitOfWork.GetRepository<Account>().Entities
                 .FirstOrDefaultAsync(a => a.Email == coAuthor.Email);
             if (account != null)
             {
-                _logger.LogError($"Account found for email: {coAuthor.Email}, Role: {account.Role.RoleName}");
                 if (account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.REVIEWER || account.Role.RoleName == CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)
                 {
-                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email is already associated with system!");
+                    throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Email đã được liên kết với hệ thống!");
                 }
             }
         }
@@ -355,7 +354,7 @@ public class ArticleService : IArticleService
             // Tạo tài khoản và author mới nếu không tồn tại
             Role role = await _unitOfWork.GetRepository<Role>().Entities
             .FirstOrDefaultAsync(r => r.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Role not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Vai trò không tồn tại!");
 
             FixedSaltPasswordHasher<Account> passwordHasher = new FixedSaltPasswordHasher<Account>(Options.Create(new PasswordHasherOptions()));
             Account account = new Account
@@ -390,7 +389,7 @@ public class ArticleService : IArticleService
                 .FirstOrDefaultAsync(a => a.AuthorId == existingAuthor.Id && a.ArticleId == article.Id);
             if (existingAuthorArticle != null)
             {
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Co-author is existed!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.EXISTED, "Đồng tác giả đã tồn tại!");
             }
             return existingAuthor.Id;
         }
@@ -401,19 +400,19 @@ public class ArticleService : IArticleService
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Author author = await _unitOfWork.GetRepository<Author>().Entities
             .FirstOrDefaultAsync(a => a.AccountId == userId) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại!");
         // Kiểm tra bài báo có tồn tại không
         Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
         // Kiểm tra tài khoản và quyền sở hữu bài báo
         Author_Article author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities
             .FirstOrDefaultAsync(a => a.ArticleId == id && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author article not found or not an author!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả bài báo không tồn tại hoặc không phải tác giả!");
         // Kiểm tra bài báo có được phép cập nhật không
         if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved || article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Rejected)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-                "You cannot update published or rejected articles");
+                "Bạn không thể cập nhật bài báo đã được duyệt hoặc bị từ chối!");
         }
         // Thực hiện cập nhật bài báo
         var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -513,11 +512,11 @@ public class ArticleService : IArticleService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         string roleName = Authentication.GetUserRoleFromHttpContext(_httpContextAccessor.HttpContext);
-        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Article not found!");
+        Article article = await _unitOfWork.GetRepository<Article>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Bài báo không tồn tại!");
         if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved && roleName.ToLower() != CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)
         {
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-                "Only administrators can delete published articles");
+                "Chỉ có quản trị viên mới có thể xóa các bài báo đã được xuất bản");
         }
         if (roleName.ToLower() == CLAIMS_VALUES.ROLE_TYPE.AUTHOR)
         {
@@ -526,7 +525,7 @@ public class ArticleService : IArticleService
             if (authorArticle == null)
             {
                 throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN,
-                "You can only delete your own articles");
+                "Bạn chỉ có thể xóa bài báo của chính mình!");
             }
         }
         article.DeletedAt = DateTime.Now;
@@ -540,7 +539,7 @@ public class ArticleService : IArticleService
         {
             throw new BadRequestException(
                 ResponseCodeConstants.INVALID_STATUS,
-                "Invalid publication status (0: Pending, 1: Approved, 2: Rejected)"
+                "Trạng thái duyệt để xuất bản không hợp lệ (0: Chờ duyệt, 1: Đã duyệt, 2: Bị từ chối)"
             );
         }
 
@@ -548,7 +547,7 @@ public class ArticleService : IArticleService
             ?? throw new ErrorException(
                 StatusCodes.Status404NotFound,
                 ResponseCodeConstants.NOT_FOUND,
-                "Article not found"
+                "Bài báo không tồn tại!"
             );
 
         article.AcceptedForPublicationStatus = dto.AcceptedForPublicationStatus;

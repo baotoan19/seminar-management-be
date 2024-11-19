@@ -42,13 +42,13 @@ public class UserService : IUserService
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "Invalid user id!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "ID tài khoản không hợp lệ.");
         }
 
         Account? account = await _unitOfWork.GetRepository<Account>().Entities.Include(a => a.Role).FirstOrDefaultAsync(a => a.Id == accountId);
         if (account == null)
         {
-            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Account not found!");
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tài khoản không tồn tại.");
         }
         switch (account.Role.RoleName)
         {
@@ -62,7 +62,7 @@ public class UserService : IUserService
                 OrganizerVM organizerVM = await _organizerService.GetOrganizerInforAsync(accountId);
                 return organizerVM;
             default:
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_ROLE, "Invalid role!");
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_ROLE, "Vai trò không hợp lệ.");
         }
     }
 
@@ -71,7 +71,7 @@ public class UserService : IUserService
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "Invalid user id!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "ID tài khoản không hợp lệ.");
         }
         await _authorService.UpdateAuthorAsync(accountId, updateAuthorDto);
     }
@@ -81,7 +81,7 @@ public class UserService : IUserService
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "Invalid user id!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "ID tài khoản không hợp lệ.");
         }
         await _reviewerService.UpdateReviewerAsync(accountId, updateReviewerDto);
     }
@@ -91,7 +91,7 @@ public class UserService : IUserService
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
-            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "Invalid user id!");
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_USER_ID, "ID tài khoản không hợp lệ.");
         }
         await _organizerService.UpdateOrganizerAsync(accountId, updateOrganizerDto);
     }

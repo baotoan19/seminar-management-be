@@ -29,7 +29,7 @@ public class StatisticService : IStatisticService
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer organizer = _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefault(o => o.AccountId == userId)
-            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Organizer not found!");
+            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp ban tổ chức hợp lệ.");
 
         StatisticsVM statisticsVM = new StatisticsVM();
 

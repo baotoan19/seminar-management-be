@@ -54,13 +54,13 @@ public class OtpService : IOtpService
                 .OrderByDescending(x => x.CreatedAt)
                 .FirstOrDefaultAsync()
                 ?? throw new ErrorException(StatusCodes.Status404NotFound,
-                    ResponseCodeConstants.NOT_FOUND, "No OTP request found for this email!");
+                    ResponseCodeConstants.NOT_FOUND, "Không tìm thấy yêu cầu OTP cho email này. Vui lòng cung cấp email hợp lệ.");
 
             // Kiểm tra OTP đã được sử dụng chưa
             if (otpVerification.IsUsed && otpVerification.OtpStatus == OtpStatusEnum.Verified)
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest,
-                    ResponseCodeConstants.BADREQUEST, "OTP has already been used!");
+                    ResponseCodeConstants.BADREQUEST, "OTP đã được sử dụng.");
             }
 
             // Kiểm tra OTP đã hết hạn chưa
@@ -69,7 +69,7 @@ public class OtpService : IOtpService
                 otpVerification.OtpStatus = OtpStatusEnum.Expired;
                 await _unitOfWork.SaveChangesAsync();
                 throw new ErrorException(StatusCodes.Status400BadRequest,
-                    ResponseCodeConstants.BADREQUEST, "OTP has expired!");
+                    ResponseCodeConstants.BADREQUEST, "OTP đã hết hạn.");
             }
 
             // Kiểm tra số lần thử
@@ -78,7 +78,7 @@ public class OtpService : IOtpService
                 otpVerification.OtpStatus = OtpStatusEnum.Cancelled;
                 await _unitOfWork.SaveChangesAsync();
                 throw new ErrorException(StatusCodes.Status400BadRequest,
-                    ResponseCodeConstants.BADREQUEST, "Exceeded maximum number of attempts (5)!");
+                    ResponseCodeConstants.BADREQUEST, "Đã đạt số lần thử tối đa (5).");
                 
             }
 
@@ -90,7 +90,7 @@ public class OtpService : IOtpService
             if (otpVerification.OtpCode != otpVerificationDto.OtpCode)
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest,
-                    ResponseCodeConstants.BADREQUEST, "Invalid OTP code!");
+                    ResponseCodeConstants.BADREQUEST, "Mã OTP không hợp lệ.");
             }
 
             // Nếu OTP đúng, đánh dấu đã sử dụng
@@ -124,7 +124,7 @@ public class OtpService : IOtpService
                 {
                     throw new ErrorException(StatusCodes.Status400BadRequest,
                         ResponseCodeConstants.BADREQUEST,
-                        "Please wait 2 minutes before requesting a new OTP!");
+                        "Vui lòng chờ 2 phút trước khi yêu cầu mã OTP mới.");
                 }
 
                 // Vô hiệu hóa OTP cũ
