@@ -26,7 +26,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<AcceptanceVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Get all acceptances success!",
+            message: "Lấy tất cả các nghiệm thu thành công!",
             data: result));
     }
     [HttpGet("{id}")]
@@ -36,7 +36,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<AcceptanceVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Get acceptance by id success!",
+            message: "Lấy nghiệm thu theo id thành công!",
             data: result));
     }
     [HttpPost]
@@ -47,7 +47,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create acceptance success!",
+            message: "Tạo nghiệm thu thành công!",
             data: null));
     }
     [HttpDelete("{id}")]
@@ -58,7 +58,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete acceptance success!",
+            message: "Xóa nghiệm thu thành công!",
             data: null));
     }
     [HttpPost("review")]
@@ -69,7 +69,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create review acceptance success!",
+            message: "Tạo phản biện nghiệm thu thành công!",
             data: null));
     }
     [HttpPatch("update-for-publication/{id}")]
@@ -80,7 +80,7 @@ public class AcceptanceController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update acceptance for publication success!",
+            message: "Cập nhật nghiệm thu để public thành công!",
             data: null));
     }
 }

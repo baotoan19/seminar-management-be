@@ -47,7 +47,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Update account success"));
+                message: "Cập nhật tài khoản thành công",
+                data: null));
         }
 
         [HttpDelete]
@@ -57,7 +58,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Delete account success"));
+                message: "Xóa tài khoản thành công",
+                data: null));
         }
     }
 }

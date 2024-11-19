@@ -28,6 +28,7 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các bài báo thành công",
             data: articles));
     }
 
@@ -38,6 +39,7 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<ArticleVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy bài báo theo id thành công",
             data: article));
     }
 
@@ -48,6 +50,7 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các bài báo được phê duyệt thành công",
             data: articles));
     }
 
@@ -59,6 +62,7 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ArticleVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các bài báo của tác giả thành công",
             data: articles));
     }
 
@@ -70,7 +74,8 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Article created successfully!"));
+            message: "Tạo bài báo thành công",
+            data: null));
     }
 
 
@@ -82,7 +87,8 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Article updated successfully!"));
+            message: "Cập nhật bài báo thành công",
+            data: null));
     }
 
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN + "," + CLAIMS_VALUES.ROLE_TYPE.AUTHOR)]
@@ -93,7 +99,8 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Article deleted successfully!"));
+            message: "Xóa bài báo thành công",
+            data: null));
     }
 
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
@@ -104,6 +111,7 @@ public class ArticleController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Article approved successfully!"));
+            message: "Bài báo được phê duyệt thành công",
+            data: null));
     }
 }

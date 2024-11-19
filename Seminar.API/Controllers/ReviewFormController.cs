@@ -29,7 +29,7 @@ public class ReviewFormController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ReviewFormVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Form retrieved successfully",
+            message: "Lấy tất cả hồ sơ đánh giá theo id lịch sử cập nhật chủ đề nghiên cứu thành công",
             data: result));
     }
 
@@ -40,7 +40,7 @@ public class ReviewFormController : ControllerBase
         return Ok(new BaseResponse<CreateReviewFormDto>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Form created successfully",
+            message: "Tạo hồ sơ đánh giá thành công",
             data: null));
     }
 
@@ -51,7 +51,7 @@ public class ReviewFormController : ControllerBase
         return Ok(new BaseResponse<UpdateReviewFormDto>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Form updated successfully",
+            message: "Cập nhật hồ sơ đánh giá thành công",
             data: null));
     }
 
@@ -62,7 +62,7 @@ public class ReviewFormController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Form deleted successfully",
+            message: "Xóa hồ sơ đánh giá thành công",
             data: null));
     }
 

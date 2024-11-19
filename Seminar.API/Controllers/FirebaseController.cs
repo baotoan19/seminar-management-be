@@ -23,7 +23,7 @@ public class FirebaseController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Upload file successfully",
+            message: "Upload file thành công",
             data: result));
     }
 
@@ -34,6 +34,7 @@ public class FirebaseController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete file successfully"));
+            message: "Xóa file thành công",
+            data: null));
     }
 }

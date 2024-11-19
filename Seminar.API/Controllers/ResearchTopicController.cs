@@ -75,7 +75,7 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<List<HistoryUpdateResearchTopicVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "History research topic retrieved successfully",
+            message: "Lấy tất cả lịch sử cập nhật chủ đề nghiên cứu theo id chủ đề nghiên cứu thành công",
             data: historyUpdateResearchTopicVMs));
     }
 
@@ -87,7 +87,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Research topic created successfully"));
+            message: "Tạo chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpPost("new-version")]
@@ -98,7 +99,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "New version research topic created successfully"));
+            message: "Tạo phiên bản chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpPatch("update/{researchTopicId}")]
@@ -109,7 +111,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Research topic updated successfully"));
+            message: "Cập nhật chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpPatch("is-review-acceptance")]
@@ -120,7 +123,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Research topic is review acceptance updated successfully"));
+            message: "Cập nhật trạng thái chấp nhận đánh giá chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpPatch("date-end/{researchTopicId}")]
@@ -131,7 +135,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Research topic date end updated successfully"));
+            message: "Cập nhật ngày kết thúc chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpPatch("history-research-topic/{historyResearchTopicId}")]
@@ -142,7 +147,8 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "History research topic updated successfully"));
+            message: "Cập nhật lịch sử cập nhật chủ đề nghiên cứu thành công",
+            data: null));
     }
 
     [HttpDelete("history-research-topic/{historyResearchTopicId}")]
@@ -153,6 +159,7 @@ public class ResearchTopicController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "History research topic deleted successfully"));
+            message: "Xóa lịch sử cập nhật chủ đề nghiên cứu thành công",
+            data: null));
     }
 }

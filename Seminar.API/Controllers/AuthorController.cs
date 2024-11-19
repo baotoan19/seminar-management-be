@@ -25,7 +25,8 @@ public class AuthorController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create co-author success!"));
+            message: "Tạo tác giả phụ thành công",
+            data: null));
     }
 
     [HttpPost("create-member")]
@@ -35,7 +36,8 @@ public class AuthorController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create member success!"));
+            message: "Tạo thành viên thành công",
+            data: null));
     }
 
     [HttpDelete("delete-coauthor")]
@@ -45,7 +47,8 @@ public class AuthorController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete co-author success!"));
+            message: "Xóa tác giả phụ thành công",
+            data: null));
     }
 
     [HttpDelete("delete-member")]
@@ -55,6 +58,7 @@ public class AuthorController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete member success!"));
+            message: "Xóa thành viên thành công",
+            data: null));
     }
 }

@@ -24,6 +24,7 @@ public class FacultyController : ControllerBase
         return Ok(new BaseResponse<IList<FacultyVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các khoa thành công",
             data: faculties));
     }
 
@@ -34,6 +35,7 @@ public class FacultyController : ControllerBase
         return Ok(new BaseResponse<FacultyVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy khoa theo id thành công",
             data: faculty));
     }
 }

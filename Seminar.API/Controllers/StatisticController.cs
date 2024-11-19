@@ -27,7 +27,7 @@ public class StatisticController : ControllerBase
         return Ok(new BaseResponse<StatisticsVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Statistics retrieved successfully",
+            message: "Lấy thống kê theo id ban tổ chức thành công",
             data: result));
     }
 }

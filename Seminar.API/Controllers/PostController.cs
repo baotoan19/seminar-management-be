@@ -38,6 +38,7 @@ public class PostController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<PostVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả bài đăng của chủ tịch thành công",
             data: result));
     }
 
@@ -49,7 +50,8 @@ public class PostController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create post successfully!"));
+            message: "Tạo bài đăng thành công",
+            data: null));
     }
 
     [HttpPatch()]
@@ -60,7 +62,8 @@ public class PostController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update post successfully!"));
+            message: "Cập nhật bài đăng thành công",
+            data: null));
     }
 
     [HttpDelete("{id}")]
@@ -71,7 +74,8 @@ public class PostController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete post successfully!"));
+            message: "Xóa bài đăng thành công",
+            data: null));
     }
 
     [HttpGet("{id}")]
@@ -81,6 +85,7 @@ public class PostController : ControllerBase
         return Ok(new BaseResponse<PostVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy bài đăng theo id thành công",
             data: postVM));
     }
     

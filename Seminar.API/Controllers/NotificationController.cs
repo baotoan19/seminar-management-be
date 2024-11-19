@@ -27,7 +27,7 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<NotificationVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notification retrieved successfully!",
+            message: "Lấy thông báo theo id thành công",
             data: notification));
     }
 
@@ -38,7 +38,7 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<List<NotificationVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notifications retrieved successfully!",
+            message: "Lấy tất cả thông báo theo người nhận thành công",
             data: notifications));
     }
 
@@ -49,7 +49,8 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notification created successfully!"));
+            message: "Tạo thông báo thành công",
+            data: null));
     }
 
     [HttpPatch("{id}")]
@@ -59,7 +60,8 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notification updated successfully!"));
+            message: "Cập nhật thông báo thành công",
+            data: null));
     }
 
     [HttpPatch("mark-all-as-read")]
@@ -69,7 +71,8 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notification marked as read successfully!"));
+            message: "Thông báo đã được đánh dấu đã đọc thành công",
+            data: null));
     }
 
     [HttpDelete("{id}")]
@@ -79,7 +82,8 @@ public class NotificationController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Notification deleted successfully!"));
+            message: "Xóa thông báo thành công",
+            data: null));
     }
 
 

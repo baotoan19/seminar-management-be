@@ -25,6 +25,7 @@ public class ConcludeController : ControllerBase
         return Ok(new BaseResponse<IList<ConcludeVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các cuộc họp thành công",
             data: concludes));
     }
 
@@ -35,6 +36,7 @@ public class ConcludeController : ControllerBase
         return Ok(new BaseResponse<ConcludeVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy cuộc họp theo id thành công",
             data: conclude));
     }
     

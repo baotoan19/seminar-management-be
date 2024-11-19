@@ -27,6 +27,7 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<CompetitionVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy cuộc thi theo id thành công",
             data: competition));
     }
 
@@ -38,6 +39,7 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<CompetitionVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả cuộc thi của chủ tịch thành công",
             data: competitions));
     }
 
@@ -59,8 +61,8 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create competition successfully!"
-            ));
+            message: "Tạo cuộc thi thành công",
+            data: null));
         
     }
 
@@ -72,8 +74,8 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update competition successfully!"
-            ));
+            message: "Cập nhật cuộc thi thành công",
+            data: null));
     }
 
     [HttpDelete()]
@@ -84,8 +86,8 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete competition successfully!"
-            ));
+            message: "Xóa cuộc thi thành công",
+            data: null));
     }
 
     [HttpPatch("date-end")]
@@ -96,7 +98,8 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update date end competition successfully!"));
+            message: "Cập nhật ngày kết thúc cuộc thi thành công",
+            data: null));
     }
 
     [HttpPatch("date-submit")]
@@ -107,6 +110,7 @@ public class CompetitionController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update date submit competition successfully!"));
+            message: "Cập nhật ngày nộp hồ sơ thành công",
+            data: null));
     }
 }

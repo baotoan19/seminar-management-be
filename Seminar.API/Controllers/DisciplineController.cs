@@ -23,6 +23,7 @@ public class DisciplineController : ControllerBase
         return Ok(new BaseResponse<IList<DisciplineVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các chuyên ngành thành công",
             data: disciplines));
     }
 
@@ -33,6 +34,7 @@ public class DisciplineController : ControllerBase
         return Ok(new BaseResponse<DisciplineVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy chuyên ngành theo id thành công",
             data: discipline));
     }
 }

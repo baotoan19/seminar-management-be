@@ -26,7 +26,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                message: "Register success "));
+                message: "Đăng ký thành công",
+                data: null));
         }
 
         [HttpPost("login")]
@@ -34,9 +35,9 @@ namespace Seminar.API.Controllers
         {
             LoginResponseDto loginResponseDto = await _authService.LoginAsync(loginRequestDto);
             return Ok(new BaseResponse<LoginResponseDto>(
-                message: "Login success",
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
+                message: "Đăng nhập thành công",
                 data: loginResponseDto));
         }
 
@@ -47,6 +48,7 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<TokenResponseDto>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
+                message: "Cập nhật token thành công",
                 data: tokenResponseDto));
         }
 
@@ -57,7 +59,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                message: "Change password success"));
+                message: "Đổi mật khẩu thành công",
+                data: null));
         }
 
         [HttpPost("send-registration-otp")]
@@ -67,7 +70,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                message: "Send registration otp success"));
+                message: "Gửi OTP đăng ký thành công",
+                data: null));
         }
 
         [HttpPost("resend-otp")]
@@ -77,7 +81,8 @@ namespace Seminar.API.Controllers
             return Ok(new BaseResponse<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                message: "Resend otp success"));
+                message: "Gửi OTP lại thành công",
+                data: null));
         }
     }
 }

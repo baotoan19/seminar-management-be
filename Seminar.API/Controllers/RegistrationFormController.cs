@@ -29,6 +29,7 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<RegistrationFormVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả hồ sơ đăng ký theo id cuộc thi thành công",
             data: registrationFormVMs));
     }
 
@@ -40,6 +41,7 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<List<RegistrationFormVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả hồ sơ đăng ký theo id tác giả thành công",
             data: registrationFormVMs));
     }
 
@@ -50,6 +52,7 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<RegistrationFormVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy hồ sơ đăng ký theo id thành công",
             data: registrationFormVM));
     }
 
@@ -61,7 +64,8 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Create registration form successfully!"));
+            message: "Tạo hồ sơ đăng ký thành công",
+            data: null));
     }
     [HttpPatch("{id}")]
     [Authorize(Roles = $"{CLAIMS_VALUES.ROLE_TYPE.ORGANIZER}")]
@@ -71,7 +75,8 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update registration form successfully!"));
+            message: "Cập nhật hồ sơ đăng ký thành công",
+            data: null));
     }
 
     [HttpDelete("{id}")]
@@ -82,6 +87,7 @@ public class RegistrationFormController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Delete registration form successfully!"));
+            message: "Xóa hồ sơ đăng ký thành công",
+            data: null));
     }
 }

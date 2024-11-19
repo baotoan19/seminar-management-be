@@ -31,6 +31,7 @@ public class UserController : ControllerBase
             return Ok(new BaseResponse<OrganizerVM>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
+                message: "Lấy thông tin người dùng theo id thành công",
                 data: organizerVM));
         }
         else if (userVM is AuthorVM authorVM)
@@ -38,6 +39,7 @@ public class UserController : ControllerBase
             return Ok(new BaseResponse<AuthorVM>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
+                message: "Lấy thông tin người dùng theo id thành công",
                 data: authorVM));
         }
         else if (userVM is ReviewerVM reviewerVM)
@@ -45,6 +47,7 @@ public class UserController : ControllerBase
             return Ok(new BaseResponse<ReviewerVM>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
+                message: "Lấy thông tin người dùng theo id thành công",
                 data: reviewerVM));
         }
         return BadRequest(new BaseResponse<UserVM>(
@@ -61,7 +64,8 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update author success"));
+            message: "Cập nhật tác giả thành công",
+            data: null));
     }
 
     [HttpPatch("update-reviewer")]
@@ -72,7 +76,8 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update reviewer success"));
+            message: "Cập nhật người phản biện thành công",
+            data: null));
     }
 
     [HttpPatch("update-organizer")]
@@ -83,7 +88,8 @@ public class UserController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Update organizer success"));
+            message: "Cập nhật ban tổ chức thành công",
+            data: null));
     }
 
 }

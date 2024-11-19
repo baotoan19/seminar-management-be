@@ -33,7 +33,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<List<CreateReviewCommitteeDto>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee created successfully",
+            message: "Tạo hội đồng đánh giá thành công",
             data: null));
     }
 
@@ -44,7 +44,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ReviewCommitteeVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee retrieved successfully",
+            message: "Lấy hội đồng đánh giá theo id cuộc thi thành công",
             data: result));
     }
 
@@ -57,7 +57,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<PaginatedList<ReviewCommitteeVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee retrieved successfully",
+            message: "Lấy hội đồng đánh giá theo id chủ đề nghiên cứu thành công",
             data: result));
     }
 
@@ -68,7 +68,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<ReviewCommitteeVM>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee retrieved successfully",
+            message: "Lấy hội đồng đánh giá theo id thành công",
             data: result));
     }
 
@@ -79,7 +79,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<UpdateReviewCommitteeDto>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee updated successfully",
+            message: "Cập nhật hội đồng đánh giá thành công",
             data: null));
     }
 
@@ -90,7 +90,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee assigned to research topic successfully",
+            message: "Gán hội đồng đánh giá cho chủ đề nghiên cứu thành công",
             data: null));
     }
 
@@ -101,7 +101,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Date end review committee updated successfully",
+            message: "Cập nhật ngày kết thúc hội đồng đánh giá thành công",
             data: null));
     }
 
@@ -112,7 +112,7 @@ public class OrganizerController : ControllerBase
         return Ok(new BaseResponse<string>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
-            message: "Review Committee deleted successfully",
+            message: "Xóa hội đồng đánh giá thành công",
             data: null));
     }
 }
