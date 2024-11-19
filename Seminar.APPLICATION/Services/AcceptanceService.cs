@@ -96,35 +96,49 @@ public class AcceptanceService : IAcceptanceService
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
         foreach (var acceptance in resultQuery)
         {
+            // Check acceptance itself
+            if (acceptance == null || acceptance.DeletedAt != null) continue;
+
+            // Handle Review_Acceptances
+            acceptance.Review_Acceptances = acceptance.Review_Acceptances ?? new List<Review_Acceptance>();
             acceptance.Review_Acceptances = acceptance.Review_Acceptances
-                .Where(ra => ra.DeletedAt == null)
+                .Where(ra => ra != null && ra.DeletedAt == null)
                 .ToList();
-        }
-        foreach (var acceptance in resultQuery)
-        {
-            acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics
-                .Where(ar => ar.DeletedAt == null)
-                .ToList();
-        }
-        foreach (var acceptance in resultQuery)
-        {
-            acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics
-                .Where(h => h.DeletedAt == null)
-                .ToList();
-        }
-        foreach (var acceptance in resultQuery)
-        {
-            acceptance.ResearchTopic.Review_Committees.Review_Board_Members = acceptance.ResearchTopic.Review_Committees.Review_Board_Members
-                .Where(rc => rc.DeletedAt == null && rc.IsStatus == true)
-                .ToList();
-        }
-        foreach (var acceptance in resultQuery)
-        {
-            foreach (var history in acceptance.ResearchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+
+            // Check ResearchTopic
+            if (acceptance.ResearchTopic != null)
             {
-                history.Review_Forms = history.Review_Forms
-                    .Where(rf => rf.DeletedAt == null)
+                // Handle Author_ResearchTopics
+                acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics ?? new List<Author_ResearchTopic>();
+                acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics
+                    .Where(ar => ar != null && ar.DeletedAt == null)
                     .ToList();
+
+                // Handle History_Update_ResearchTopics
+                acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics ?? new List<History_Update_ResearchTopic>();
+                acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics
+                    .Where(h => h != null && h.DeletedAt == null)
+                    .ToList();
+
+                // Handle Review_Forms in History
+                foreach (var history in acceptance.ResearchTopic.History_Update_ResearchTopics)
+                {
+                    history.Review_Forms = history.Review_Forms ?? new List<Review_Form>();
+                    history.Review_Forms = history.Review_Forms
+                        .Where(rf => rf != null && rf.DeletedAt == null)
+                        .ToList();
+                }
+
+                // Handle Review_Committees and Review_Board_Members
+                if (acceptance.ResearchTopic.Review_Committees != null)
+                {
+                    acceptance.ResearchTopic.Review_Committees.Review_Board_Members =
+                        acceptance.ResearchTopic.Review_Committees.Review_Board_Members ?? new List<Review_Board_Member>();
+                    acceptance.ResearchTopic.Review_Committees.Review_Board_Members =
+                        acceptance.ResearchTopic.Review_Committees.Review_Board_Members
+                            .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                            .ToList();
+                }
             }
         }
         List<AcceptanceVM> responeItems = _mapper.Map<List<AcceptanceVM>>(resultQuery);
@@ -139,25 +153,50 @@ public class AcceptanceService : IAcceptanceService
     }
     public async Task<AcceptanceVM> GetAcceptanceById(int id)
     {
-        Acceptance acceptance = await _unitOfWork.GetRepository<Acceptance>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nghiệm thu không tồn tại!");
+        Acceptance acceptance = await _unitOfWork.GetRepository<Acceptance>().GetByIdAsync(id)
+            ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nghiệm thu không tồn tại!");
+
+        acceptance.Review_Acceptances = acceptance.Review_Acceptances ?? new List<Review_Acceptance>();
         acceptance.Review_Acceptances = acceptance.Review_Acceptances
-            .Where(ra => ra.DeletedAt == null)
+            .Where(ra => ra != null && ra.DeletedAt == null)
             .ToList();
-        acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics
-            .Where(ar => ar.DeletedAt == null)
-            .ToList();
-        acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics
-            .Where(h => h.DeletedAt == null)
-            .ToList();
-        acceptance.ResearchTopic.Review_Committees.Review_Board_Members = acceptance.ResearchTopic.Review_Committees.Review_Board_Members
-            .Where(rc => rc.DeletedAt == null && rc.IsStatus == true)
-            .ToList();
-        foreach (var history in acceptance.ResearchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+
+        if (acceptance.ResearchTopic != null)
         {
-            history.Review_Forms = history.Review_Forms
-                .Where(rf => rf.DeletedAt == null)
+            acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics ?? new List<Author_ResearchTopic>();
+            acceptance.ResearchTopic.Author_ResearchTopics = acceptance.ResearchTopic.Author_ResearchTopics
+                .Where(ar => ar != null && ar.DeletedAt == null)
                 .ToList();
+
+            acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics ?? new List<History_Update_ResearchTopic>();
+            acceptance.ResearchTopic.History_Update_ResearchTopics = acceptance.ResearchTopic.History_Update_ResearchTopics
+                .Where(h => h != null && h.DeletedAt == null)
+                .ToList();
+
+            foreach (var history in acceptance.ResearchTopic.History_Update_ResearchTopics)
+            {
+                history.Review_Forms = history.Review_Forms ?? new List<Review_Form>();
+                history.Review_Forms = history.Review_Forms
+                    .Where(rf => rf != null && rf.DeletedAt == null)
+                    .ToList();
+            }
+
+            if (acceptance.ResearchTopic.Review_Committees != null)
+            {
+                acceptance.ResearchTopic.Review_Committees.Review_Board_Members =
+                    acceptance.ResearchTopic.Review_Committees.Review_Board_Members ?? new List<Review_Board_Member>();
+                acceptance.ResearchTopic.Review_Committees.Review_Board_Members =
+                    acceptance.ResearchTopic.Review_Committees.Review_Board_Members
+                        .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                        .ToList();
+            }
         }
+        else
+        {
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND,
+                "Đề tài nghiên cứu của nghiệm thu không tồn tại!");
+        }
+
         return _mapper.Map<AcceptanceVM>(acceptance);
     }
     private async Task<int> GetAuthorId()
