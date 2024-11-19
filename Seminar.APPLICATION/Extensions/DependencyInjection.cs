@@ -54,6 +54,7 @@ namespace Seminar.APPLICATION.Extensions
             services.AddScoped(typeof(IAcceptanceService), typeof(AcceptanceService));
             services.AddScoped(typeof(IOtpService), typeof(OtpService));
             services.AddScoped(typeof(IStatisticService), typeof(StatisticService));
+            services.AddScoped(typeof(IGoogleAIService), typeof(GoogleAIService));
         }
 
         //Đăng ký mapper
