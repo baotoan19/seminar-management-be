@@ -117,41 +117,76 @@ public class ResearchTopicService : IResearchTopicService
         //Author Research Topic
         foreach (var researchTopic in resultQuery)
         {
-            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
-                .Where(ar => ar.DeletedAt == null)
-                .ToList();
-        }
-        // History Update Research Topic
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
-                .Where(h => h.DeletedAt == null)
-                .ToList();
-        }
-        foreach (var researchTopic in resultQuery)
-        {
-            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
-            {
+            if (researchTopic == null) continue;
 
-                history.Review_Forms = history.Review_Forms
-                    .Where(rf => rf.DeletedAt == null)
+            // Author_ResearchTopics
+            if (researchTopic.Author_ResearchTopics != null)
+            {
+                researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                    .Where(ar => ar != null && ar.DeletedAt == null)
                     .ToList();
             }
-        }
-        // Review Committee
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
-                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
-                .ToList();
-        }
+            else
+            {
+                researchTopic.Author_ResearchTopics = new List<Author_ResearchTopic>();
+            }
 
-        //Acceptance
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
-                .Where(ra => ra.DeletedAt == null)
-                .ToList();
+            // History_Update_ResearchTopics
+            if (researchTopic.History_Update_ResearchTopics != null)
+            {
+                researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                    .Where(h => h != null && h.DeletedAt == null)
+                    .ToList();
+
+                // Review_Forms trong History
+                foreach (var history in researchTopic.History_Update_ResearchTopics)
+                {
+                    if (history.Review_Forms != null)
+                    {
+                        history.Review_Forms = history.Review_Forms
+                            .Where(rf => rf != null && rf.DeletedAt == null)
+                            .ToList();
+                    }
+                    else
+                    {
+                        history.Review_Forms = new List<Review_Form>();
+                    }
+                }
+            }
+            else
+            {
+                researchTopic.History_Update_ResearchTopics = new List<History_Update_ResearchTopic>();
+            }
+
+            // Review_Committees và Review_Board_Members
+            if (researchTopic.Review_Committees != null)
+            {
+                if (researchTopic.Review_Committees.Review_Board_Members != null)
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                        .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = new List<Review_Board_Member>();
+                }
+            }
+
+            // Acceptance và Review_Acceptances
+            if (researchTopic.Acceptance != null)
+            {
+                if (researchTopic.Acceptance.Review_Acceptances != null)
+                {
+                    researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                        .Where(ra => ra != null && ra.DeletedAt == null)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Acceptance.Review_Acceptances = new List<Review_Acceptance>();
+                }
+            }
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -167,40 +202,77 @@ public class ResearchTopicService : IResearchTopicService
     {
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(id) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Đề tài nghiên cứu không tồn tại. Vui lòng cung cấp đề tài nghiên cứu hợp lệ.");
-        //Author Research Topic
-        researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
-            .Where(ar => ar.DeletedAt == null)
-            .ToList();
+        // Author Research Topic
+        if (researchTopic.Author_ResearchTopics != null)
+        {
+            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                .Where(ar => ar != null && ar.DeletedAt == null)
+                .ToList();
+        }
+        else
+        {
+            researchTopic.Author_ResearchTopics = new List<Author_ResearchTopic>();
+        }
+
         // History Update Research Topic
-        researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
-            .Where(h => h.DeletedAt == null)
-            .Select(h =>
-            {
-                h.Review_Forms = h.Review_Forms
-                    .Where(rf => rf.DeletedAt == null)
-                    .ToList();
-                return h;
-            })
-            .ToList();
+        if (researchTopic.History_Update_ResearchTopics != null)
+        {
+            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                .Where(h => h != null && h.DeletedAt == null)
+                .Select(h =>
+                {
+                    if (h.Review_Forms != null)
+                    {
+                        h.Review_Forms = h.Review_Forms
+                            .Where(rf => rf != null && rf.DeletedAt == null)
+                            .ToList();
+                    }
+                    else
+                    {
+                        h.Review_Forms = new List<Review_Form>();
+                    }
+                    return h;
+                })
+                .ToList();
+        }
+        else
+        {
+            researchTopic.History_Update_ResearchTopics = new List<History_Update_ResearchTopic>();
+        }
+
         // Review Committee
-        researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
-            .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
-            .ToList();
+        if (researchTopic.Review_Committees != null && researchTopic.Review_Committees.Review_Board_Members != null)
+        {
+            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                .ToList();
+        }
+        else if (researchTopic.Review_Committees != null)
+        {
+            researchTopic.Review_Committees.Review_Board_Members = new List<Review_Board_Member>();
+        }
+
         // Acceptance
-        researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
-            .Where(ra => ra.DeletedAt == null)
-            .ToList();
+        if (researchTopic.Acceptance != null && researchTopic.Acceptance.Review_Acceptances != null)
+        {
+            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                .Where(ra => ra != null && ra.DeletedAt == null)
+                .ToList();
+        }
+        else if (researchTopic.Acceptance != null)
+        {
+            researchTopic.Acceptance.Review_Acceptances = new List<Review_Acceptance>();
+        }
         return _mapper.Map<ResearchTopicVM>(researchTopic);
     }
     public async Task<PaginatedList<ResearchTopicVM>> GetAllResearchTopicByAuthorIdAsync(string roleName, int index, int pageSize, string nameTopicSearch, int acceptedForPublicationStatus, int ReviewAcceptanceStatus, int competitionId)
     {
-        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
-        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         if (index <= 0 || pageSize <= 0)
         {
             throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Chỉ số hoặc kích thước trang không hợp lệ. Vui lòng cung cấp chỉ số và kích thước trang hợp lệ.");
         }
+        int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId && a.DeletedAt == null) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả không tồn tại. Vui lòng cung cấp tác giả hợp lệ.");
         IQueryable<ResearchTopic> query = _unitOfWork.GetRepository<ResearchTopic>().Entities
         .Where(r => r.DeletedAt == null && r.Author_ResearchTopics.Any(ar => ar.AuthorId == author.Id))
         .OrderByDescending(r => r.CreatedAt);
@@ -252,42 +324,79 @@ public class ResearchTopicService : IResearchTopicService
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
         //Author Research Topic
+        // 8. Process results
         foreach (var researchTopic in resultQuery)
         {
-            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
-                .Where(ar => ar.DeletedAt == null)
-                .ToList();
-        }
-        // History Update Research Topic
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
-                .Where(h => h.DeletedAt == null)
-                .ToList();
-        }
-        foreach (var researchTopic in resultQuery)
-        {
-            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+            if (researchTopic == null) continue;
+
+            // Author_ResearchTopics
+            if (researchTopic.Author_ResearchTopics != null)
             {
-                history.Review_Forms = history.Review_Forms
-                    .Where(rf => rf.DeletedAt == null)
+                researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                    .Where(ar => ar != null && ar.DeletedAt == null)
                     .ToList();
             }
-        }
+            else
+            {
+                researchTopic.Author_ResearchTopics = new List<Author_ResearchTopic>();
+            }
 
-        // Review Committee
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
-                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
-                .ToList();
-        }
-        // Acceptance
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
-                .Where(ra => ra.DeletedAt == null)
-                .ToList();
+            // History_Update_ResearchTopics
+            if (researchTopic.History_Update_ResearchTopics != null)
+            {
+                researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                    .Where(h => h != null && h.DeletedAt == null)
+                    .ToList();
+
+                // Review_Forms trong History
+                foreach (var history in researchTopic.History_Update_ResearchTopics)
+                {
+                    if (history.Review_Forms != null)
+                    {
+                        history.Review_Forms = history.Review_Forms
+                            .Where(rf => rf != null && rf.DeletedAt == null)
+                            .ToList();
+                    }
+                    else
+                    {
+                        history.Review_Forms = new List<Review_Form>();
+                    }
+                }
+            }
+            else
+            {
+                researchTopic.History_Update_ResearchTopics = new List<History_Update_ResearchTopic>();
+            }
+
+            // Review_Committees và Review_Board_Members
+            if (researchTopic.Review_Committees != null)
+            {
+                if (researchTopic.Review_Committees.Review_Board_Members != null)
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                        .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = new List<Review_Board_Member>();
+                }
+            }
+
+            // Acceptance và Review_Acceptances
+            if (researchTopic.Acceptance != null)
+            {
+                if (researchTopic.Acceptance.Review_Acceptances != null)
+                {
+                    researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                        .Where(ra => ra != null && ra.DeletedAt == null)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Acceptance.Review_Acceptances = new List<Review_Acceptance>();
+                }
+            }
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -352,42 +461,78 @@ public class ResearchTopicService : IResearchTopicService
             return new PaginatedList<ResearchTopicVM>(new List<ResearchTopicVM>(), 0, index, pageSize);
         }
         var resultQuery = await query.Skip((index - 1) * pageSize).Take(pageSize).ToListAsync();
-        //Author Research Topic
         foreach (var researchTopic in resultQuery)
         {
-            researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
-                .Where(ar => ar.DeletedAt == null)
-                .ToList();
-        }
-        // History Update Research Topic
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
-                .Where(h => h.DeletedAt == null)
-                .ToList();
-        }
-        foreach (var researchTopic in resultQuery)
-        {
-            foreach (var history in researchTopic.History_Update_ResearchTopics.Where(h => h.DeletedAt == null))
+            if (researchTopic == null) continue;
+
+            // Author_ResearchTopics
+            if (researchTopic.Author_ResearchTopics != null)
             {
-                history.Review_Forms = history.Review_Forms
-                    .Where(rf => rf.DeletedAt == null)
+                researchTopic.Author_ResearchTopics = researchTopic.Author_ResearchTopics
+                    .Where(ar => ar != null && ar.DeletedAt == null)
                     .ToList();
             }
-        }
-        // Review Committee
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
-                .Where(rb => rb.DeletedAt == null && rb.IsStatus == true)
-                .ToList();
-        }
-        // Acceptance
-        foreach (var researchTopic in resultQuery)
-        {
-            researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
-                .Where(ra => ra.DeletedAt == null)
-                .ToList();
+            else
+            {
+                researchTopic.Author_ResearchTopics = new List<Author_ResearchTopic>();
+            }
+
+            // History_Update_ResearchTopics
+            if (researchTopic.History_Update_ResearchTopics != null)
+            {
+                researchTopic.History_Update_ResearchTopics = researchTopic.History_Update_ResearchTopics
+                    .Where(h => h != null && h.DeletedAt == null)
+                    .ToList();
+
+                // Review_Forms trong History
+                foreach (var history in researchTopic.History_Update_ResearchTopics)
+                {
+                    if (history.Review_Forms != null)
+                    {
+                        history.Review_Forms = history.Review_Forms
+                            .Where(rf => rf != null && rf.DeletedAt == null)
+                            .ToList();
+                    }
+                    else
+                    {
+                        history.Review_Forms = new List<Review_Form>();
+                    }
+                }
+            }
+            else
+            {
+                researchTopic.History_Update_ResearchTopics = new List<History_Update_ResearchTopic>();
+            }
+
+            // Review_Committees và Review_Board_Members
+            if (researchTopic.Review_Committees != null)
+            {
+                if (researchTopic.Review_Committees.Review_Board_Members != null)
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = researchTopic.Review_Committees.Review_Board_Members
+                        .Where(rb => rb != null && rb.DeletedAt == null && rb.IsStatus == true)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Review_Committees.Review_Board_Members = new List<Review_Board_Member>();
+                }
+            }
+
+            // Acceptance và Review_Acceptances
+            if (researchTopic.Acceptance != null)
+            {
+                if (researchTopic.Acceptance.Review_Acceptances != null)
+                {
+                    researchTopic.Acceptance.Review_Acceptances = researchTopic.Acceptance.Review_Acceptances
+                        .Where(ra => ra != null && ra.DeletedAt == null)
+                        .ToList();
+                }
+                else
+                {
+                    researchTopic.Acceptance.Review_Acceptances = new List<Review_Acceptance>();
+                }
+            }
         }
         List<ResearchTopicVM> responeItems = _mapper.Map<List<ResearchTopicVM>>(resultQuery);
         var totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
