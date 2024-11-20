@@ -12,7 +12,6 @@ public class NotificationVM
     public string SenderName { get; set; }
     public string SenderEmail { get; set; }
     public int NotificationTypeId { get; set; }
-    public string NotificationTypeName { get; set; }
     public int TargetId { get; set; }
     public bool Status { get; set; }
 }
