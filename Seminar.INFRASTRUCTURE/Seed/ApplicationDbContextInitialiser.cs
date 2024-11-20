@@ -61,7 +61,6 @@ namespace Seminar.INFRASTRUCTURE.Seed
                 await addDiscipline();
                 await addReviewCommittee();
                 await addConclude();
-                await addNotificationType();
             }
             catch (Exception ex)
             {
@@ -302,31 +301,6 @@ namespace Seminar.INFRASTRUCTURE.Seed
                         conclude.CreatedAt = DateTime.Now;
                         conclude.UpdatedAt = DateTime.Now;
                         await _unitOfWork.GetRepository<Conclude>().InsertAsync(conclude);
-                    }
-                }
-                await _unitOfWork.SaveChangesAsync();
-            }
-        }
-
-        private async Task addNotificationType()
-        {
-            if (!await _context.NotificationTypes.AnyAsync(x => x.DeletedAt == null))
-            {
-                NotificationType[] notificationTypes =
-                [
-                    new NotificationType { Name = "Article" },
-                    new NotificationType { Name = "ResearchTopic" },
-                    new NotificationType { Name = "History_Update_ResearchTopic" },
-                    new NotificationType { Name = "RegistrationForm" }
-                ];
-
-                foreach (NotificationType notificationType in notificationTypes)
-                {
-                    if (!await _unitOfWork.GetRepository<NotificationType>().Entities.AnyAsync(n => n.Name == notificationType.Name))
-                    {
-                        notificationType.CreatedAt = DateTime.Now;
-                        notificationType.UpdatedAt = DateTime.Now;
-                        await _unitOfWork.GetRepository<NotificationType>().InsertAsync(notificationType);
                     }
                 }
                 await _unitOfWork.SaveChangesAsync();

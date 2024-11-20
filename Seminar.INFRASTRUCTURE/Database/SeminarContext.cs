@@ -50,7 +50,6 @@ namespace Seminar.INFRASTRUCTURE.Database
         public DbSet<Author_ResearchTopic> Author_ResearchTopics { get; set; }
         public DbSet<History_Update_ResearchTopic> History_Update_ResearchTopics { get; set; }
         public DbSet<Acceptance> Acceptances { get; set; }
-        public DbSet<NotificationType> NotificationTypes { get; set; }
         public DbSet<Review_Acceptance> Review_Acceptances { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
 
