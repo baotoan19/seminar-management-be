@@ -39,4 +39,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.3" />
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="taskkill /F /IM Seminar.API.exe 2>nul || exit 0" />
+  </Target>
+
 </Project>
