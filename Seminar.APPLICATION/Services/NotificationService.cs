@@ -30,7 +30,6 @@ public class NotificationService : INotificationService
     {
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         Notification notification = await _unitOfWork.GetRepository<Notification>().Entities
-            .Include(n => n.NotificationTypes)
             .FirstOrDefaultAsync(n => n.Id == id) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Thông báo không tồn tại. Vui lòng cung cấp thông báo hợp lệ.");
         if (notification.RecevierId.ToString() != userId)
@@ -38,7 +37,6 @@ public class NotificationService : INotificationService
             throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "Bạn không được phép xem thông báo này.");
         }
         NotificationVM notificationVM = _mapper.Map<NotificationVM>(notification);
-        notificationVM.NotificationTypeName = notification.NotificationTypes?.Name ?? "";
         notificationVM.RecevierName = await _accountService.GetNameByAccountId(notification?.RecevierId ?? 0);
         notificationVM.RecevierEmail = await _accountService.GetEmailByAccountId(notification?.RecevierId ?? 0);
         notificationVM.SenderName = await _accountService.GetNameByAccountId(notification?.SenderId ?? 0);
@@ -49,8 +47,6 @@ public class NotificationService : INotificationService
     public async Task CreateNotificationAsync(CreateNotificationDto createNotificationDto)
     {
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
-        NotificationType notificationTypes = await _unitOfWork.GetRepository<NotificationType>().Entities.FirstOrDefaultAsync(nt => nt.Id == createNotificationDto.NotificationTypeId) ??
-        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Loại thông báo không tồn tại. Vui lòng cung cấp loại thông báo hợp lệ.");
         Notification notification = _mapper.Map<Notification>(createNotificationDto);
         notification.SenderId = int.Parse(userId);
         await _unitOfWork.GetRepository<Notification>().InsertAsync(notification);
@@ -76,7 +72,6 @@ public class NotificationService : INotificationService
         }
 
         List<Notification> notifications = await _unitOfWork.GetRepository<Notification>().Entities
-            .Include(n => n.NotificationTypes)
             .Where(n => n.RecevierId == receiverId && n.DeletedAt == null)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
@@ -86,7 +81,7 @@ public class NotificationService : INotificationService
         foreach (NotificationVM notificationVM in notificationVMs)
         {
             var notification = notifications.FirstOrDefault(n => n.Id == notificationVM.Id);
-            notificationVM.NotificationTypeName = notification?.NotificationTypes?.Name ?? "";
+            //notificationVM.NotificationTypeName = notification?.NotificationTypes?.Name ?? "";
             // Lấy tên người nhận và người gửi
             notificationVM.RecevierName = await _accountService.GetNameByAccountId(notification?.RecevierId ?? 0);
             notificationVM.RecevierEmail = await _accountService.GetEmailByAccountId(notification?.RecevierId ?? 0);
