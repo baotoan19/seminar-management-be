@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Web;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Seminar.APPLICATION.Auth;
 using Seminar.APPLICATION.Dtos.AuthDtos;
 using Seminar.APPLICATION.Dtos.AuthorDtos;
+using Seminar.APPLICATION.Dtos.EmailDtos;
 using Seminar.APPLICATION.Dtos.ReviewCommitteeDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.CORE.Constants;
@@ -87,6 +89,12 @@ public class EmailService : IEmailService
     {
         var emailBody = await CreateEmailBodySendOtpAsync(otpCode);
         await SendEmailAsync(email, "Mã OTP", emailBody);
+    }
+
+    public async Task SendFeedBackEmail(EmailFeedBackDto emailFeedBackDto)
+    {
+        var emailBody = await CreateEmailBodySendFeedBackAsync(emailFeedBackDto);
+        await SendEmailAsync(emailFeedBackDto.EmailReviewer, "Phản biện đề tài", emailBody);
     }
 
     private async Task<string> CreateEmailBodySendAccountReviewerAsync(ReviewBoardMemberDto request, string reviewCommitteeName)
@@ -371,5 +379,137 @@ public class EmailService : IEmailService
         </body>
         </html>");
         return sb.ToString();
+    }
+
+    private async Task<string> CreateEmailBodySendFeedBackAsync(EmailFeedBackDto emailFeedBackDto)
+    {
+        string emailBody = $@"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Reminder Email</title>
+            <style>
+                body {{
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    line-height: 1.8;
+                    color: #3a3a3a;
+                    background-color: #f4f7f9;
+                    margin: 0;
+                    padding: 20px;
+                    font-size: 16px; /* Đặt cỡ chữ mặc định */
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background-color: #ffffff;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border: 2px solid rgba(169, 169, 169, 0.6);
+                }}
+                .header {{
+                    background: linear-gradient(90deg, #4CAF50, #1976D2);
+                    color: white;
+                    text-align: center;
+                    padding: 30px 20px;
+                    ont-size: 24px; /* Điều chỉnh cỡ chữ tiêu đề */
+                }}
+                .header h2 {{
+                    margin: 0;
+                    font-size: 26px;
+                    font-weight: bold;
+                }}
+                .content {{
+                    padding: 25px;
+                }}
+                .info-section {{
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    border: 1px solid #e4e4e4;
+                }}
+                .info-section ul {{
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }}
+                .info-section li {{
+                    padding: 10px 0;
+                    border-bottom: 1px solid #ddd;
+                    font-size: 15px;
+                }}
+                .info-section li:last-child {{
+                    border-bottom: none;
+                }}
+                .message {{
+                    background-color: #e8f5e9;
+                    padding: 20px;
+                    border-left: 6px solid #4CAF50;
+                    margin: 20px 0;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    border-radius: 5px;
+                }}
+                .footer {{
+                    text-align: center;
+                    padding: 15px 20px;
+                    background-color: #f4f4f4;
+                    color: #6c757d;
+                    font-size: 13px;
+                    border-top: 1px solid #e0e0e0;
+                }}
+                .signature {{
+                    margin-top: 30px;
+                    padding-top: 20px;
+                    font-style: italic;
+                    border-top: 1px solid #e6e6e6;
+                }}
+                .highlight {{
+                    color: #1976D2;
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h2>Đề xuất hoàn thành phản biện</h2>
+                </div>
+                <div class='content'>
+                    <p>Kính gửi <strong>{emailFeedBackDto.NameReviewer}</strong>,</p>
+                    <p>Tôi là <strong>{emailFeedBackDto.NameAuthor}</strong>, tác giả của đề tài &quot;<span class='highlight'>{emailFeedBackDto.TitleResearchTopic}</span>&quot;. Tôi xin phép gửi lời nhắc nhở nhẹ nhàng về tiến độ phản biện. Rất mong nhận được phản hồi từ quý thầy/cô/anh/chị trong thời gian sớm nhất để tôi có thể chỉnh sửa và hoàn thiện đúng hạn.</p>
+
+                    <div class='info-section'>
+                        <ul>
+                            <li><strong>Đề tài:</strong> {emailFeedBackDto.TitleResearchTopic}</li>
+                            <li><strong>Người gửi:</strong> {emailFeedBackDto.NameAuthor}</li>
+                            <li><strong>Ngày gửi:</strong> {DateTime.Now.ToString("dd/MM/yyyy")}</li>
+                            <li><strong>Ngày đề xuất:</strong> {emailFeedBackDto.ProposedTime.ToString("dd/MM/yyyy")}</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>Lời nhắn từ tác giả:</strong></p>
+                    <div class='message'>
+                        {emailFeedBackDto.Feedback}
+                    </div>
+
+                    <div class='signature'>
+                        <p>Xin chân thành cảm ơn quý thầy/cô/anh/chị vì sự hỗ trợ quý giá này.</p>
+                        <p><strong>{HttpUtility.HtmlEncode(emailFeedBackDto.NameAuthor ?? "Không có thông tin")}</strong></p>
+                        <p><strong>Thông tin liên hệ:</strong></p>
+                        <p>Email: {HttpUtility.HtmlEncode(emailFeedBackDto.EmailAuthor ?? "Không có thông tin")}</p>
+                        <p>Điện thoại: {HttpUtility.HtmlEncode(emailFeedBackDto.PhoneAuthor ?? "Không có thông tin")}</p>
+                    </div>
+                </div>
+            <div class='footer'>
+                <p>Email này được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp email này.</p>
+                <p>&copy; 2024 Hệ thống quản lý phản biện. Mọi quyền được bảo lưu.</p>
+            </div>
+        </div>
+    </body>
+        </html>";
+        return emailBody;
     }
 }
