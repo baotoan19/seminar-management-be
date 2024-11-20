@@ -11,4 +11,5 @@ public interface IEmailService
     Task SendMemberAccountInfoEmail(CoAuthorDto coAuthorDto, string competitionName);
     Task SendOtpEmail(string email, string otpCode);
     Task SendFeedBackEmail(EmailFeedBackDto emailFeedBackDto);
+    Task SendSystemEmail(EmailSystemDto emailSystemDto);
 }

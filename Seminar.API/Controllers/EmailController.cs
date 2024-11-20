@@ -28,4 +28,15 @@ public class EmailController : ControllerBase
             data: null,
             message: "Gửi email phản biện đề tài thành công"));
     }
+
+    [HttpPost("send-system")]
+    public async Task<IActionResult> SendSystemEmailAsync(EmailSystemDto emailSystemDto)
+    {
+        await _emailService.SendSystemEmail(emailSystemDto);
+        return Ok(new BaseResponse<string>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            data: null,
+            message: "Gửi email thành công"));
+    }
 }

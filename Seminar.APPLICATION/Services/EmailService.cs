@@ -91,6 +91,12 @@ public class EmailService : IEmailService
         await SendEmailAsync(email, "Mã OTP", emailBody);
     }
 
+    public async Task SendSystemEmail(EmailSystemDto emailSystemDto)
+    {
+        var emailBody = await CreateEmailBodySendSystemAsync(emailSystemDto);
+        await SendEmailAsync(emailSystemDto.ReceiverEmail, emailSystemDto.Subject, emailBody);
+    }
+
     public async Task SendFeedBackEmail(EmailFeedBackDto emailFeedBackDto)
     {
         var emailBody = await CreateEmailBodySendFeedBackAsync(emailFeedBackDto);
@@ -511,5 +517,113 @@ public class EmailService : IEmailService
     </body>
         </html>";
         return emailBody;
+    }
+
+    private async Task<string> CreateEmailBodySendSystemAsync(EmailSystemDto emailSystemDto)
+    {
+        try
+        {
+            if (emailSystemDto == null)
+                throw new ArgumentNullException(nameof(emailSystemDto));
+
+            return $@"
+            <!DOCTYPE html>
+            <html lang='vi'>
+            <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <style>
+                    body {{
+                        font-family: 'Arial', sans-serif;
+                        background-color: #f1f1f1;
+                        margin: 0;
+                        padding: 0;
+                    }}
+                    .email-container {{
+                        background-color: #ffffff;
+                        width: 100%;
+                        max-width: 650px;
+                        margin: 20px auto;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+                        border: 1px solid #d1d1d1; /* Viền nhẹ màu xám nhạt */
+                    }}
+                    .email-header {{
+                        background-color: #3498db;
+                        color: #ffffff;
+                        padding: 30px 20px;
+                        text-align: center;
+                        border-bottom: 5px solid #2980b9;
+                    }}
+                    .email-header h1 {{
+                        font-size: 28px;
+                        margin: 0;
+                        font-weight: 600;
+                    }}
+                    .email-body {{
+                        padding: 30px 20px;
+                        line-height: 1.7;
+                        color: #333;
+                    }}
+                    .email-body p {{
+                        font-size: 16px;
+                        margin: 15px 0;
+                    }}
+                    .footer {{
+                        background-color: rgb(59, 59, 59);
+                        color: #ffffff;
+                        padding: 20px;
+                        font-size: 12px;
+                        text-align: center;
+                        border-top: 3px solid #7f8c8d;
+                    }}
+                    .footer p {{
+                        margin: 5px 0;
+                    }}
+                    .footer a {{
+                        color: #ecf0f1;
+                        text-decoration: none;
+                        font-weight: 600;
+                    }}
+                    .footer a:hover {{
+                        text-decoration: underline;
+                    }}
+                    .email-body p.signature {{
+                        font-size: 14px;
+                        font-style: italic;
+                        color: #777;
+                        margin-top: 30px;
+                    }}
+                    .email-body p.signature span {{
+                        font-weight: 600;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class='email-container'>
+                    <div class='email-header'>
+                        <h1>{HttpUtility.HtmlEncode(emailSystemDto.Subject)}</h1>
+                    </div>
+                    <div class='email-body'>
+                        <p>Kính gửi {HttpUtility.HtmlEncode(emailSystemDto.ReceiverName)},</p>
+                        <p>{HttpUtility.HtmlEncode(emailSystemDto.Content)}</p>
+                        <p class='signature'>
+                            Trân trọng,<br>
+                            <span>{HttpUtility.HtmlEncode(emailSystemDto.SenderName)}</span>
+                        </p>
+                    </div>
+                    <div class='footer'>
+                        <p>Email này được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.</p>
+                        <p>&copy; {DateTime.Now.Year} Hệ thống quản lý nghiên cứu khoa học. Mọi quyền được bảo lưu.</p>
+                    </div>
+                </div>
+            </body>
+            </html>";
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error creating system email body", ex);
+        }
     }
 }
