@@ -14,6 +14,5 @@ namespace Seminar.DOMAIN.Entitys
         public int RecevierId { get; set; }
         public int SenderId { get; set; }
         public bool Status { get; set; }
-        public virtual NotificationType NotificationTypes { get; set; }
     }
 }
