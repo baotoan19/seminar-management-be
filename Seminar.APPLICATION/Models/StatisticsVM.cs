@@ -46,6 +46,7 @@ public class ReviewCommitteeStatistics
 
 public class ArticleStatistics
 {
+    public List<ArticleVM> Article { get; set; } // Chi tiết bài báo
     public int TotalArticle { get; set; } // Tổng số bài báo
 }
 
