@@ -212,6 +212,15 @@ public class StatisticService : IStatisticService
                 .Where(rt => rt.Acceptance.FacultyAcceptedStatus == (int)FacultyAcceptedStatusEnum.Pending)
                 .CountAsync(),
 
+            // 13. Tỷ lệ đề tài được khoa phê duyệt
+            FacultyApprovedTopicsRate = totalResearchTopics > 0
+                ? Math.Round((double)filteredQuery
+                    .SelectMany(c => c.ResearchTopics)
+                    .Where(rt => rt.DeletedAt == null)
+                    .Count(rt => rt.Acceptance.FacultyAcceptedStatus == (int)FacultyAcceptedStatusEnum.Approved)
+                    / totalResearchTopics * 100, 2)
+                : 0,
+
         };
         return statisticsVM;
     }

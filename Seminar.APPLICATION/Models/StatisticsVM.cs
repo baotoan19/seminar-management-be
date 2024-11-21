@@ -72,6 +72,7 @@ public class ResearchFieldStatistics
     public int TotalFacultyPendingReviewTopics { get; set; } // Tổng số đề tài nghiên cứu chưa được khoa phản biện
     public int TotalFacultyApprovedTopics { get; set; }        // Tổng số đề tài được khoa phê duyệt
     public int TotalFacultyRejectedTopics { get; set; }        // Tổng số đề tài được khoa từ chối
+    public double FacultyApprovedTopicsRate { get; set; }      // Tỷ lệ đề tài được khoa phê duyệt
     public int TotalPublishedTopics { get; set; }              // Tổng số đề tài được public lên hệ thống
     public int TotalPendingPublishedTopics { get; set; }      // Tổng số đề tài chưa được public lên hệ thống
     public int TotalRejectedPublishedTopics { get; set; }     // Tổng số đề tài không được public lên hệ thống
