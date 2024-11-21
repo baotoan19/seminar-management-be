@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Seminar.APPLICATION.Auth;
+using Seminar.APPLICATION.Dtos.AuthorDtos;
 using Seminar.APPLICATION.Dtos.StatisticDtos;
 using Seminar.APPLICATION.Interfaces;
 using Seminar.APPLICATION.Models;
@@ -105,7 +106,12 @@ public class StatisticService : IStatisticService
         //Article Statistics
         statisticsVM.ArticleStatistics = new ArticleStatistics
         {
-            TotalArticle = await filteredQuery.SelectMany(c => c.ResearchTopics).CountAsync(rt => rt.ArticleId.HasValue && rt.DeletedAt == null)
+            TotalArticle = await filteredQuery.SelectMany(c => c.ResearchTopics).CountAsync(rt => rt.ArticleId.HasValue && rt.DeletedAt == null),
+            Article = await filteredQuery
+            .SelectMany(c => c.ResearchTopics)
+            .Where(rt => rt.DeletedAt == null && rt.ArticleId.HasValue)
+            .Select(rt => _mapper.Map<ArticleVM>(rt.Articles))
+            .ToListAsync()
         };
 
         //Discipline Statistics
