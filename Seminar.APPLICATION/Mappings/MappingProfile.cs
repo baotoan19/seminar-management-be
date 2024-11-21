@@ -59,7 +59,7 @@ namespace Seminar.APPLICATION.Mappings
             //Article
             CreateMap<Article, ArticleVM>()
             .ForMember(dest => dest.DisciplineName, opt => opt.MapFrom(src => src.Discipline.DisciplineName))
-            .ForMember(dest => dest.Author_Articles, opt => opt.MapFrom(src => src.Author_Articles))
+            .ForMember(dest => dest.Author_Articles, opt => opt.MapFrom(src => src.Author_Articles.Where(aa => aa.DeletedAt == null)))
             .ReverseMap();
             CreateMap<CreateArticleDto, Article>();
             CreateMap<UpdateArticleDto, Article>();
