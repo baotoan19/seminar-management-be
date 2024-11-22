@@ -33,8 +33,28 @@ public class EmailService : IEmailService
         _configuration = configuration;
     }
 
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private async Task SendEmailAsync(string recipientEmail, string subject, string body)
     {
+        if (!IsValidEmail(recipientEmail))
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest,
+                ResponseCodeConstants.INVALID_EMAIL,
+                "Địa chỉ email không hợp lệ");
+        }
+
         var sender = _configuration["EmailSettings:Sender"];
         var password = _configuration["EmailSettings:Password"];
         var host = _configuration["EmailSettings:Host"];
@@ -526,6 +546,16 @@ public class EmailService : IEmailService
             if (emailSystemDto == null)
                 throw new ArgumentNullException(nameof(emailSystemDto));
 
+            var formattedContent = emailSystemDto.Content
+            .Replace("\n", "<br>")
+            .Replace("\r\n", "<br>")
+            .Replace("\r", "<br>");
+            var emailBodyStyle = @"
+            .email-body p {
+                white-space: pre-line;
+                margin-bottom: 1em;
+            }";
+
             return $@"
             <!DOCTYPE html>
             <html lang='vi'>
@@ -533,6 +563,7 @@ public class EmailService : IEmailService
                 <meta charset='UTF-8'>
                 <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                 <style>
+                    {emailBodyStyle}
                     body {{
                         font-family: 'Arial', sans-serif;
                         background-color: #f1f1f1;
@@ -607,7 +638,7 @@ public class EmailService : IEmailService
                     </div>
                     <div class='email-body'>
                         <p>Kính gửi {HttpUtility.HtmlEncode(emailSystemDto.ReceiverName)},</p>
-                        <p>{HttpUtility.HtmlEncode(emailSystemDto.Content)}</p>
+                        <p style='white-space: pre-line;'>{formattedContent}</p>
                         <p class='signature'>
                             Trân trọng,<br>
                             <span>{HttpUtility.HtmlEncode(emailSystemDto.SenderName)}</span>
