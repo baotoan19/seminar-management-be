@@ -26,6 +26,7 @@ namespace Seminar.CORE.Constants
         public const string INVALID_ROLE = "Invalid role!";
         public const string INVALID_DATA = "Invalid data!";
         public const string INVALID_STATUS = "Invalid status!";
+        public const string INVALID_EMAIL = "Invalid email!";
     }
 
     public static class FirebaseConstants
