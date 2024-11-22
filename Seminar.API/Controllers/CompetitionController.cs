@@ -44,9 +44,9 @@ public class CompetitionController : ControllerBase
     }
 
     [HttpGet("all")]
-    public async Task<IActionResult> GetAllCompetitionAsync(int index = 1, int pageSize = 8, string nameSearch = "", string organizerName = "")
+    public async Task<IActionResult> GetAllCompetitionAsync(int index = 1, int pageSize = 8, string nameSearch = "", string organizerName = "", int facultyId = 0)
     {
-        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionAsync(index, pageSize, nameSearch, organizerName);
+        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionAsync(index, pageSize, nameSearch, organizerName, facultyId);
         return Ok(new BaseResponse<PaginatedList<CompetitionVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,

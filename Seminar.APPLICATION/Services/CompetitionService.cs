@@ -67,7 +67,7 @@ public class CompetitionService : ICompetitionService
         );
         return responePaginatedList;
     }
-    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionAsync(int index, int pageSize, string nameSearch, string organizerName)
+    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionAsync(int index, int pageSize, string nameSearch, string organizerName, int facultyId)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -97,6 +97,11 @@ public class CompetitionService : ICompetitionService
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại!");
             }
+        }
+
+        if (facultyId != 0)
+        {
+            query = query.Where(c => c.Organizer.Faculty.Id == facultyId);
         }
 
         int totalCount = await query.CountAsync();
