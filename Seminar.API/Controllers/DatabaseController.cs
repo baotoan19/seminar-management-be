@@ -7,7 +7,7 @@ using Seminar.CORE.Constants;
 
 namespace Seminar.API.Controllers;
 
-[Route("api/authors")]
+[Route("api/database")]
 [ApiController]
 [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.SUPPERADMIN)]
 public class DatabaseController : ControllerBase
