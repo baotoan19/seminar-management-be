@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,6 +18,16 @@ namespace Seminar.API.Extensions
     {
         public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Thêm cấu hình giới hạn kích thước request
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = 209715200; // 200MB
+            });
+
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.Limits.MaxRequestBodySize = 209715200; // 200MB
+            });
             JwtSetting(services, configuration);
             ConfigureCors(services);
             ConfigureAuthentication(services, configuration);
