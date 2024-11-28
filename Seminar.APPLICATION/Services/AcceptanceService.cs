@@ -90,7 +90,7 @@ public class AcceptanceService : IAcceptanceService
 
         if (accountId > 0)
         {
-            query = query.Where(a => a.ResearchTopic.Author_ResearchTopics.Any(ar => ar.Author.AccountId == accountId));
+            query = query.Where(a => a.ResearchTopic.Author_ResearchTopics.Any(ar => ar.Author.AccountId == accountId && ar.DeletedAt == null));
         }
 
         int totalCount = await query.CountAsync();
