@@ -27,7 +27,7 @@ public class AcceptanceService : IAcceptanceService
         _httpContextAccessor = httpContextAccessor;
         _mapper = mapper;
     }
-    public async Task<PaginatedList<AcceptanceVM>> GetAllAcceptances(int index, int pageSize, int idSearch, string nameSearch, int facultyAcceptedStatus, int acceptedForPublicationStatus, int competitionId, int facultyId)
+    public async Task<PaginatedList<AcceptanceVM>> GetAllAcceptances(int index, int pageSize, int idSearch, string nameSearch, int facultyAcceptedStatus, int acceptedForPublicationStatus, int competitionId, int facultyId,int accountId)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -86,6 +86,11 @@ public class AcceptanceService : IAcceptanceService
         if (facultyId != 0)
         {
             query = query.Where(a => a.ResearchTopic.Competitions.Organizer.Faculty.Id == facultyId);
+        }
+
+        if (accountId > 0)
+        {
+            query = query.Where(a => a.ResearchTopic.Author_ResearchTopics.Any(ar => ar.Author.AccountId == accountId));
         }
 
         int totalCount = await query.CountAsync();
