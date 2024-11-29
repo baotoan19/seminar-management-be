@@ -553,6 +553,9 @@ public class ResearchTopicService : IResearchTopicService
             {
                 try
                 {
+                    // Kiểm tra discipline có tồn tại không
+                    Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createResearchTopicDto.DisciplineId) ??
+                        throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại!");
                     // Lấy main author
                     int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
                     Author mainAuthor = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
@@ -726,6 +729,9 @@ public class ResearchTopicService : IResearchTopicService
     public async Task UpdateResearchTopicAsync(int researchTopicId, UpdateResearchTopicDto updateResearchTopicDto)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
+        // Kiểm tra discipline có tồn tại không
+        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(updateResearchTopicDto.DisciplineId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại!");
         Author author = await _unitOfWork.GetRepository<Author>().Entities.FirstOrDefaultAsync(a => a.AccountId == userId) ??
         throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Author not found!");
         ResearchTopic researchTopic = await _unitOfWork.GetRepository<ResearchTopic>().GetByIdAsync(researchTopicId) ??

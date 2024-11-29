@@ -267,7 +267,7 @@ public class ArticleService : IArticleService
     public async Task CreateArticleAsync(CreateArticleDto createArticalsDto)
     {
         Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(createArticalsDto.DisciplineId) ?? throw
-        new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Discipline not found!");
+        new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại!");
         var strategy = _unitOfWork.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
@@ -408,6 +408,9 @@ public class ArticleService : IArticleService
         Author_Article author_Article = await _unitOfWork.GetRepository<Author_Article>().Entities
             .FirstOrDefaultAsync(a => a.ArticleId == id && a.AuthorId == author.Id && a.RoleName == CLAIMS_VALUES.ROLE_TYPE.AUTHOR) ??
             throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Tác giả bài báo không tồn tại hoặc không phải tác giả!");
+        // Kiểm tra lĩnh vực có tồn tại không
+        Discipline discipline = await _unitOfWork.GetRepository<Discipline>().GetByIdAsync(updateArticleDto.DisciplineId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Lĩnh vực không tồn tại!");
         // Kiểm tra bài báo có được phép cập nhật không
         if (article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved || article.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Rejected)
         {
