@@ -68,6 +68,9 @@ public class UserService : IUserService
 
     public async Task UpdateAuthorAsync(UpdateAuthorDto updateAuthorDto)
     {
+        // Kiểm tra khoa có tồn tại không
+        Faculty faculty = await _unitOfWork.GetRepository<Faculty>().GetByIdAsync(updateAuthorDto.FacultyId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Khoa không tồn tại!");
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
@@ -78,6 +81,9 @@ public class UserService : IUserService
 
     public async Task UpdateReviewerAsync(UpdateReviewerDto updateReviewerDto)
     {
+        // Kiểm tra khoa có tồn tại không
+        Faculty faculty = await _unitOfWork.GetRepository<Faculty>().GetByIdAsync(updateReviewerDto.FacultyId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Khoa không tồn tại!");    
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
@@ -88,6 +94,9 @@ public class UserService : IUserService
 
     public async Task UpdateOrganizerAsync(UpdateOrganizerDto updateOrganizerDto)
     {
+        // Kiểm tra khoa có tồn tại không
+        Faculty faculty = await _unitOfWork.GetRepository<Faculty>().GetByIdAsync(updateOrganizerDto.FacultyId) ??
+            throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Khoa không tồn tại!");
         string userId = Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         if (!int.TryParse(userId, out int accountId))
         {
