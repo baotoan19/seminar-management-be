@@ -162,6 +162,15 @@ public class DatabaseService : IDatabaseService
                 ?? throw new ErrorException(StatusCodes.Status404NotFound,
                     ResponseCodeConstants.NOT_FOUND, "Tên cơ sở dữ liệu không tìm thấy");
 
+            string dataPath;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using var command = new SqlCommand(
+                    "SELECT SERVERPROPERTY('InstanceDefaultDataPath')", connection);
+                dataPath = (string)await command.ExecuteScalarAsync();
+            }
+
             // Tạo connection string tới master database
             var masterConnection = _connectionString.Replace(dbName, "master");
 
@@ -195,22 +204,40 @@ public class DatabaseService : IDatabaseService
                         await command.ExecuteNonQueryAsync();
                     }
 
-                    // Execute restore
-                    var restoreQuery = $@"RESTORE DATABASE [{dbName}] 
+                    // Lấy logical file names từ backup
+                var fileListQuery = $"RESTORE FILELISTONLY FROM DISK = N'{tempFilePath}'";
+                var fileList = new List<(string LogicalName, string Type)>();
+                
+                using (var command = new SqlCommand(fileListQuery, connection))
+                {
+                    using var reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        fileList.Add((
+                            reader["LogicalName"].ToString(),
+                            reader["Type"].ToString()
+                        ));
+                    }
+                }
+
+                // Tạo câu lệnh MOVE cho từng file
+                var moveStatements = fileList.Select(file =>
+                {
+                    var extension = file.Type == "D" ? ".mdf" : ".ldf";
+                    var fileName = $"{dbName}_{file.LogicalName}{extension}";
+                    return $"MOVE N'{file.LogicalName}' TO N'{Path.Combine(dataPath, fileName)}'";
+                });
+
+                // Execute restore với MOVE
+                var restoreQuery = $@"RESTORE DATABASE [{dbName}] 
                     FROM DISK = N'{tempFilePath}'
                     WITH STATS = 10,
+                    {string.Join(",\n", moveStatements)},
                     REPLACE";
+
                     using (var command = new SqlCommand(restoreQuery, connection))
                     {
                         command.CommandTimeout = 3600; // 1 giờ
-                        await command.ExecuteNonQueryAsync();
-                    }
-
-                    // Set back to MULTI_USER
-                    var multiUserQuery = $"ALTER DATABASE [{dbName}] SET MULTI_USER";
-                    using (var command = new SqlCommand(multiUserQuery, connection))
-                    {
-                        command.CommandTimeout = 300;
                         await command.ExecuteNonQueryAsync();
                     }
                 }
