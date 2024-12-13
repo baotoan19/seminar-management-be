@@ -226,6 +226,11 @@ public class StatisticService : IStatisticService
                     .Count(rt => rt.Acceptance.FacultyAcceptedStatus == (int)FacultyAcceptedStatusEnum.Approved)
                     / totalResearchTopics * 100, 2)
                 : 0,
+             // 14.Tổng số tiền của những đề tài được nghiệm thu
+            TotalBudgets = filteredQuery
+                .SelectMany(c => c.ResearchTopics)
+                .Where(rt => rt.DeletedAt == null && rt.Acceptance.AcceptedForPublicationStatus == (int)AcceptedForPublicationStatusEnum.Approved)
+                .Sum(rt => rt.Budget),
 
         };
         return statisticsVM;

@@ -70,7 +70,7 @@ public class ResearchFieldStatistics
     public int TotalPendingReviewTopics { get; set; }         // Tổng số đề tài nghiên cứu chưa được phản biện
     public double SuccessfulReviewRate { get; set; }           // Tỉ lệ số đề tài phản biện thành công
     public int TotalRejectedReviewTopics { get; set; }         // Tổng số đề tài bị từ chối phản biện
-    public int TotalFacultyPendingReviewTopics { get; set; } // Tổng số đề tài nghiên cứu chưa được khoa phản biện
+    public int TotalFacultyPendingReviewTopics { get; set; }    // Tổng số đề tài nghiên cứu chưa được khoa phản biện
     public int TotalFacultyApprovedTopics { get; set; }        // Tổng số đề tài được khoa phê duyệt
     public int TotalFacultyRejectedTopics { get; set; }        // Tổng số đề tài được khoa từ chối
     public double FacultyApprovedTopicsRate { get; set; }      // Tỷ lệ đề tài được khoa phê duyệt
@@ -78,5 +78,6 @@ public class ResearchFieldStatistics
     public int TotalPendingPublishedTopics { get; set; }      // Tổng số đề tài chưa được public lên hệ thống
     public int TotalRejectedPublishedTopics { get; set; }     // Tổng số đề tài không được public lên hệ thống
     public double PublishedTopicsRate { get; set; }            // Tỷ lệ đề tài được public lên hệ thống
+    public double TotalBudgets { get; set; }                    // Tổng số tiền của những đề tài được nghiệm thu
 }
 
