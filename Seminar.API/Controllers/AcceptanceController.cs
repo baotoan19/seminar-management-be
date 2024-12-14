@@ -29,6 +29,16 @@ public class AcceptanceController : ControllerBase
             message: "Lấy tất cả các nghiệm thu thành công!",
             data: result));
     }
+    [HttpGet("review-acceptances")]
+    public async Task<IActionResult> GetAllReviewAcceptanceByAcceptanceId(int acceptanceId,int index = 1, int pageSize = 10)
+    {
+        var result = await _acceptanceService.GetAllReviewAcceptanceByAcceptanceId(acceptanceId,index, pageSize);
+        return Ok(new BaseResponse<PaginatedList<ReviewAcceptanceVM>>(
+            statusCode: StatusCodes.Status200OK,
+            code: ResponseCodeConstants.SUCCESS,
+            message: "Lấy tất cả các phiếu nhận xét nghiệm thu thành công!",
+            data: result));
+    }
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAcceptanceById(int id)
     {

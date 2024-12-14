@@ -17,6 +17,7 @@ using Seminar.APPLICATION.Dtos.ResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.HistoryResearchTopicDtos;
 using Seminar.APPLICATION.Dtos.AcceptanceDtos;
 using Seminar.APPLICATION.Dtos.ReviewAcceptanceDtos;
+using Microsoft.Identity.Client;
 namespace Seminar.APPLICATION.Mappings
 {
     public class MappingProfile : Profile

@@ -1,7 +1,6 @@
 using Seminar.APPLICATION.Dtos.AcceptanceDtos;
 using Seminar.APPLICATION.Dtos.ReviewAcceptanceDtos;
 using Seminar.APPLICATION.Models;
-using Seminar.DOMAIN.Entitys;
 using Seminar.INFRASTRUCTURE.Common;
 
 namespace Seminar.APPLICATION.Interfaces;
@@ -13,5 +12,6 @@ public interface IAcceptanceService
     Task CreateAcceptance(CreateAcceptanceDto dto);
     Task DeleteAcceptance(int id);
     Task CreateReviewAcceptance(CreateReviewAcceptanceDto dto);
+    Task<PaginatedList<ReviewAcceptanceVM>> GetAllReviewAcceptanceByAcceptanceId(int acceptanceId,int index, int pageSize);
     Task UpdateAcceptanceForPublication(int acceptanceId, UpdateAcceptanceForPublicationDto dto);
 }

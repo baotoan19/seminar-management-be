@@ -322,5 +322,28 @@ public class AcceptanceService : IAcceptanceService
         acceptance.UpdatedAt = DateTime.Now;
         await _unitOfWork.SaveChangesAsync();
     }
+    public async Task<PaginatedList<ReviewAcceptanceVM>> GetAllReviewAcceptanceByAcceptanceId(int acceptanceId, int index, int pageSize)
+    {
+        Acceptance acceptance = await _unitOfWork.GetRepository<Acceptance>().GetByIdAsync(acceptanceId)
+        ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Nghiệm thu không tồn tại!");
+        if (index <= 0 || pageSize <= 0)
+        {
+            throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.INVALID_DATA, "Invalid index or page size");
+        }
+        var query = _unitOfWork.GetRepository<Review_Acceptance>().Entities
+            .Where(a => a.DeletedAt == null && a.Acceptance.Id == acceptanceId)
+            .OrderByDescending(a => a.CreatedAt);
+        int totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return new PaginatedList<ReviewAcceptanceVM>(new List<ReviewAcceptanceVM>(), 0, index, pageSize);
+        }
+        var reviewAcceptances = await query
+            .Skip((index - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+        var reviewAcceptanceVMs = _mapper.Map<List<ReviewAcceptanceVM>>(reviewAcceptances);
+        return new PaginatedList<ReviewAcceptanceVM>(reviewAcceptanceVMs, totalCount, index, pageSize);
+    }
 
 }
