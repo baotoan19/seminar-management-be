@@ -18,4 +18,5 @@ public class ReviewAcceptanceVM
     public bool IsAccepted { get; set; }
     public OrganizerVM Organizer { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
