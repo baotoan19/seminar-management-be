@@ -12,8 +12,8 @@ public class ResearchTopicVM
     public float Budget { get; set; }
     public int ProjectDuration { get; set; }
     public string AchievedResults { get; set; }
-    public bool IsAcceptanceApproved { get; set; }
-    public bool IsReviewerAcceptance { get; set; }
+    public int AcceptanceApprovedStatus { get; set; }
+    public int ReviewAcceptanceStatus { get; set; }
     public string BudgetFilePath { get; set; }
     public string ProductFilePath { get; set; }
     public string ReportFilePath { get; set; }
