@@ -25,7 +25,7 @@ public class CompetitionService : ICompetitionService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionByOrganizerIdAsync(int index, int pageSize, string nameSearch)
+    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionByOrganizerIdAsync(int index, int pageSize, string nameSearch,int year)
     {
         int userId = int.Parse(Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor));
         Organizer? organizer = await _unitOfWork.GetRepository<Organizer>().Entities.FirstOrDefaultAsync(o => o.AccountId == userId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Ban tổ chức không tồn tại. Vui lòng cung cấp tổ chức hợp lệ.");
@@ -39,6 +39,11 @@ public class CompetitionService : ICompetitionService
             .Include(c => c.Organizer)
             .Where(c => c.DeletedAt == null && c.OrganizerId == organizer.Id)
             .OrderByDescending(c => c.CreatedAt);
+
+        if (year != 0)
+        {
+            query = query.Where(c => c.DateStart != null && c.DateStart.Value.Year == year);
+        }
 
         if (!string.IsNullOrEmpty(nameSearch))
         {
@@ -67,7 +72,7 @@ public class CompetitionService : ICompetitionService
         );
         return responePaginatedList;
     }
-    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionAsync(int index, int pageSize, string nameSearch, string organizerName, int facultyId)
+    public async Task<PaginatedList<CompetitionVM>> GetAllCompetitionAsync(int index, int pageSize, string nameSearch, string organizerName, int facultyId, int year)
     {
         if (index <= 0 || pageSize <= 0)
         {
@@ -87,6 +92,11 @@ public class CompetitionService : ICompetitionService
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Cuộc thi không tồn tại!");
             }
+        }
+
+        if (year != 0)
+        {
+            query = query.Where(c => c.DateStart != null && c.DateStart.Value.Year == year);
         }
 
         if (!string.IsNullOrEmpty(nameSearch))

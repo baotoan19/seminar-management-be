@@ -47,8 +47,10 @@ public class StatisticService : IStatisticService
         if (filterDto.CompetitionId.HasValue)
             filteredQuery = filteredQuery.Where(c => c.Id == filterDto.CompetitionId);
 
-        if (filterDto.Year.HasValue && filterDto.Year > 0)
-            filteredQuery = filteredQuery.Where(c => c.CreatedAt.Year == filterDto.Year);
+        if (filterDto.Year.HasValue && filterDto.Year.Value > 0)
+        {
+            totalQuery = totalQuery.Where(c => c.DateStart != null && c.DateStart.Value.Year == filterDto.Year.Value);
+        }
 
         // Lọc theo Discipline
         if (filterDto.DisciplineId.HasValue && filterDto.DisciplineId > 0)
@@ -218,7 +220,7 @@ public class StatisticService : IStatisticService
                 .Where(rt => rt.Acceptance.FacultyAcceptedStatus == (int)FacultyAcceptedStatusEnum.Pending)
                 .CountAsync(),
 
-            // 13. Tỷ lệ đề tài được khoa phê duyệt
+            // 13. Tỷ lệ đề t��i được khoa phê duyệt
             FacultyApprovedTopicsRate = totalResearchTopics > 0
                 ? Math.Round((double)filteredQuery
                     .SelectMany(c => c.ResearchTopics)

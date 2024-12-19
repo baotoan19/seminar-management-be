@@ -33,9 +33,9 @@ public class CompetitionController : ControllerBase
 
     [HttpGet("organizer")]
     [Authorize(Roles = CLAIMS_VALUES.ROLE_TYPE.ORGANIZER)]
-    public async Task<IActionResult> GetAllCompetitionByOrganizerIdAsync(int index = 1, int pageSize = 8, string nameSearch = "")
+    public async Task<IActionResult> GetAllCompetitionByOrganizerIdAsync(int index = 1, int pageSize = 8, string nameSearch = "",int year = 0)
     {
-        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionByOrganizerIdAsync(index, pageSize,nameSearch);
+        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionByOrganizerIdAsync(index, pageSize,nameSearch,year);
         return Ok(new BaseResponse<PaginatedList<CompetitionVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
@@ -44,9 +44,9 @@ public class CompetitionController : ControllerBase
     }
 
     [HttpGet("all")]
-    public async Task<IActionResult> GetAllCompetitionAsync(int index = 1, int pageSize = 8, string nameSearch = "", string organizerName = "", int facultyId = 0)
+    public async Task<IActionResult> GetAllCompetitionAsync(int index = 1, int pageSize = 8, string nameSearch = "", string organizerName = "", int facultyId = 0, int year = 0)
     {
-        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionAsync(index, pageSize, nameSearch, organizerName, facultyId);
+        PaginatedList<CompetitionVM> competitions = await _competitionService.GetAllCompetitionAsync(index, pageSize, nameSearch, organizerName, facultyId, year);
         return Ok(new BaseResponse<PaginatedList<CompetitionVM>>(
             statusCode: StatusCodes.Status200OK,
             code: ResponseCodeConstants.SUCCESS,
